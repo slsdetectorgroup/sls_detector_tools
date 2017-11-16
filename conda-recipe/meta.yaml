@@ -1,0 +1,27 @@
+package:
+    name: sls_detector_tools
+    version: 0.0.1
+
+build:
+  number: 0
+
+source:
+    path: ..
+
+requirements:
+    build:
+        - python
+        - setuptools
+
+    run:
+        - python
+        - numpy 
+
+
+test:
+      imports:
+         - sls_detector_tools
+
+
+about:
+    summary: "Support scripts for analysing detector data"
