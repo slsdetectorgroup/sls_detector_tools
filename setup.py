@@ -7,7 +7,6 @@ Created on Thu Nov 16 20:17:59 2017
 """
 
 from setuptools import setup, Extension, find_packages
-from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
 
@@ -22,7 +21,6 @@ setup(
     description='Some test',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    ext_modules=ext_modules,
     install_requires=['numpy>=1.13'],
     zip_safe=False,
 )
