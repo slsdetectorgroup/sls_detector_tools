@@ -21,6 +21,5 @@ setup(
     description='Some test',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['numpy>=1.13'],
     zip_safe=False,
 )
