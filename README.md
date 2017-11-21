@@ -1,11 +1,12 @@
 # sls detector tools
-A collection of tools for detector related tasks in Python kbkll
+A collection of tools for detector related tasks in Python
 
 
-### Interacting with instruments
+### Interacting with instruments and measurements setups
 
- * Keithly SourceMeter using serial to USB adapter
- * Agilent MultiMeter
+ * **SourceMeter** - Keithly SourceMeter using serial to USB adapter
+ * **AgilentMultiMeter** - Agilent multimeter over telnet
+ * **XrayBox** - Big X-ray box using command line calls to the client
 
 ```python
 
