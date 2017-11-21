@@ -10,17 +10,16 @@ from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-from sls_detector import Detector
+
 from .io import load_frame, save_txt, load_txt
 from .plot import *
 from . import root_helper as r
-
 from . import config as cfg
 
 plt.ion()
 sns.set()
 
-def rx_bias(name, d, clk = 1, npulse = 1, plot = False):
+def rx_bias(detector, clk = 'Full Speed', npulse = 1, plot = False):
     """
     Scans rx bias and checks for each value if the data is read
     out correctly. Uses testing with enable to load counter values. 
@@ -28,88 +27,92 @@ def rx_bias(name, d, clk = 1, npulse = 1, plot = False):
     721 (1444 counter value)
     
     """
-    if cfg.nmod == 1:
-        geo = '250k'
-    else:
-        geo = '500k'
+
     
     #Output config
     out = cfg.path.out
-    path = os.path.join( cfg.path.test, name )
+    path = os.path.join( cfg.path.test, cfg.det_id )
     tmp_fname = 'test'
-    d.file_name = tmp_fname
-    d.file_write = True 
-    d.dynamic_range = 16 
-    d.readout_clock = 'Full Speed'
-    if cfg.debug == True:
-        print( 'Readout clock:', d.readout_clock )
+    
+    detector.file_name = tmp_fname
+    detector.file_write = True 
+    detector.dynamic_range = 16 
+    detector.readout_clock = clk
 
-    d.exposure_time = 0.01 
+
+    detector.exposure_time = 0.01 
 
     #Save dacs to recover them later    
-    dacs = d.dacs.get_asarray()  
+    dacs = detector.dacs.get_asarray()  
     
     #Set dacs for testing mode
-    d.vthreshold = 4000
-    d.dacs.vtr = 4000
-    print( d.dacs )    
+    detector.vthreshold = 4000
+    detector.dacs.vtr = 4000
+    print( detector.dacs )    
     
-    #Generate slices to access chip data
+
+    #should use masks!
     rows = [slice(256,512,1), slice(0,256,1)]
     cols = [slice(0,256,1), slice(256,512,1), slice(512,768,1), slice(768,1024,1)]
     chips = [[r,c] for r in rows for c in cols]
 
     #Scan range 
-    rx_list = np.arange(500,1801,10)
-    N = np.zeros((8, rx_list.size))
-    print( "rx_bias test at clkdivider", clk)
+#    rx_list = np.arange(500,1801,100)
+    rxb_values = list(range(500,1801,100))
+    N = np.zeros((8, len(rxb_values)))
+    print( "rx_bias test at: ", detector.readout_clock)
     t0 = time.time()
     
-    for i,rx in enumerate(rx_list):
-        if not i % (len(rx_list)/10):
-            sys.stdout.write('=')
-        d.dacs.rxb_lb = rx
-        d.dacs.rxb_rb = rx
-        d.file_index = 0
-        d.pulse_chip(npulse)
-        d.acq()
-        if cfg.debug == True:
-            print( 'd.readout_clock:', d.readout_clock)
-        data = load_frame(os.path.join(out, tmp_fname), 0, geometry = geo) #Single frame
+    data_list = []
+    for i,rx in enumerate(rxb_values):
+        detector.dacs.rxb_lb= rx
+        detector.dacs.rxb_rb = rx
+        detector.file_index = 0
+        detector.pulse_chip(npulse)
+        detector.acq()
+#        print(detector.dacs.rxb_rb)
+#        print(detector.dacs.rxb_lb)
+#        print(rx)
 
+        data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry) 
+        data_list.append(data)
         for j,c in enumerate(chips):
             N[j, i] = (data[c] != int(npulse*2+2)).sum()
+#
+#    sys.stdout.write(' ' + str(time.time()-t0))
+#    sys.stdout.write('\n')
 
-    sys.stdout.write(' ' + str(time.time()-t0))
-    sys.stdout.write('\n')
 
-    
     
     #Clean up last files
     os.remove( os.path.join(out, tmp_fname)+'_d0_0.raw' )
     os.remove( os.path.join(out, tmp_fname)+'_d1_0.raw' )
-    
-    
-    return data
+    os.remove( os.path.join(out, tmp_fname)+'_d2_0.raw' )
+    os.remove( os.path.join(out, tmp_fname)+'_d3_0.raw' )
+
+
+
     #plot rx bias
     if plot:
         plt.figure()
         for i in range(8):
-            plt.plot(rx_list, N[i], 'o-')
+            plt.plot(rxb_values, N[i], 'o-')
         plt.xlabel('rx_bias [DAC code]')
         plt.ylabel('number of pixels [1]')
         plt.title('RX bias test, clk: ' + str(clk))
 
     #Save data for report
     header = ['rx_bias', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
-    fname = os.path.join(path, name+'_rxbias_'+str(clk)+'.txt')
-    save_txt(fname, header, [rx_list] + [x for x in N])
+#    fname = os.path.join(path, cfg.det_id+'_rxbias_'+str(clk)+'.txt')
+    n = detector._speed_int[ detector.readout_clock ]
+    fname = os.path.join(path, '{:s}_rxbias_{:d}.txt'.format(cfg.det_id, n))
+    save_txt(fname, header, [rxb_values] + [x for x in N])
 
     
     #Reset to previous state
-    d.pulse_chip(-1)
-    d.dacs.set_from_array( dacs )
-    return rx_list, N
+    detector.pulse_chip(-1)
+    detector.dacs.set_from_array( dacs )
+    return rxb_values, N
 
 def io_delay( name, d, clk = 1, npulse = -1, plot = False ):
     """

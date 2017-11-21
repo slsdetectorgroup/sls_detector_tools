@@ -22,14 +22,14 @@ import sls_detector_tools.config as cfg
 
 #Initialize the system
 #d = SlsDetector(cfg = 'pc1875_tests.cfg')
-cfg.verbose = True
-cfg.debug = True
+cfg.verbose = False
+cfg.debug = False
 d = Detector()
-#d.set_readfreq(0)
 
-#Setup
-name = 'T06-retest'
-path = os.path.join( cfg.path.test, name )
+
+##Setup
+cfg.det_id = 'T06-retest'
+path = os.path.join( cfg.path.test, cfg.det_id )
 
 
 cfg.geometry= '500k'
@@ -43,14 +43,16 @@ except OSError:
 print("\n --- EIGER Module testing ---")
 print("Test path:", path)
 print("Tmp data path:", d.file_path)
-print("module:", name)
-
+print("module:", cfg.det_id)
+#
 
 cfg.nmod = 2
 d.dacs.iodelay = 660
+d.dacs.vtr = 2000
 ### RX bias test to find operation point
-data = module_tests.rx_bias(name, d, clk = 0, npulse = 10, plot = True)
-#tests.rx_bias(name, d, clk = 1, npulse = 10, plot = True)
+#data = module_tests.rx_bias(name, d, clk = 0, npulse = 10, plot = True)
+out = module_tests.rx_bias(d, clk = 'Full Speed', npulse = 10, plot = True)
+out = module_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
 ######
 #########Set rx bias and iodelay
 #d.set_dac('0:rxb_lb', 1100)
