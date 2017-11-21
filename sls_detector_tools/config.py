@@ -15,6 +15,30 @@ debug = False
 #Detector
 det_id = 'Unconfigured'
 
+class path: 
+    """
+    All configuration regarding which path to write to or where to find
+    the slsDetectorsPackage. 
+    """
+    
+    base = '/home/l_frojdh'
+    """Base directory for io"""
+
+
+    
+    test = '/home/l_frojdh/code/scripts/testing'
+    """Output directory for module testing"""
+    
+#    settingsdir = '/home/l_frojdh/slsDetectorsPackage/settingsdir/eiger/'
+#    """ Settings directory of the slsDetectorsPackage"""
+#    
+#    afs_calibration = '/afs/psi.ch/project/pilatusXFS/Erik/calibration'  
+#    """ AFS path to write out trimbit files """
+    
+#    trim = os.path.join(base, 'trim')
+    data = os.path.join(base, 'data')
+    out = os.path.join(base, 'out')  
+#    log = os.path.join(base, 'tmp')
 
 #Configure logging
 def set_log(fname, level = logging.INFO, stream = False):
