@@ -95,6 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="plot.html">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_tests.html">EIGER Tests</a></li>
 </ul>
 
             
@@ -730,6 +731,18 @@ the slsDetectorsPackage.</p>
 <code class="descclassname">sls_detector_tools.config.</code><code class="descname">set_log</code><span class="sig-paren">(</span><em>fname</em>, <em>level=20</em>, <em>stream=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/config.html#set_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.config.set_log" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="class">
+<dt id="sls_detector_tools.config.tests">
+<em class="property">class </em><code class="descclassname">sls_detector_tools.config.</code><code class="descname">tests</code><a class="reference internal" href="_modules/sls_detector_tools/config.html#tests"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.config.tests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="sls_detector_tools.config.tests.plot">
+<code class="descname">plot</code><em class="property"> = True</em><a class="headerlink" href="#sls_detector_tools.config.tests.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the result of each module test</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-sls_detector_tools.io">
 <span id="sls-detector-tools-io-module"></span><h2>sls_detector_tools.io module<a class="headerlink" href="#module-sls_detector_tools.io" title="Permalink to this headline">¶</a></h2>
@@ -956,284 +969,8 @@ trough the cfg.geometry setting.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-sls_detector_tools.module_tests">
-<span id="sls-detector-tools-module-tests-module"></span><h2>sls_detector_tools.module_tests module<a class="headerlink" href="#module-sls_detector_tools.module_tests" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.analog_pulses">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">analog_pulses</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em>, <em>N=1000</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#analog_pulses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.analog_pulses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test the analog side of the pixel using test pulses
-Normally this test is run only using clock divider 1
-It is normal to see cosmics in the final image</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.counter">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">counter</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#counter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.counter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test the digital counter logic.
-Note this does not test the overflow</p>
-<p>Test is done by toggeling enable:
-1364 –&gt; 2730 –&gt; 101010101010
-682 –&gt; 1366 –&gt; 010101010110</p>
-<p>Using enable only increments of 2 in the
-counter value is possible</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.generate_report">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">generate_report</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#generate_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.generate_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a report based on the contents in a folder
-outputs a multipage pdf file</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.io_delay">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">io_delay</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em>, <em>npulse=-1</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#io_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.io_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test to determine the settings for iodelay
-npulses = -1 makes the test using a normal readout
-npulses = 0 puts the threshold on the far side of noise</p>
-<blockquote>
-<div>but does not pulse</div></blockquote>
-<p>npulse &gt; 0 pulses using enable</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.overflow">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">overflow</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#overflow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.overflow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Overflow test using analog pulses</p>
-<p>Unfortunatley the enable toggling cannot be used to check this because
-of problems when going to overflow</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.rx_bias">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">rx_bias</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Full Speed'</em>, <em>npulse=1</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#rx_bias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.rx_bias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Scans rx bias and checks for each value if the data is read
-out correctly. Uses testing with enable to load counter values.
-Default number of pulses is 1. Probe station testing uses 721 pulses
-721 (1444 counter value)</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.module_tests.tp_scurve">
-<code class="descclassname">sls_detector_tools.module_tests.</code><code class="descname">tp_scurve</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/module_tests.html#tp_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.module_tests.tp_scurve" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="module-sls_detector_tools.plot">
-<span id="sls-detector-tools-plot-module"></span><h2>sls_detector_tools.plot module<a class="headerlink" href="#module-sls_detector_tools.plot" title="Permalink to this headline">¶</a></h2>
-<p>Plotting routines for displaying image sensor data using matplotlib and
-seaborn. Some routines like the chip_histograms rely on PyROOT but the import
-should work even without ROOT.</p>
-<dl class="function">
-<dt id="sls_detector_tools.plot.add_module_gaps">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">add_module_gaps</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#add_module_gaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.add_module_gaps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add the gaps in a multi module system</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>numpy_array</em>) – Image used for expanding</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>new_image</strong> – Image with the gaps inserted</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy_array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.chip_histograms">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">chip_histograms</code><span class="sig-paren">(</span><em>data</em>, <em>xmin=0</em>, <em>xmax=2000</em>, <em>bins=400</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#chip_histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.chip_histograms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a histogram per chip of the inflection point (fit_result[‘mu’])</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>numpy_array</em>) – numpy_array in type of fit_results with named fields</li>
-<li><strong>xmin</strong> (<em>int</em><em>, </em><em>optional</em>) – Lover edge of the histogram</li>
-<li><strong>xmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Higher edge of the histogram</li>
-<li><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bins in the histogram</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.draw_module_borders">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">draw_module_borders</code><span class="sig-paren">(</span><em>ax</em>, <em>vertical=False</em>, <em>half_module=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#draw_module_borders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.draw_module_borders" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draw lines outlining the individual modules in the Eiger9M. Options as
-well for half modules</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ax</strong> (<em>mpl.axes</em>) – axes of the image that should be drawn on</li>
-<li><strong>vertical</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to False, set to True if the image is rotated to vertical
-layout</li>
-<li><strong>half_module</strong> (<em>bool</em>) – Defaults to False, set to True to also draw a line at the border
-between half modules</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.draw_module_names">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">draw_module_names</code><span class="sig-paren">(</span><em>ax</em>, <em>vertical=False</em>, <em>color='white'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#draw_module_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.draw_module_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write out the names of the modules in the 9M image.
-Names are fetched from sls_detector.config.Eiger9M</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ax</strong> (<em>mpl.axes</em>) – axes to draw the names on</li>
-<li><strong>vertical</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to False, set to True if the image is rotated</li>
-<li><strong>color</strong> (<em>str</em>) – Textcolor</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.fix_large_pixels">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">fix_large_pixels</code><span class="sig-paren">(</span><em>image</em>, <em>interpolation=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#fix_large_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.fix_large_pixels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Expand and interpolate the values in large pixels at borders and in corners
-Works on sigle module data with one or several frames</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.global_scurve">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">global_scurve</code><span class="sig-paren">(</span><em>data</em>, <em>x</em>, <em>chip_divided=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#global_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.global_scurve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a global scurve and differential scurve for the data provided.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>numpy_array</em><em>[</em><em>row</em><em>, </em><em>col</em><em>, </em><em>N</em><em>]</em>) – Data to plot</li>
-<li><strong>x</strong> (<em>numpy_array</em><em>[</em><em>N</em><em>]</em>) – Data for the x axis</li>
-<li><strong>chip_divided</strong> (<em>bool</em>) – Plot each chip seperate</li>
-<li><strong>Returns</strong> – <dl class="docutils">
-<dt>x: numpy_array</dt>
-<dd>xaxis data, usually threshold</dd>
-<dt>y: numpy_array</dt>
-<dd>summed counts per step</dd>
-</dl>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Chip divided plot is only implemented for a single module</p>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.imshow">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">imshow</code><span class="sig-paren">(</span><em>data</em>, <em>cmap='coolwarm'</em>, <em>log=False</em>, <em>draw_asics=False</em>, <em>asic_color='white'</em>, <em>asic_linewidth=2</em>, <em>figsize=(16</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#imshow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.imshow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot an image with colorbar</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>data</strong> (<em>2d numpy_array</em>) – Image data</li>
-<li><strong>cmap</strong> (<a class="reference internal" href="#sls_detector_tools.config.calibration.std" title="sls_detector_tools.config.calibration.std"><em>std</em></a>) – Name of the colormap that should be used for the plot. Default is
-coolwarm</li>
-<li><strong>log</strong> (<em>bool</em>) – If True apply a logaritmical colorscale</li>
-<li><strong>draw_asics</strong> (<em>bool</em>) – Draw the edges of the asic in the module Warning this currently
-only works for single modules</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
-<li><strong>ax</strong> (<em>mpl.axes</em>) – Matplotlib axes object</li>
-<li><strong>im</strong> (<em>mppl.image</em>) – Matplotlib image</li>
-</ul>
-</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the size of x and y is not the same</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.interpolate_pixel">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">interpolate_pixel</code><span class="sig-paren">(</span><em>pixel</em>, <em>data</em>, <em>pixelmask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#interpolate_pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.interpolate_pixel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the interpolated value in pixel.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>pixel</strong> (<em>int</em><em>, </em><em>int</em>) – Index of the pixel to interpolate</li>
-<li><strong>data</strong> (<em>numpy_array</em>) – The image to use for interpolation</li>
-<li><strong>pixelmask</strong> (<em>numpy_array</em><em>(</em><em>bool</em><em>)</em>) – True for pixels that should be skipped.</li>
-<li><strong>Returns</strong> – </li>
-<li><strong>value</strong> (<em>double</em>) – The value of the interpolated pixel</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.plot_pixel_fit">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">plot_pixel_fit</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>par</em>, <em>px</em>, <em>figure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#plot_pixel_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.plot_pixel_fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the fit of a single pixel, given parameters and values</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.plot_signals">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">plot_signals</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#plot_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.plot_signals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot a set of digital signals in one plot. Expects a named numpy
-array as input.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.random_pixels">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">random_pixels</code><span class="sig-paren">(</span><em>data</em>, <em>x</em>, <em>n_pixels=5</em>, <em>rows=(0</em>, <em>512)</em>, <em>cols=(0</em>, <em>1024)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#random_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.random_pixels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot data from random pixels</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>data</strong> (<em>numpy_array</em><em>[</em><em>row</em><em>, </em><em>col</em><em>, </em><em>n</em><em>]</em>) – Detector data</li>
-<li><strong>n_pixels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of pixels to plot. Defaults to 5</li>
-<li><strong>rows</strong> (<em>tuple</em>) – Sets max and min row</li>
-<li><strong>cols</strong> (<em>tuple</em>) – Sets max and min row</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="sls_detector_tools.plot.setup_plot">
-<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">setup_plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#setup_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.setup_plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Setup seaborn and matplotlib for nice plots. This function uses sns.set()
-then sets style to: <em>talk</em> and font scale 1.2 for better readability.</p>
-</dd></dl>
-
+<div class="section" id="sls-detector-tools-module-tests-module">
+<h2>sls_detector_tools.module_tests module<a class="headerlink" href="#sls-detector-tools-module-tests-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-sls_detector_tools.receiver">
 <span id="sls-detector-tools-receiver-module"></span><h2>sls_detector_tools.receiver module<a class="headerlink" href="#module-sls_detector_tools.receiver" title="Permalink to this headline">¶</a></h2>

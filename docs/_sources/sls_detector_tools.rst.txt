@@ -58,13 +58,6 @@ sls\_detector\_tools\.module\_tests module
     :undoc-members:
     :show-inheritance:
 
-sls\_detector\_tools\.plot module
----------------------------------
-
-.. automodule:: sls_detector_tools.plot
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 sls\_detector\_tools\.receiver module
 -------------------------------------

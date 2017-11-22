@@ -40,6 +40,11 @@ class path:
     out = os.path.join(base, 'out')  
 #    log = os.path.join(base, 'tmp')
 
+
+class tests:
+    plot = True
+    """Plot the result of each module test"""
+
 #Configure logging
 def set_log(fname, level = logging.INFO, stream = False):
     logger = logging.getLogger()

@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import ROOT
 sys.path.insert(0, os.path.abspath('..'))
 
 

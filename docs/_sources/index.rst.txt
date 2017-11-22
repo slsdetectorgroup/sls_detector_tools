@@ -15,6 +15,7 @@ Welcome to sls_detector_tools's documentation!
    plot
    root_helper
    receiver
+   eiger_tests
    
 
 Indices and tables

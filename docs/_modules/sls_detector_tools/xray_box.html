@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../plot.html">Plotting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../eiger_tests.html">EIGER Tests</a></li>
 </ul>
 
             
@@ -276,7 +277,7 @@
 <span class="sd">        value: bool</span>
 <span class="sd">            True for on, False for off</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching on HV&#39;</span><span class="p">)</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>

@@ -8,7 +8,7 @@ sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
 
 from sls_detector import Detector
 #from sls_detector_tools.io import load_frame, save_txt, load_txt, load_file
-from sls_detector_tools import module_tests
+from sls_detector_tools import eiger_tests
 #import matplotlib as mpl
 import matplotlib.pyplot as plt
 plt.ion()
@@ -43,25 +43,20 @@ print("\n --- EIGER Module testing ---")
 print("Test path:", path)
 print("Tmp data path:", d.file_path)
 print("module:", cfg.det_id)
-#
+
 
 cfg.nmod = 2
 d.dacs.iodelay = 660
+d.dacs.rxb_lb = 1100
+d.dacs.rxb_rg = 1100
 
 ### RX bias test to find operation point
-out = module_tests.rx_bias(d, clk = 'Full Speed', npulse = 10, plot = True)
-#out = module_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
-######
-#########Set rx bias and iodelay
-#d.set_dac('0:rxb_lb', 1100)
-#d.set_dac('0:rxb_rb', 1100)
-#d.set_dac('1:rxb_lb', 1100)
-#d.set_dac('1:rxb_rb', 1100)
-#d.set_dac('iodelay', 660)
-#############
-##################
-#tests.io_delay(name, d, clk = 0, plot = True)
-#tests.io_delay(name, d, clk = 1, plot = True)
+out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
+#out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
+#
+###################
+#out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
+#out = eiger_tests.io_delay(d, clk = 'Half Speed', plot = True)
 #####################
 ##
 #tests.analog_pulses(name, d, plot = True)
@@ -73,3 +68,12 @@ out = module_tests.rx_bias(d, clk = 'Full Speed', npulse = 10, plot = True)
 #data = tests.overflow(name, d)
 ########
 #tests.generate_report(path)
+
+#plt.ioff()
+#
+#def plot_lines(x, lines):
+#    fig = plt.figure()
+#    ax = plt.subplot(1,1,1)
+#    for i in range(8):
+#        ax.plot(x, lines[i], 'o-')
+#    return fig, ax
