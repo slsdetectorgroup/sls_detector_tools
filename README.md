@@ -1,6 +1,10 @@
 # sls detector tools
 A collection of tools for detector related tasks in Python
 
+### Documentation
+
+[https://slsdetectorgroup.github.io/sls_detector_tools/](https://slsdetectorgroup.github.io/sls_detector_tools/)
+
 
 ### Interacting with instruments and measurements setups
 
