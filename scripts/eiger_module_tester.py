@@ -7,15 +7,15 @@ sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
 sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
 
 from sls_detector import Detector
-from sls_detector_tools.io import load_frame, save_txt, load_txt, load_file
+#from sls_detector_tools.io import load_frame, save_txt, load_txt, load_file
 from sls_detector_tools import module_tests
-import matplotlib as mpl
+#import matplotlib as mpl
 import matplotlib.pyplot as plt
 plt.ion()
 
-import time 
+#import time 
 import seaborn as sns
-from sls_detector_tools.plot import *
+#from sls_detector_tools.plot import *
 sns.set_context('talk')
 
 import sls_detector_tools.config as cfg
@@ -37,7 +37,6 @@ cfg.geometry= '500k'
 try:
 	os.mkdir( path )
 except OSError:
-	#should check error
 	pass
 
 print("\n --- EIGER Module testing ---")
@@ -51,7 +50,7 @@ d.dacs.iodelay = 660
 
 ### RX bias test to find operation point
 out = module_tests.rx_bias(d, clk = 'Full Speed', npulse = 10, plot = True)
-out = module_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
+#out = module_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
 ######
 #########Set rx bias and iodelay
 #d.set_dac('0:rxb_lb', 1100)

@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-import matplotlib as mpl
+#import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time 
@@ -12,9 +12,12 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 from .io import load_frame, save_txt, load_txt
-from .plot import *
-from . import root_helper as r
+#from .plot import *
+#from . import root_helper as r
 from . import config as cfg
+
+from . import ZmqReceiver
+from .mask import chip
 
 plt.ion()
 sns.set()
@@ -27,19 +30,19 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1, plot = False):
     721 (1444 counter value)
     
     """
+    #Toggle data streaming to make sure it is set up correctly and that
+    #buffers don't hold data
+    detector.rx_datastream = False
+    time.sleep(0.1)
+    detector.rx_datastream = True
 
+    #Receiver to have data in Python
+    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
     
-    #Output config
-    out = cfg.path.out
-    path = os.path.join( cfg.path.test, cfg.det_id )
-    tmp_fname = 'test'
-    
-    detector.file_name = tmp_fname
-    detector.file_write = True 
+    path = os.path.join( cfg.path.test, cfg.det_id )    
+    detector.file_write = False
     detector.dynamic_range = 16 
     detector.readout_clock = clk
-
-
     detector.exposure_time = 0.01 
 
     #Save dacs to recover them later    
@@ -48,52 +51,31 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1, plot = False):
     #Set dacs for testing mode
     detector.vthreshold = 4000
     detector.dacs.vtr = 4000
-    print( detector.dacs )    
-    
-
-    #should use masks!
-    rows = [slice(256,512,1), slice(0,256,1)]
-    cols = [slice(0,256,1), slice(256,512,1), slice(512,768,1), slice(768,1024,1)]
-    chips = [[r,c] for r in rows for c in cols]
-
+ 
     #Scan range 
-#    rx_list = np.arange(500,1801,100)
     rxb_values = list(range(500,1801,100))
     N = np.zeros((8, len(rxb_values)))
     print( "rx_bias test at: ", detector.readout_clock)
-    t0 = time.time()
     
-    data_list = []
+    t0 = time.time()
     for i,rx in enumerate(rxb_values):
         detector.dacs.rxb_lb= rx
         detector.dacs.rxb_rb = rx
-        detector.file_index = 0
         detector.pulse_chip(npulse)
+        
+        #Take frame and get data
         detector.acq()
-#        print(detector.dacs.rxb_rb)
-#        print(detector.dacs.rxb_lb)
-#        print(rx)
+        data = receiver.get_frame()
 
-        data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry) 
-        data_list.append(data)
-        for j,c in enumerate(chips):
+        #Sum of pixels that are not equal to the expected pulse value
+        for j,c in enumerate(chip):
             N[j, i] = (data[c] != int(npulse*2+2)).sum()
-#
-#    sys.stdout.write(' ' + str(time.time()-t0))
-#    sys.stdout.write('\n')
-
-
-    
-    #Clean up last files
-    os.remove( os.path.join(out, tmp_fname)+'_d0_0.raw' )
-    os.remove( os.path.join(out, tmp_fname)+'_d1_0.raw' )
-    os.remove( os.path.join(out, tmp_fname)+'_d2_0.raw' )
-    os.remove( os.path.join(out, tmp_fname)+'_d3_0.raw' )
-
+            
+    print('rx_bias test done in: {:.2f}'.format(time.time()-t0))
 
 
     #plot rx bias
-    if plot:
+    if plot is True:
         plt.figure()
         for i in range(8):
             plt.plot(rxb_values, N[i], 'o-')
@@ -103,7 +85,6 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1, plot = False):
 
     #Save data for report
     header = ['rx_bias', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
-#    fname = os.path.join(path, cfg.det_id+'_rxbias_'+str(clk)+'.txt')
     n = detector._speed_int[ detector.readout_clock ]
     fname = os.path.join(path, '{:s}_rxbias_{:d}.txt'.format(cfg.det_id, n))
     save_txt(fname, header, [rxb_values] + [x for x in N])

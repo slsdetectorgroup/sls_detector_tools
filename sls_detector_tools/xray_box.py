@@ -114,7 +114,7 @@ class XrayBox():
         value: bool
             True for on, False for off
         """
-        if value:
+        if value is True:
             logger.info('Switching on HV')
             out = self._call([self.box, 'HV', 'on'])
         else:

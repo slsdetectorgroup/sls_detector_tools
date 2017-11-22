@@ -24,10 +24,10 @@ from sls_detector_tools import utils
 
 
 #Try to import r (root plotting stuff) otherwise fallback on python version
-try:
-    from sls_detector_tools import root_helper as r
-except ImportError:
-    pass
+#try:
+#    from sls_detector_tools import root_helper as r
+#except ImportError:
+#    pass
 #    print('sls_detector/plot: ROOT version of r not imported! Using python version')
 #    from sls_detector import py_r as r
 
@@ -449,6 +449,8 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
     bins: int, optional
         Number of bins in the histogram
     """
+    from sls_detector_tools import root_helper as r
+    
     if cfg.nmod == 1:
         chips = mask.chip[4:]
     else:

@@ -1,0 +1,453 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Plotting &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="index.html"/>
+        <link rel="next" title="PyROOT Helper" href="root_helper.html"/>
+        <link rel="prev" title="Instruments" href="instruments.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="instruments.html">Instruments</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Plotting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sls_detector_tools.plot">
+<span id="plotting"></span><h1>Plotting<a class="headerlink" href="#module-sls_detector_tools.plot" title="Permalink to this headline">¶</a></h1>
+<p>Plotting routines for displaying image sensor data using matplotlib and
+seaborn. Some routines like the chip_histograms rely on PyROOT but the import
+should work even without ROOT.</p>
+<dl class="function">
+<dt id="sls_detector_tools.plot.add_module_gaps">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">add_module_gaps</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#add_module_gaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.add_module_gaps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the gaps in a multi module system</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>image</strong> (<em>numpy_array</em>) – Image used for expanding</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>new_image</strong> – Image with the gaps inserted</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy_array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.chip_histograms">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">chip_histograms</code><span class="sig-paren">(</span><em>data</em>, <em>xmin=0</em>, <em>xmax=2000</em>, <em>bins=400</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#chip_histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.chip_histograms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a histogram per chip of the inflection point (fit_result[‘mu’])</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>numpy_array</em>) – numpy_array in type of fit_results with named fields</li>
+<li><strong>xmin</strong> (<em>int</em><em>, </em><em>optional</em>) – Lover edge of the histogram</li>
+<li><strong>xmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Higher edge of the histogram</li>
+<li><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bins in the histogram</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.draw_module_borders">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">draw_module_borders</code><span class="sig-paren">(</span><em>ax</em>, <em>vertical=False</em>, <em>half_module=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#draw_module_borders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.draw_module_borders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw lines outlining the individual modules in the Eiger9M. Options as
+well for half modules</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ax</strong> (<em>mpl.axes</em>) – axes of the image that should be drawn on</li>
+<li><strong>vertical</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to False, set to True if the image is rotated to vertical
+layout</li>
+<li><strong>half_module</strong> (<em>bool</em>) – Defaults to False, set to True to also draw a line at the border
+between half modules</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.draw_module_names">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">draw_module_names</code><span class="sig-paren">(</span><em>ax</em>, <em>vertical=False</em>, <em>color='white'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#draw_module_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.draw_module_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out the names of the modules in the 9M image.
+Names are fetched from sls_detector.config.Eiger9M</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ax</strong> (<em>mpl.axes</em>) – axes to draw the names on</li>
+<li><strong>vertical</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to False, set to True if the image is rotated</li>
+<li><strong>color</strong> (<em>str</em>) – Textcolor</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.fix_large_pixels">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">fix_large_pixels</code><span class="sig-paren">(</span><em>image</em>, <em>interpolation=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#fix_large_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.fix_large_pixels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Expand and interpolate the values in large pixels at borders and in corners
+Works on sigle module data with one or several frames</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.global_scurve">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">global_scurve</code><span class="sig-paren">(</span><em>data</em>, <em>x</em>, <em>chip_divided=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#global_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.global_scurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a global scurve and differential scurve for the data provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>numpy_array</em><em>[</em><em>row</em><em>, </em><em>col</em><em>, </em><em>N</em><em>]</em>) – Data to plot</li>
+<li><strong>x</strong> (<em>numpy_array</em><em>[</em><em>N</em><em>]</em>) – Data for the x axis</li>
+<li><strong>chip_divided</strong> (<em>bool</em>) – Plot each chip seperate</li>
+<li><strong>Returns</strong> – <dl class="docutils">
+<dt>x: numpy_array</dt>
+<dd>xaxis data, usually threshold</dd>
+<dt>y: numpy_array</dt>
+<dd>summed counts per step</dd>
+</dl>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Chip divided plot is only implemented for a single module</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.imshow">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">imshow</code><span class="sig-paren">(</span><em>data</em>, <em>cmap='coolwarm'</em>, <em>log=False</em>, <em>draw_asics=False</em>, <em>asic_color='white'</em>, <em>asic_linewidth=2</em>, <em>figsize=(16</em>, <em>10)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#imshow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.imshow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot an image with colorbar</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>2d numpy_array</em>) – Image data</li>
+<li><strong>cmap</strong> (<a class="reference internal" href="sls_detector_tools.html#sls_detector_tools.config.calibration.std" title="sls_detector_tools.config.calibration.std"><em>std</em></a>) – Name of the colormap that should be used for the plot. Default is
+coolwarm</li>
+<li><strong>log</strong> (<em>bool</em>) – If True apply a logaritmical colorscale</li>
+<li><strong>draw_asics</strong> (<em>bool</em>) – Draw the edges of the asic in the module Warning this currently
+only works for single modules</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><strong>ax</strong> (<em>mpl.axes</em>) – Matplotlib axes object</li>
+<li><strong>im</strong> (<em>mppl.image</em>) – Matplotlib image</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the size of x and y is not the same</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.interpolate_pixel">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">interpolate_pixel</code><span class="sig-paren">(</span><em>pixel</em>, <em>data</em>, <em>pixelmask</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#interpolate_pixel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.interpolate_pixel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the interpolated value in pixel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pixel</strong> (<em>int</em><em>, </em><em>int</em>) – Index of the pixel to interpolate</li>
+<li><strong>data</strong> (<em>numpy_array</em>) – The image to use for interpolation</li>
+<li><strong>pixelmask</strong> (<em>numpy_array</em><em>(</em><em>bool</em><em>)</em>) – True for pixels that should be skipped.</li>
+<li><strong>Returns</strong> – </li>
+<li><strong>value</strong> (<em>double</em>) – The value of the interpolated pixel</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.plot_pixel_fit">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">plot_pixel_fit</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>par</em>, <em>px</em>, <em>figure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#plot_pixel_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.plot_pixel_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the fit of a single pixel, given parameters and values</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.plot_signals">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">plot_signals</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#plot_signals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.plot_signals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a set of digital signals in one plot. Expects a named numpy
+array as input.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.random_pixels">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">random_pixels</code><span class="sig-paren">(</span><em>data</em>, <em>x</em>, <em>n_pixels=5</em>, <em>rows=(0</em>, <em>512)</em>, <em>cols=(0</em>, <em>1024)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#random_pixels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.random_pixels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot data from random pixels</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<em>numpy_array</em><em>[</em><em>row</em><em>, </em><em>col</em><em>, </em><em>n</em><em>]</em>) – Detector data</li>
+<li><strong>n_pixels</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of pixels to plot. Defaults to 5</li>
+<li><strong>rows</strong> (<em>tuple</em>) – Sets max and min row</li>
+<li><strong>cols</strong> (<em>tuple</em>) – Sets max and min row</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.setup_plot">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">setup_plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#setup_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.setup_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup seaborn and matplotlib for nice plots. This function uses sns.set()
+then sets style to: <em>talk</em> and font scale 1.2 for better readability.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="root_helper.html" class="btn btn-neutral float-right" title="PyROOT Helper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="instruments.html" class="btn btn-neutral" title="Instruments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

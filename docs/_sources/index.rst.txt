@@ -10,8 +10,9 @@ Welcome to sls_detector_tools's documentation!
    :maxdepth: 2
    :caption: Contents:
     
+   functions 
    instruments
-   functions
+   plot
    root_helper
    receiver
    
