@@ -48,9 +48,8 @@ print("module:", cfg.det_id)
 
 cfg.nmod = 2
 d.dacs.iodelay = 660
-d.dacs.vtr = 2000
+
 ### RX bias test to find operation point
-#data = module_tests.rx_bias(name, d, clk = 0, npulse = 10, plot = True)
 out = module_tests.rx_bias(d, clk = 'Full Speed', npulse = 10, plot = True)
 out = module_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
 ######

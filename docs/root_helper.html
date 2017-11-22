@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PyROOT Helper &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="index.html"/>
+        <link rel="next" title="ZmqReceiver" href="receiver.html"/>
+        <link rel="prev" title="Functions" href="functions.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>PyROOT Helper</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/root_helper.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sls_detector_tools.root_helper">
+<span id="pyroot-helper"></span><h1>PyROOT Helper<a class="headerlink" href="#module-sls_detector_tools.root_helper" title="Permalink to this headline">¶</a></h1>
+<p>Convenient wrapper for plotting Python things in ROOT.
+Mostly uses numpy data and aims to have a Pyton like feeling.
+No external dependencies except numpy and PyROOT</p>
+<dl class="function">
+<dt id="sls_detector_tools.root_helper.getHist">
+<code class="descclassname">sls_detector_tools.root_helper.</code><code class="descname">getHist</code><span class="sig-paren">(</span><em>h</em>, <em>edge='center'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/root_helper.html#getHist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.root_helper.getHist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the bin edges and values for a ROOT histogram.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>h</strong> (<em>TH1</em>) – Histogram that we need the values from</li>
+<li><strong>edge</strong> (<em>str</em><em>, </em><em>optional</em>) – Which edge that should be used. Defaults to center.
+Possible values low, center high and both</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><strong>x</strong> (<em>np.array</em>) – Bin edges as spefied by edge</li>
+<li><strong>y</strong> (<em>np.array</em>) – Values of the bins</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If edge is something different from low, center, high or both</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.root_helper.hist">
+<code class="descclassname">sls_detector_tools.root_helper.</code><code class="descname">hist</code><span class="sig-paren">(</span><em>data=None</em>, <em>xmin=None</em>, <em>xmax=None</em>, <em>bins=100</em>, <em>title='Histogram'</em>, <em>add=False</em>, <em>c=None</em>, <em>h0=None</em>, <em>color=None</em>, <em>line_color=None</em>, <em>fill_style=1001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/root_helper.html#hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.root_helper.hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a histogram using TH1D also can add a new histogram as an overlay
+on the same canvas. In that case the canvas and one histogram on it
+needs to be specified</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>array_like</em>) – An array or list with the hits that should be added to the histogram</li>
+<li><strong>xmin</strong> (<em>double</em><em>, </em><em>optional</em>) – Lower edge of the lowest bin</li>
+<li><strong>xmax</strong> (<em>double</em><em>, </em><em>optional</em>) – High edge of the highest bin</li>
+<li><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Defaults to 100</li>
+<li><strong>title</strong> (<a class="reference internal" href="sls_detector_tools.html#sls_detector_tools.config.calibration.std" title="sls_detector_tools.config.calibration.std"><em>std</em></a><em>, </em><em>optional</em>) – Title of the histogram</li>
+<li><strong>add</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True add the new histogram to an old canvas</li>
+<li><strong>c</strong> (<em>TCanvas</em><em>, </em><em>optional</em>) – Canvas to add the histogram to</li>
+<li><strong>h0</strong> (<em>TH1D</em><em>, </em><em>optional</em>) – Base histogram plotted on the old canvas</li>
+<li><strong>color</strong> (<em>int</em><em>, </em><em>optional</em>) – ROOT color for the histogram, if not specified the value is taken from
+style.hist_color</li>
+<li><strong>line_color</strong> (<em>int optional</em>) – ROOT color for the line of the histogram is not specified taken from
+style.hist_line_color</li>
+<li><strong>fill_style</strong> (<em>int optional</em>) – Style to fill the histogram, default 1001</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>c</strong> (<em>TCanvas</em>) – Canvas on which the Histogram is drawn
+c=None</li>
+<li><strong>h</strong> (<em>TH1D</em>) – The histogram that was just drawn.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.root_helper.plot">
+<code class="descclassname">sls_detector_tools.root_helper.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>options='ALP'</em>, <em>title='A TGraph'</em>, <em>wx=900</em>, <em>wy=600</em>, <em>draw=True</em>, <em>error_graph=False</em>, <em>ex=None</em>, <em>ey=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/root_helper.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.root_helper.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a TGraph</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array_like</em>) – Values for the x axis</li>
+<li><strong>y</strong> (<em>array_like</em>) – Values for the y axis</li>
+<li><strong>options</strong> (<em>str</em><em>, </em><em>optional</em>) – Draw options for the TGraph default is ALP -&gt; (Axis, Line, Points)</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the TGraph, defaults to A TGraph</li>
+<li><strong>wx</strong> (<em>int</em><em>, </em><em>optional</em>) – Width of the plot in pixels</li>
+<li><strong>wy</strong> (<em>int</em><em>, </em><em>optional</em>) – Height of the plot in pixels</li>
+<li><strong>draw</strong> (<em>bool</em><em>, </em><em>optional</em>) – Defaults to True, draws the plot</li>
+<li><strong>error_graph</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use a TGraphErrors instead of a normal TGraph</li>
+<li><strong>ex</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Errors in x values</li>
+<li><strong>ey</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Errors in y values, if not spefified it is assumed to be np.sqrt(y)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><ul class="simple">
+<li><strong>c</strong> (<em>TCanvas</em>) – Canvas on which the TGraph is drawn if draw is set to false
+c=None</li>
+<li><strong>g</strong> (<em>TGraph</em>) – The graph.</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the size of x and y is not the same</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="sls_detector_tools.root_helper.style">
+<em class="property">class </em><code class="descclassname">sls_detector_tools.root_helper.</code><code class="descname">style</code><a class="reference internal" href="_modules/sls_detector_tools/root_helper.html#style"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.root_helper.style" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class used to configure the apparence of PyROOT draw objects</p>
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.hist_color">
+<code class="descname">hist_color</code><em class="property"> = 864</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.hist_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.hist_line_color">
+<code class="descname">hist_line_color</code><em class="property"> = 1</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.hist_line_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.hist_line_width">
+<code class="descname">hist_line_width</code><em class="property"> = 1</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.hist_line_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.line_color">
+<code class="descname">line_color</code><em class="property"> = 862</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.line_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.line_width">
+<code class="descname">line_width</code><em class="property"> = 2</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.line_width" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.marker_color">
+<code class="descname">marker_color</code><em class="property"> = 862</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.marker_color" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.root_helper.style.marker_style">
+<code class="descname">marker_style</code><em class="property"> = 21</em><a class="headerlink" href="#sls_detector_tools.root_helper.style.marker_style" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.root_helper.th2">
+<code class="descclassname">sls_detector_tools.root_helper.</code><code class="descname">th2</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>xmin=0</em>, <em>xmax=0</em>, <em>ymin=0</em>, <em>ymax=0</em>, <em>bins=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/root_helper.html#th2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.root_helper.th2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a TH2</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> (<em>array_like</em>) – input</li>
+<li><strong>y</strong> (<em>array_like</em>) – input</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>c</strong> (<em>TCanvas</em>) – Canvas on which the Histogram is drawn</li>
+<li><strong>h</strong> (<em>TH2D</em>) – The histogram that was just drawn.</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="receiver.html" class="btn btn-neutral float-right" title="ZmqReceiver" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="functions.html" class="btn btn-neutral" title="Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

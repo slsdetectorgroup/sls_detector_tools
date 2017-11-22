@@ -47,6 +47,11 @@ class eiger500k:
         _row = [slice(1024*i, 1024*(i+1), 1) for i in range(1)]
         self.halfmodule = [[c,r] for r in _row for c in _col]
 
+        self.port = []
+        for col in range(1):
+            for row in range(2,0,-1):
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
 
 
 class eiger9M:

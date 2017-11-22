@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.root_helper &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.root_helper</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.root_helper</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Convenient wrapper for plotting Python things in ROOT.</span>
+<span class="sd">Mostly uses numpy data and aims to have a Pyton like feeling.</span>
+<span class="sd">No external dependencies except numpy and PyROOT</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">TCanvas</span><span class="p">,</span> <span class="n">TGraph</span><span class="p">,</span> <span class="n">TH1D</span><span class="p">,</span> <span class="n">TH2D</span><span class="p">,</span>
+    <span class="n">TGraphErrors</span><span class="p">,</span>
+    <span class="n">kGreen</span><span class="p">,</span> <span class="n">kBlack</span><span class="p">,</span> <span class="n">kWhite</span><span class="p">,</span> <span class="n">kAzure</span><span class="p">,</span>
+    <span class="n">gPad</span><span class="p">,</span> <span class="n">gStyle</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="style"><a class="viewcode-back" href="../../root_helper.html#sls_detector_tools.root_helper.style">[docs]</a><span class="k">class</span> <span class="nc">style</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used to configure the apparence of PyROOT draw objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">line_color</span> <span class="o">=</span> <span class="n">kAzure</span><span class="o">+</span><span class="mi">2</span>
+    <span class="n">line_width</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">marker_color</span> <span class="o">=</span> <span class="n">kAzure</span><span class="o">+</span><span class="mi">2</span>
+    <span class="n">marker_style</span> <span class="o">=</span> <span class="mi">21</span> <span class="c1">#Square</span>
+    <span class="n">hist_color</span> <span class="o">=</span> <span class="n">kAzure</span><span class="o">+</span><span class="mi">4</span>
+    <span class="n">hist_line_width</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">hist_line_color</span> <span class="o">=</span> <span class="n">kBlack</span></div>
+
+
+<div class="viewcode-block" id="plot"><a class="viewcode-back" href="../../root_helper.html#sls_detector_tools.root_helper.plot">[docs]</a><span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="s1">&#39;ALP&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;A TGraph&quot;</span><span class="p">,</span>
+         <span class="n">wx</span><span class="o">=</span><span class="mi">900</span><span class="p">,</span> <span class="n">wy</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">draw</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">error_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+         <span class="n">ex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ey</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a TGraph</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: array_like</span>
+<span class="sd">        Values for the x axis</span>
+<span class="sd">    y: array_like</span>
+<span class="sd">        Values for the y axis</span>
+<span class="sd">    options: str, optional</span>
+<span class="sd">        Draw options for the TGraph default is ALP -&gt; (Axis, Line, Points)</span>
+<span class="sd">    title: str, optional</span>
+<span class="sd">        Title of the TGraph, defaults to A TGraph</span>
+<span class="sd">    wx: int, optional</span>
+<span class="sd">        Width of the plot in pixels</span>
+<span class="sd">    wy: int, optional</span>
+<span class="sd">        Height of the plot in pixels</span>
+<span class="sd">    draw: bool, optional</span>
+<span class="sd">        Defaults to True, draws the plot</span>
+<span class="sd">    error_graph: bool, optional</span>
+<span class="sd">        Use a TGraphErrors instead of a normal TGraph</span>
+<span class="sd">    ex: array_like, optional</span>
+<span class="sd">        Errors in x values</span>
+<span class="sd">    ey: array_like, optional</span>
+<span class="sd">        Errors in y values, if not spefified it is assumed to be np.sqrt(y)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: TCanvas</span>
+<span class="sd">        Canvas on which the TGraph is drawn if draw is set to false</span>
+<span class="sd">        c=None</span>
+<span class="sd">    g: TGraph</span>
+<span class="sd">        The graph.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the size of x and y is not the same</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#To have someting to return if draw is False</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1">#Show stats box if the graph is fitted</span>
+    <span class="n">gStyle</span><span class="o">.</span><span class="n">SetOptFit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1">#type conversions (Note! as array does not copy unless needed)</span>
+    <span class="n">xdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+    <span class="n">ydata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+
+    <span class="c1">#check array size</span>
+    <span class="k">if</span> <span class="n">xdata</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">ydata</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Size of x and y must match. (x.size: </span><span class="si">{:d}</span><span class="s2">&quot;</span>\
+                         <span class="s2">&quot;, y.size: </span><span class="si">{:d}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">draw</span><span class="p">:</span>
+        <span class="c1">#Workaround assigning random name to the histogram to avoid</span>
+        <span class="c1">#deleting it, TODO! do we have a smarter solution</span>
+        <span class="n">canvas_name</span> <span class="o">=</span> <span class="s1">&#39;r.plotcanvas&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">canvas_title</span> <span class="o">=</span> <span class="s1">&#39;plot&#39;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">TCanvas</span><span class="p">(</span><span class="n">canvas_name</span><span class="p">,</span> <span class="n">canvas_title</span><span class="p">,</span> <span class="n">wx</span><span class="p">,</span> <span class="n">wy</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">SetFillColor</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">SetGrid</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">error_graph</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">TGraph</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#Use a TErrorGraph to display error bars</span>
+        <span class="k">if</span> <span class="n">ex</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ey</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ey</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)</span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="n">TGraphErrors</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">ex</span><span class="p">,</span> <span class="n">ey</span><span class="p">)</span>
+
+    <span class="n">g</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+
+    <span class="c1">#Styling of the graph</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">SetLineColor</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">line_color</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">SetLineWidth</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">line_width</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">SetMarkerColor</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">marker_color</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">SetMarkerStyle</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">marker_style</span><span class="p">)</span>
+
+
+    <span class="k">if</span> <span class="n">draw</span><span class="p">:</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">g</span></div>
+
+
+<div class="viewcode-block" id="hist"><a class="viewcode-back" href="../../root_helper.html#sls_detector_tools.root_helper.hist">[docs]</a><span class="k">def</span> <span class="nf">hist</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Histogram&#39;</span><span class="p">,</span>
+         <span class="n">add</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">h0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+         <span class="n">line_color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_style</span><span class="o">=</span><span class="mi">1001</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a histogram using TH1D also can add a new histogram as an overlay</span>
+<span class="sd">    on the same canvas. In that case the canvas and one histogram on it</span>
+<span class="sd">    needs to be specified</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data: array_like</span>
+<span class="sd">        An array or list with the hits that should be added to the histogram</span>
+<span class="sd">    xmin: double, optional</span>
+<span class="sd">        Lower edge of the lowest bin</span>
+<span class="sd">    xmax: double, optional</span>
+<span class="sd">        High edge of the highest bin</span>
+<span class="sd">    bins: int, optional</span>
+<span class="sd">        Defaults to 100</span>
+<span class="sd">    title: std, optional</span>
+<span class="sd">        Title of the histogram</span>
+<span class="sd">    add: bool, optional</span>
+<span class="sd">        If True add the new histogram to an old canvas</span>
+<span class="sd">    c: TCanvas, optional</span>
+<span class="sd">        Canvas to add the histogram to</span>
+<span class="sd">    h0: TH1D, optional</span>
+<span class="sd">        Base histogram plotted on the old canvas</span>
+<span class="sd">    color: int, optional</span>
+<span class="sd">        ROOT color for the histogram, if not specified the value is taken from</span>
+<span class="sd">        style.hist_color</span>
+<span class="sd">    line_color: int optional</span>
+<span class="sd">        ROOT color for the line of the histogram is not specified taken from</span>
+<span class="sd">        style.hist_line_color</span>
+<span class="sd">    fill_style: int optional</span>
+<span class="sd">        Style to fill the histogram, default 1001</span>
+
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: TCanvas</span>
+<span class="sd">        Canvas on which the Histogram is drawn</span>
+<span class="sd">        c=None</span>
+<span class="sd">    h: TH1D</span>
+<span class="sd">        The histogram that was just drawn.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1">#Convert other data, (Note! does not copy is its already a numpy array)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1">#Apply custom plot settings</span>
+    <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">hist_color</span>
+
+    <span class="k">if</span> <span class="n">line_color</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">line_color</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">hist_line_color</span>
+
+
+    <span class="c1">#Check if we specified limits otherwise use min and max of the data</span>
+    <span class="k">if</span> <span class="n">xmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">xmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xmax</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+
+
+    <span class="c1">#If we are adding to an existing histogram we should not create a new</span>
+    <span class="c1"># TCanvas for the plotting</span>
+    <span class="k">if</span> <span class="n">add</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">canvas_name</span> <span class="o">=</span> <span class="s1">&#39;r.plotcanvas&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">canvas_title</span> <span class="o">=</span> <span class="s1">&#39;Histogram&#39;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">TCanvas</span><span class="p">(</span><span class="n">canvas_name</span><span class="p">,</span> <span class="n">canvas_title</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">SetGrid</span><span class="p">()</span>
+
+
+    <span class="n">histogram_name</span> <span class="o">=</span> <span class="s1">&#39;r.plothist&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">TH1D</span><span class="p">(</span><span class="n">histogram_name</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">bins</span><span class="p">),</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
+
+    <span class="n">h</span><span class="o">.</span><span class="n">SetFillColor</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">SetLineColor</span><span class="p">(</span><span class="n">line_color</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">SetLineWidth</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">hist_line_width</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">SetFillStyle</span><span class="p">(</span><span class="n">fill_style</span><span class="p">)</span>
+
+<span class="c1">#    #If we have data fill the histogram otherwise leave it</span>
+    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">hfill</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Fill</span> <span class="c1">#slight speed up</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">nditer</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">hfill</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">hfill</span>
+
+    <span class="k">if</span> <span class="n">add</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">Draw</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#Check axis and if the second histogram has a higher peak update</span>
+        <span class="n">gPad</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">gPad</span><span class="o">.</span><span class="n">GetFrame</span><span class="p">()</span><span class="o">.</span><span class="n">GetY2</span><span class="p">()</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetMaximum</span><span class="p">()</span><span class="o">*</span><span class="mf">1.05</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">h0</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">SetRangeUser</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+        <span class="n">h</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s1">&#39;SAME&#39;</span><span class="p">)</span>
+
+    <span class="n">c</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span></div>
+
+<div class="viewcode-block" id="th2"><a class="viewcode-back" href="../../root_helper.html#sls_detector_tools.root_helper.th2">[docs]</a><span class="k">def</span> <span class="nf">th2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot a TH2</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: array_like</span>
+<span class="sd">        input</span>
+<span class="sd">    y: array_like</span>
+<span class="sd">        input</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    c: TCanvas</span>
+<span class="sd">        Canvas on which the Histogram is drawn</span>
+<span class="sd">    h: TH2D</span>
+<span class="sd">        The histogram that was just drawn.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">TCanvas</span><span class="p">(</span><span class="s1">&#39;r.plotcanvas&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span>
+                <span class="s1">&#39;Plot&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">900</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">SetFillColor</span><span class="p">(</span><span class="n">kWhite</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">GetFrame</span><span class="p">()</span><span class="o">.</span><span class="n">SetFillColor</span><span class="p">(</span><span class="n">kWhite</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ymin</span><span class="p">:</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">xmax</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="n">ymin</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ymax</span><span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+
+    <span class="k">if</span> <span class="n">bins</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">nbinsx</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nbinsy</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">nbinsx</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">nbinsy</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nbinsx</span> <span class="o">=</span> <span class="mi">500</span>
+        <span class="n">nbinsy</span> <span class="o">=</span> <span class="mi">500</span>
+
+
+    <span class="n">h</span> <span class="o">=</span> <span class="n">TH2D</span><span class="p">(</span><span class="s1">&#39;r.hist2&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">)),</span> <span class="s1">&#39;Title&#39;</span><span class="p">,</span> <span class="n">nbinsx</span><span class="p">,</span>
+             <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">nbinsy</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+
+    <span class="n">hfill</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Fill</span>
+    <span class="k">for</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">nditer</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]):</span>
+        <span class="n">hfill</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
+
+    <span class="n">h</span><span class="o">.</span><span class="n">Draw</span><span class="p">(</span><span class="s1">&#39;colz&#39;</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span></div>
+
+
+
+<div class="viewcode-block" id="getHist"><a class="viewcode-back" href="../../root_helper.html#sls_detector_tools.root_helper.getHist">[docs]</a><span class="k">def</span> <span class="nf">getHist</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">edge</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns the bin edges and values for a ROOT histogram.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h: TH1</span>
+<span class="sd">        Histogram that we need the values from</span>
+<span class="sd">    edge: str, optional</span>
+<span class="sd">        Which edge that should be used. Defaults to center.</span>
+<span class="sd">        Possible values low, center high and both</span>
+
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x: np.array</span>
+<span class="sd">        Bin edges as spefied by edge</span>
+<span class="sd">    y: np.array</span>
+<span class="sd">        Values of the bins</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If edge is something different from low, center, high or both</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bins</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetNbinsX</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;low&#39;</span> <span class="ow">or</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;high&#39;</span> <span class="ow">or</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;low&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinLowEdge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinContent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;high&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinLowEdge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinWidth</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinContent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;center&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinCenter</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinContent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">edge</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Bins&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bins</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bins</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinLowEdge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinLowEdge</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinWidth</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinContent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">GetBinContent</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown edge specification use: high, low, center or both&#39;</span><span class="p">)</span>
+
+
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

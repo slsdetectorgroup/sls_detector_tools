@@ -1,0 +1,393 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.config &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.config</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.config</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Nov 20 11:37:05 2017</span>
+
+<span class="sd">@author: l_frojdh</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="c1">#Detector</span>
+<span class="n">det_id</span> <span class="o">=</span> <span class="s1">&#39;Unconfigured&#39;</span>
+
+<div class="viewcode-block" id="path"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.config.path">[docs]</a><span class="k">class</span> <span class="nc">path</span><span class="p">:</span> 
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    All configuration regarding which path to write to or where to find</span>
+<span class="sd">    the slsDetectorsPackage. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;/home/l_frojdh&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Base directory for io&quot;&quot;&quot;</span>
+
+
+    
+    <span class="n">test</span> <span class="o">=</span> <span class="s1">&#39;/home/l_frojdh/code/scripts/testing&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Output directory for module testing&quot;&quot;&quot;</span>
+    
+<span class="c1">#    settingsdir = &#39;/home/l_frojdh/slsDetectorsPackage/settingsdir/eiger/&#39;</span>
+<span class="c1">#    &quot;&quot;&quot; Settings directory of the slsDetectorsPackage&quot;&quot;&quot;</span>
+<span class="c1">#    </span>
+<span class="c1">#    afs_calibration = &#39;/afs/psi.ch/project/pilatusXFS/Erik/calibration&#39;  </span>
+<span class="c1">#    &quot;&quot;&quot; AFS path to write out trimbit files &quot;&quot;&quot;</span>
+    
+<span class="c1">#    trim = os.path.join(base, &#39;trim&#39;)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;out&#39;</span><span class="p">)</span>  </div>
+<span class="c1">#    log = os.path.join(base, &#39;tmp&#39;)</span>
+
+<span class="c1">#Configure logging</span>
+<div class="viewcode-block" id="set_log"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.config.set_log">[docs]</a><span class="k">def</span> <span class="nf">set_log</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="n">stream</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span> <span class="n">level</span> <span class="p">)</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1">- </span><span class="si">%(module)s</span><span class="s1">:</span><span class="si">%(funcName)s</span><span class="s1">() </span><span class="si">%(message)s</span><span class="s1"> &#39;</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">log</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">log</span><span class="p">)</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1">- </span><span class="si">%(module)s</span><span class="s1">:</span><span class="si">%(funcName)s</span><span class="s1">() </span><span class="si">%(message)s</span><span class="s1"> &#39;</span> <span class="p">)</span>
+        <span class="n">blank_formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1">- </span><span class="si">%(module)s</span><span class="s1">:</span><span class="si">%(funcName)s</span><span class="s1">() </span><span class="si">%(message)s</span><span class="s1"> &#39;</span> <span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span> <span class="n">formatter</span> <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span> <span class="n">handler</span> <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+    <span class="k">if</span> <span class="n">append</span><span class="p">:</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span> <span class="n">blank_formatter</span> <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;New measurement&#39;</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span> <span class="n">formatter</span> <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Appendling to existing log file&#39;</span><span class="p">)</span>
+    
+    <span class="c1">#In addition output log information to stream</span>
+    <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="n">stream_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="p">)</span>
+        <span class="n">stream_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span> <span class="n">formatter</span> <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span> <span class="n">stream_handler</span> <span class="p">)</span></div>
+    
+    
+<div class="viewcode-block" id="calibration"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.config.calibration">[docs]</a><span class="k">class</span> <span class="nc">calibration</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Settings concerning the calibration</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;run&#39;</span>    
+    <span class="n">target</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">gain</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">exptime</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">vrf_scan_exptime</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c1">#Short time!</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">nframes</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">clkdivider</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">32</span>
+    <span class="n">nproc</span> <span class="o">=</span> <span class="mi">12</span>
+
+    <span class="n">tp_dynamic_range</span> <span class="o">=</span> <span class="mi">16</span>
+    <span class="n">tp_exptime</span> <span class="o">=</span> <span class="mf">0.01</span>
+    
+    <span class="c1">#DACs</span>
+    <span class="n">vtr</span> <span class="o">=</span> <span class="mi">2500</span>    
+    <span class="n">vrs</span> <span class="o">=</span> <span class="mi">1600</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="mi">1200</span>
+    
+    <span class="c1">#Trimbit setting for the first scan, trimming will be centered around this</span>
+    <span class="n">trimval</span> <span class="o">=</span> <span class="mi">32</span>
+    <span class="c1">#Switch between XRF and testpulse calibration</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Possible calibration types:</span>
+<span class="sd">    XRF = X-ray fluorescence </span>
+<span class="sd">    beam  = Monochromatic (synchrotron)</span>
+<span class="sd">    TP  = Test pulses</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;XRF&#39;</span>
+    <span class="n">energy</span> <span class="o">=</span>  <span class="kc">None</span>
+    <span class="n">plot</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">clean_threshold</span> <span class="o">=</span> <span class="mi">500</span>
+    
+    <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nonparallel&#39;</span><span class="p">,</span> <span class="s1">&#39;continous&#39;</span><span class="p">]</span>
+    
+    <span class="n">global_targets</span> <span class="o">=</span> <span class="p">{</span>  <span class="s1">&#39;Sn&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Ag&#39;</span><span class="p">],</span>
+                         <span class="s1">&#39;Ag&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Sn&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Mo&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Ag&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Zr&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mo&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Ge&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Cu&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Cu&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Ge&#39;</span><span class="p">],</span>
+                       <span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Cu&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Cr&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Fe&#39;</span><span class="p">],</span>
+                        <span class="s1">&#39;Ti&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Cr&#39;</span><span class="p">]}</span>
+    
+    <span class="n">run_id_untrimmed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">run_id_trimmed</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="c1">#Mask all pixels further than set number of std from the chip mean</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="mi">5</span>
+    
+    <span class="c1">#Number of parameters in the calibration function </span>
+    <span class="n">npar</span> <span class="o">=</span> <span class="mi">6</span> </div>
+    
+<div class="viewcode-block" id="Eiger2M"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.config.Eiger2M">[docs]</a><span class="k">class</span> <span class="nc">Eiger2M</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Backend board numbers and hostanmes for the ESRF Eiger2M&quot;&quot;&quot;</span>
+    <span class="n">beb</span> <span class="o">=</span> <span class="p">[</span><span class="mi">74</span><span class="p">,</span><span class="mi">71</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">102</span><span class="p">,</span><span class="mi">72</span><span class="p">,</span><span class="mi">73</span><span class="p">,</span><span class="mi">87</span><span class="p">,</span><span class="mi">88</span><span class="p">]</span>
+    <span class="n">hostname</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;beb</span><span class="si">{:03d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">beb</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Eiger9M"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.config.Eiger9M">[docs]</a><span class="k">class</span> <span class="nc">Eiger9M</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Backend board numbers, hostnames and T numbers for the 9M&quot;&quot;&quot;</span>
+    <span class="n">beb</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">111</span><span class="p">,</span><span class="mi">70</span><span class="p">,</span>
+         <span class="mi">109</span><span class="p">,</span><span class="mi">116</span><span class="p">,</span>
+         <span class="mi">92</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span>
+         <span class="mi">122</span><span class="p">,</span><span class="mi">113</span><span class="p">,</span>
+         <span class="mi">105</span><span class="p">,</span><span class="mi">121</span><span class="p">,</span>
+         <span class="mi">104</span><span class="p">,</span><span class="mi">54</span><span class="p">,</span>
+         <span class="mi">117</span><span class="p">,</span><span class="mi">125</span><span class="p">,</span>
+         <span class="mi">103</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span>
+         <span class="mi">127</span><span class="p">,</span><span class="mi">106</span><span class="p">,</span>
+         <span class="mi">84</span><span class="p">,</span><span class="mi">61</span><span class="p">,</span>
+         <span class="mi">78</span><span class="p">,</span><span class="mi">76</span><span class="p">,</span>
+         <span class="mi">101</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span>
+         <span class="mi">97</span><span class="p">,</span><span class="mi">96</span><span class="p">,</span>
+         <span class="mi">30</span><span class="p">,</span><span class="mi">38</span><span class="p">,</span>
+         <span class="mi">40</span><span class="p">,</span><span class="mi">29</span><span class="p">,</span>
+         <span class="mi">59</span><span class="p">,</span><span class="mi">58</span><span class="p">,</span>
+         <span class="mi">95</span><span class="p">,</span><span class="mi">94</span><span class="p">,</span>
+         <span class="mi">119</span><span class="p">,</span><span class="mi">55</span><span class="p">]</span>
+    
+    <span class="n">hostname</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;beb</span><span class="si">{:03d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">beb</span><span class="p">]</span>
+
+    <span class="n">T</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">50</span><span class="p">,</span>   <span class="mi">77</span><span class="p">,</span>      <span class="mi">2</span><span class="p">,</span>
+           <span class="mi">6</span><span class="p">,</span>   <span class="mi">58</span><span class="p">,</span>     <span class="mi">60</span><span class="p">,</span>
+          <span class="mi">33</span><span class="p">,</span>   <span class="mi">64</span><span class="p">,</span>     <span class="mi">78</span><span class="p">,</span>
+          <span class="mi">30</span><span class="p">,</span>   <span class="mi">52</span><span class="p">,</span>     <span class="mi">73</span><span class="p">,</span>
+          <span class="mi">79</span><span class="p">,</span>   <span class="mi">62</span><span class="p">,</span>     <span class="mi">56</span><span class="p">,</span>
+          <span class="mi">69</span><span class="p">,</span>   <span class="mi">42</span><span class="p">,</span>     <span class="mi">59</span><span class="p">,]</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

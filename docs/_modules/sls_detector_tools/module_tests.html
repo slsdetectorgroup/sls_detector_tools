@@ -1,0 +1,869 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.module_tests &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.module_tests</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.module_tests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">time</span> 
+<span class="kn">import</span> <span class="nn">matplotlib.gridspec</span> <span class="k">as</span> <span class="nn">gridspec</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="k">import</span> <span class="n">PdfPages</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="k">import</span> <span class="n">make_axes_locatable</span>
+
+
+
+<span class="kn">from</span> <span class="nn">.io</span> <span class="k">import</span> <span class="n">load_frame</span><span class="p">,</span> <span class="n">save_txt</span><span class="p">,</span> <span class="n">load_txt</span>
+<span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">root_helper</span> <span class="k">as</span> <span class="n">r</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="rx_bias"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.rx_bias">[docs]</a><span class="k">def</span> <span class="nf">rx_bias</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scans rx bias and checks for each value if the data is read</span>
+<span class="sd">    out correctly. Uses testing with enable to load counter values. </span>
+<span class="sd">    Default number of pulses is 1. Probe station testing uses 721 pulses</span>
+<span class="sd">    721 (1444 counter value)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    
+    <span class="c1">#Output config</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    
+    <span class="n">detector</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">tmp_fname</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">file_write</span> <span class="o">=</span> <span class="kc">True</span> 
+    <span class="n">detector</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">16</span> 
+    <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="o">=</span> <span class="n">clk</span>
+
+
+    <span class="n">detector</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">=</span> <span class="mf">0.01</span> 
+
+    <span class="c1">#Save dacs to recover them later    </span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>  
+    
+    <span class="c1">#Set dacs for testing mode</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>    
+    
+
+    <span class="c1">#should use masks!</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span><span class="mi">768</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">768</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">chips</span> <span class="o">=</span> <span class="p">[[</span><span class="n">r</span><span class="p">,</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+
+    <span class="c1">#Scan range </span>
+<span class="c1">#    rx_list = np.arange(500,1801,100)</span>
+    <span class="n">rxb_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">1801</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;rx_bias test at: &quot;</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    
+    <span class="n">data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">rx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">):</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">rxb_lb</span><span class="o">=</span> <span class="n">rx</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">rxb_rb</span> <span class="o">=</span> <span class="n">rx</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">file_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">pulse_chip</span><span class="p">(</span><span class="n">npulse</span><span class="p">)</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+<span class="c1">#        print(detector.dacs.rxb_rb)</span>
+<span class="c1">#        print(detector.dacs.rxb_lb)</span>
+<span class="c1">#        print(rx)</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span> 
+        <span class="n">data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chips</span><span class="p">):</span>
+            <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">npulse</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="c1">#</span>
+<span class="c1">#    sys.stdout.write(&#39; &#39; + str(time.time()-t0))</span>
+<span class="c1">#    sys.stdout.write(&#39;\n&#39;)</span>
+
+
+    
+    <span class="c1">#Clean up last files</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d0_0.raw&#39;</span> <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d1_0.raw&#39;</span> <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d2_0.raw&#39;</span> <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d3_0.raw&#39;</span> <span class="p">)</span>
+
+
+
+    <span class="c1">#plot rx bias</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;rx_bias [DAC code]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;number of pixels [1]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;RX bias test, clk: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
+
+    <span class="c1">#Save data for report</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rx_bias&#39;</span><span class="p">,</span> <span class="s1">&#39;chip0&#39;</span><span class="p">,</span> <span class="s1">&#39;chip1&#39;</span><span class="p">,</span> <span class="s1">&#39;chip2&#39;</span><span class="p">,</span> <span class="s1">&#39;chip3&#39;</span><span class="p">,</span> <span class="s1">&#39;chip4&#39;</span><span class="p">,</span> <span class="s1">&#39;chip5&#39;</span><span class="p">,</span> <span class="s1">&#39;chip6&#39;</span><span class="p">,</span> <span class="s1">&#39;chip7&#39;</span><span class="p">]</span>
+<span class="c1">#    fname = os.path.join(path, cfg.det_id+&#39;_rxbias_&#39;+str(clk)+&#39;.txt&#39;)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">_speed_int</span><span class="p">[</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="p">]</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_rxbias_</span><span class="si">{:d}</span><span class="s1">.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="p">[</span><span class="n">rxb_values</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">N</span><span class="p">])</span>
+
+    
+    <span class="c1">#Reset to previous state</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">pulse_chip</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_from_array</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span></div>
+
+<div class="viewcode-block" id="io_delay"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.io_delay">[docs]</a><span class="k">def</span> <span class="nf">io_delay</span><span class="p">(</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test to determine the settings for iodelay</span>
+<span class="sd">    npulses = -1 makes the test using a normal readout</span>
+<span class="sd">    npulses = 0 puts the threshold on the far side of noise</span>
+<span class="sd">                but does not pulse </span>
+<span class="sd">                </span>
+<span class="sd">    npulse &gt; 0 pulses using enable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nmod</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="s1">&#39;250k&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">geo</span> <span class="o">=</span> <span class="s1">&#39;500k&#39;</span>
+    
+    
+    <span class="c1">#Output setup</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
+    
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>    
+    
+    <span class="c1">#Save dacs</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    <span class="n">iodelay</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get_dac</span><span class="p">(</span><span class="s1">&#39;iodelay&#39;</span><span class="p">)</span>
+    
+    <span class="c1">#If we have pulses</span>
+    <span class="k">if</span> <span class="n">npulse</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">4000</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>
+        
+    <span class="nb">print</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>
+    
+    <span class="c1">#Generate slices to access chip data</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">256</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span><span class="mi">768</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">768</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="n">chips</span> <span class="o">=</span> <span class="p">[[</span><span class="n">r</span><span class="p">,</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+
+    <span class="c1">#Scan range </span>
+<span class="c1">#    io_list = np.arange(550,851,5)</span>
+    <span class="n">io_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span><span class="mi">851</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="n">io_list</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;iodelay test at clkdivider&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>   
+    
+    <span class="c1">#Iodelay scan</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">io</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">io_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">io_list</span><span class="p">)</span><span class="o">/</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+            
+        <span class="n">d</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;iodelay&#39;</span><span class="p">,</span> <span class="n">io</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">npulse</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="n">npulse</span> <span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span> <span class="n">npulse</span> <span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">geo</span><span class="p">)</span> <span class="c1">#Single frame</span>
+
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chips</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">npulse</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">npulse</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span> <span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    
+    <span class="c1">#Plotting results </span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">io_list</span><span class="p">,</span> <span class="n">N</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;io delay [DAC code]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;nr of pixels [1]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;io delay scan, clk: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
+
+    <span class="c1">#Saving result</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iodelay&#39;</span><span class="p">,</span> <span class="s1">&#39;chip0&#39;</span><span class="p">,</span> <span class="s1">&#39;chip1&#39;</span><span class="p">,</span> <span class="s1">&#39;chip2&#39;</span><span class="p">,</span> <span class="s1">&#39;chip3&#39;</span><span class="p">,</span> <span class="s1">&#39;chip4&#39;</span><span class="p">,</span> <span class="s1">&#39;chip5&#39;</span><span class="p">,</span> <span class="s1">&#39;chip6&#39;</span><span class="p">,</span> <span class="s1">&#39;chip7&#39;</span><span class="p">]</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_iodelay_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="p">[</span><span class="n">io_list</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">N</span><span class="p">])</span>
+
+    <span class="c1">#Clean up last files</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d0_0.raw&#39;</span> <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_d1_0.raw&#39;</span> <span class="p">)</span>
+    
+    <span class="c1">#Reset    </span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;iodelay&#39;</span><span class="p">,</span> <span class="n">iodelay</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_asarray</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">io_list</span><span class="p">,</span> <span class="n">N</span></div>
+
+<div class="viewcode-block" id="analog_pulses"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.analog_pulses">[docs]</a><span class="k">def</span> <span class="nf">analog_pulses</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test the analog side of the pixel using test pulses</span>
+<span class="sd">    Normally this test is run only using clock divider 1</span>
+<span class="sd">    It is normal to see cosmics in the final image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;analog_pulses()&#39;</span> <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Analog pulsing with clkdivider&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>
+    
+    <span class="c1">#Output setup</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>        
+    
+    
+    <span class="c1">#Get dacs</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_all_trimbits</span><span class="p">(</span><span class="mi">63</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2600</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vrf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2900</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3600</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>    
+
+    <span class="nb">print</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span> <span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_pulse.txt&#39;</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">ax</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="n">imshow</span><span class="p">(</span> <span class="n">data</span> <span class="p">)</span>
+        <span class="n">im</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    
+    <span class="c1">#Reset dacs</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_asarray</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="counter"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.counter">[docs]</a><span class="k">def</span> <span class="nf">counter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test the digital counter logic. </span>
+<span class="sd">    Note this does not test the overflow</span>
+<span class="sd">    </span>
+<span class="sd">    Test is done by toggeling enable:</span>
+<span class="sd">    1364 --&gt; 2730 --&gt; 101010101010</span>
+<span class="sd">    682 --&gt; 1366 --&gt; 010101010110</span>
+<span class="sd">    </span>
+<span class="sd">    Using enable only increments of 2 in the </span>
+<span class="sd">    counter value is possible</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Counter tests with clkdivider&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>
+    
+    <span class="c1">#Keep bad pixels form the tests</span>
+    <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>    
+    
+    <span class="c1">#Output setup</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>  
+    
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    
+    <span class="c1">#To enter test mode</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">4000</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4000</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="c1">#Test 1</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span><span class="mi">1364</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Bad pixels:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">2730</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span>
+    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">2730</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+    <span class="c1">#Test 2</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span><span class="mi">682</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Bad pixels:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">1366</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>  
+    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">1366</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+    
+    <span class="c1">#Output</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bad_pixels</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_counter_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
+
+    <span class="c1">#Reset</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_asarray</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">bad_pixels</span></div>
+
+    
+
+<div class="viewcode-block" id="overflow"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.overflow">[docs]</a><span class="k">def</span> <span class="nf">overflow</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Overflow test using analog pulses</span>
+<span class="sd">    </span>
+<span class="sd">    Unfortunatley the enable toggling cannot be used to check this because</span>
+<span class="sd">    of problems when going to overflow</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>       
+    
+    <span class="c1">#Output setup</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>       
+    
+    
+    
+    <span class="c1">#Get dacs</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_all_trimbits</span><span class="p">(</span><span class="mi">63</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2600</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vrf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2900</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3600</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>    
+
+    <span class="nb">print</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>
+    
+    <span class="c1"># 4 bit mode </span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>  
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;4 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span> <span class="p">)</span>
+    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+    <span class="c1"># 8 bit mode</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>   
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">260</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;8 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+    <span class="c1"># 12 bit mode</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>   
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">4100</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;16 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">4095</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
+    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">4095</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    
+
+    <span class="c1">#Output</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bad_pixels</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_overflow_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">bad_pixels</span></div>
+    
+
+<div class="viewcode-block" id="tp_scurve"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.tp_scurve">[docs]</a><span class="k">def</span> <span class="nf">tp_scurve</span><span class="p">(</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">):</span>
+
+
+    <span class="c1">#Output setup</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Python&#39;</span><span class="p">,</span> <span class="s1">&#39;sls_data_path&#39;</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Python&#39;</span><span class="p">,</span> <span class="s1">&#39;module_test_path&#39;</span><span class="p">),</span><span class="n">name</span> <span class="p">)</span>
+    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>        
+    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="c1">#Get dacs</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_all_trimbits</span><span class="p">(</span><span class="mi">63</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2600</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vrf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2900</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3700</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>  
+    
+    <span class="n">th_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">th_list</span><span class="p">),</span> <span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">th</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">th_list</span><span class="p">):</span>    
+        <span class="nb">print</span><span class="p">(</span> <span class="n">th</span> <span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span> <span class="n">th</span> <span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">pulse</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="n">i</span><span class="p">,</span> <span class="n">tengiga</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">bitdepth</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span>
+        
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">th_list</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+        
+
+<div class="viewcode-block" id="generate_report"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.module_tests.generate_report">[docs]</a><span class="k">def</span> <span class="nf">generate_report</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a report based on the contents in a folder</span>
+<span class="sd">    outputs a multipage pdf file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span> <span class="n">path</span> <span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span> <span class="n">path</span> <span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pdf</span> <span class="o">=</span> <span class="n">PdfPages</span><span class="p">(</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_test.pdf&#39;</span> <span class="p">)</span>
+    
+    <span class="c1">#--------------------------------------------------------------------page 1</span>
+    <span class="c1">#rx bias </span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">11.69</span><span class="p">,</span> <span class="mf">8.27</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Eiger Module Test &#39;</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">32</span><span class="p">)</span>
+
+    <span class="n">rxb</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span>
+                       <span class="n">width_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+                       <span class="p">)</span>
+    <span class="k">for</span> <span class="n">clk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="n">clk</span><span class="o">+</span><span class="mi">3</span><span class="p">])</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">load_txt</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_rxbias_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">))</span>
+            <span class="n">rxbias</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rxbias</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;chip &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
+                    <span class="n">N</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">rx</span> <span class="o">=</span> <span class="n">rxbias</span><span class="p">[</span><span class="n">N</span><span class="o">&lt;</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">+</span><span class="mi">5</span><span class="p">)</span> <span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span> <span class="p">)</span>
+                    <span class="n">rxb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">rx</span><span class="p">))</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;lower right&#39;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;rx bias&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Bad pixels&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">clk</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;rx_bias test full speed&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">clk</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;rx_bias test half speed&#39;</span><span class="p">)</span>
+
+
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Error in RX bias test file not found&#39;</span> <span class="p">)</span>
+            <span class="k">pass</span>
+
+    <span class="c1">#Formatting of rxbias labels</span>
+    <span class="n">hpos</span> <span class="o">=</span> <span class="mf">1.15</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mf">0.95</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.09</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;0:rx_lb&#39;</span><span class="p">,</span> <span class="s1">&#39;0:rx_rb&#39;</span><span class="p">,</span><span class="s1">&#39;1:rx_lb&#39;</span><span class="p">,</span> <span class="s1">&#39;1:rx_rb&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">rx</span><span class="p">,</span><span class="n">l</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rxb</span><span class="p">)),</span><span class="n">rxb</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="o">-.</span><span class="mi">05</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;full speed&#39;</span><span class="p">,</span>
+                 <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                 <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                 <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                 <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="o">-.</span><span class="mi">05</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;half speed&#39;</span><span class="p">,</span>
+                 <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                 <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                 <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                 <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="n">l</span><span class="o">+</span><span class="s1">&#39;: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">rx</span><span class="p">),</span>
+                 <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                 <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                 <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+
+
+    <span class="c1">#Counter tests</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
+    <span class="n">bad</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;counter test full speed&#39;</span><span class="p">,</span> <span class="s1">&#39;counter test half speed&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">6</span><span class="o">+</span><span class="n">i</span><span class="p">])</span>  
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">load_txt</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_counter_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">),</span> <span class="n">data_type</span> <span class="o">=</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="n">pixels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pixels</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">interpolation</span> <span class="o">=</span> <span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">bad</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pixels</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;hej&quot;</span> <span class="p">)</span>
+            <span class="k">pass</span>
+    
+    <span class="n">hpos</span> <span class="o">=</span> <span class="mf">1.15</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mf">0.7</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.09</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="o">-.</span><span class="mi">05</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;full speed&#39;</span><span class="p">,</span>
+                 <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                 <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                 <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                 <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+    <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+    <span class="k">if</span> <span class="n">bad</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;bad pixels: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">bad</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                     <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                     <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                     <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                     <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="mi">2</span><span class="o">*</span><span class="n">step</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="o">-.</span><span class="mi">05</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;half speed&#39;</span><span class="p">,</span>
+                     <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                     <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                     <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                     <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="n">step</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">hpos</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span><span class="s1">&#39;bad pixels: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">bad</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                     <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                     <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span>
+                     <span class="n">transform</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+                     <span class="n">weight</span> <span class="o">=</span> <span class="s1">&#39;normal&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">()</span>
+    
+    <span class="c1">#-------------------------------------------------------------- Page 2</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;darkgrid&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">11.69</span><span class="p">,</span> <span class="mf">8.27</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span>
+                       <span class="n">width_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.3</span><span class="p">]</span>
+                       <span class="p">)</span>   
+
+    <span class="c1">#IO delay tests</span>
+    <span class="n">iodelay</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">clk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="n">clk</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span><span class="n">clk</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">load_txt</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_iodelay_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">))</span>
+            <span class="n">delay</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;chip &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
+                    <span class="n">N</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">io</span> <span class="o">=</span> <span class="n">delay</span><span class="p">[</span><span class="n">N</span><span class="o">&lt;</span><span class="p">(</span><span class="n">N</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">+</span><span class="mi">5</span><span class="p">)</span> <span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span><span class="n">io</span><span class="p">)</span> <span class="p">)</span>
+                    <span class="n">iodelay</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">io</span><span class="p">))</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;lower right&#39;</span><span class="p">,</span> <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;iodelay&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Bad pixels&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">clk</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;iodelay test full speed&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">clk</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;iodelay test half speed&#39;</span><span class="p">)</span>
+
+
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Error in iodelay test file not found&#39;</span> <span class="p">)</span>
+            <span class="k">pass</span>
+
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_pulse.txt&#39;</span><span class="p">))</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span> <span class="n">image</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">interpolation</span> <span class="o">=</span> <span class="s1">&#39;nearest&#39;</span> <span class="p">)</span>
+    <span class="n">im</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="mi">999</span><span class="p">,</span><span class="mi">1001</span><span class="p">)</span>
+    
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Analog Test Pulses&#39;</span><span class="p">)</span>    
+    
+    <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    
+    <span class="n">cb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mappable</span> <span class="o">=</span> <span class="n">im</span><span class="p">,</span> <span class="n">cax</span> <span class="o">=</span> <span class="n">cax</span><span class="p">)</span>
+    
+    <span class="n">ax</span> <span class="o">=</span>  <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">c</span><span class="p">,</span><span class="n">h</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">xmin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="mi">3000</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">3000</span><span class="p">)</span>
+    <span class="n">x0</span><span class="p">,</span><span class="n">y0</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">getHist</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span> <span class="n">ls</span> <span class="o">=</span> <span class="s1">&#39;steps&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">980</span><span class="p">,</span><span class="mi">1021</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Counts [1]&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Pixels [1]&#39;</span><span class="p">)</span>    
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">savefig</span><span class="p">()</span>
+     <span class="c1">#-------------------------------------------------------------- Page 3</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">11.69</span><span class="p">,</span> <span class="mf">8.27</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
+                       <span class="n">width_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">height_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+                       <span class="p">)</span>   
+                       
+    <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">load_txt</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_overflow_1.txt&#39;</span><span class="p">))</span>
+    <span class="n">pixels</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pixels</span><span class="p">:</span>
+        <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">gs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span> <span class="n">image</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;Greys&#39;</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">interpolation</span> <span class="o">=</span> <span class="s1">&#39;nearest&#39;</span> <span class="p">)</span>
+    <span class="n">im</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Overflow tests, Bad pixels: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="p">))</span>  
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span> <span class="kc">False</span> <span class="p">)</span>
+    <span class="n">pdf</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ax</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,601 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.io &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.io</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.io</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">File io for the EIGER detector. General io that have not been changed is </span>
+<span class="sd">kept in this file. While relese specific versions can be found in the v18 etc. </span>
+<span class="sd">files. This numbering corresponds loosely to the firmware versions.</span>
+
+<span class="sd">Current io version by default imported but can be changed in the config file</span>
+
+<span class="sd"> * v18 - old style with ascii header</span>
+<span class="sd"> * v19 - master file, no header</span>
+<span class="sd"> * v20 - modified master file?</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#Python imports</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">OrderedDict</span>
+
+<span class="c1">#Logger to record progress of data processing</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+
+    
+<div class="viewcode-block" id="write_trimbit_file"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.write_trimbit_file">[docs]</a><span class="k">def</span> <span class="nf">write_trimbit_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dacs</span><span class="p">,</span> <span class="n">ndacs</span> <span class="o">=</span> <span class="mi">18</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write trimbits and dacs to a file. The function checkes that you supply</span>
+<span class="sd">    18 dacs and 256*1024 (halfmodule) trimbits. But you can override the </span>
+<span class="sd">    number of dacs if you are writing files for an older software.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname: str</span>
+<span class="sd">        Filename</span>
+<span class="sd">    data: numpy_array</span>
+<span class="sd">        Array wihth the trimbits</span>
+<span class="sd">    dacs: numpy_array</span>
+<span class="sd">        Array with the dacs</span>
+<span class="sd">    ndacs: int</span>
+<span class="sd">        The number of dacs to write to the trimbit file. Defaults to 18 which </span>
+<span class="sd">        is the current value. But was 16</span>
+<span class="sd">    </span>
+<span class="sd">    Raises</span>
+<span class="sd">    -------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the size of the dacs is not the specified one</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the number of trimbits are not 256*1024 since everything is handled</span>
+<span class="sd">        as a half module in the slsDetectorSoftware</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">dacs</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">ndacs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The array of dacs.size: </span><span class="si">{:d}</span><span class="s1"> is different from&#39;</span>\
+                         <span class="s1">&#39; the specified ndacs: </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dacs</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">ndacs</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;data contains: </span><span class="si">{:d}</span><span class="s1"> elements instead of the&#39;</span>\
+                         <span class="s1">&#39; expected: </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="p">))</span>
+    
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span> <span class="p">)</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">dacs</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span> <span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="n">dacs</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span> <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="n">tb</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span> <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="read_trimbit_file"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.read_trimbit_file">[docs]</a><span class="k">def</span> <span class="nf">read_trimbit_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ndacs</span> <span class="o">=</span> <span class="mi">18</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a trimbit file and return the trimbits and dacs</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ---------</span>
+<span class="sd">    fname: str</span>
+<span class="sd">        Filename for the trimbit file</span>
+<span class="sd">    ndacs: int, optional</span>
+<span class="sd">        Number of dacs to expect in the trimbit file . Defaults to 18.</span>
+<span class="sd">        *Note that for old files it used to be 16 dacs8</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tb: numpy_array[row, col]</span>
+<span class="sd">        2d array with trimbits</span>
+<span class="sd">    dacs: numpy_array[ndacs]</span>
+<span class="sd">        dacs stored in the trimbit file</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    -------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the file size is wrong</span>
+<span class="sd">   </span>
+<span class="sd">     </span>
+<span class="sd">    **Fileformat** ::</span>
+<span class="sd">        </span>
+<span class="sd">        dacs     : (int32)*ndacs</span>
+<span class="sd">        trimbits : (int32)*256*1024</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span> <span class="p">)</span>   
+    
+    <span class="c1">#Check that the file is ok </span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="o">+</span><span class="n">ndacs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Wrong file size! Expected &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">((</span><span class="mi">256</span><span class="o">*</span><span class="mi">1024</span><span class="o">+</span><span class="n">ndacs</span><span class="p">))</span> <span class="o">+</span><span class="s1">&#39; ints and got &#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">ndacs</span><span class="p">:],</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">ndacs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">tb</span><span class="p">,</span> <span class="n">dacs</span></div>
+    
+    
+    
+<div class="viewcode-block" id="save_txt"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.save_txt">[docs]</a><span class="k">def</span> <span class="nf">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">delimiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Save variables in an ascii file function mainly used</span>
+<span class="sd">    for chip testing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">h</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">h</span><span class="o">+</span><span class="n">delimiter</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="n">delimiter</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="load_txt"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.load_txt">[docs]</a><span class="k">def</span> <span class="nf">load_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">delimiter</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">=</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Load variables from an ascii file function mainly used</span>
+<span class="sd">    for chip testing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span> <span class="n">fname</span> <span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span> <span class="n">delimiter</span> <span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="geant4"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.geant4">[docs]</a><span class="k">class</span> <span class="nc">geant4</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that holds the data type for reading x,y,c files from the </span>
+<span class="sd">    geant4medipix framework.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sparse_dt</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;event&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
+      <span class="p">(</span><span class="s1">&#39;col&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
+      <span class="p">(</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">),</span>
+      <span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">),</span>
+      <span class="p">(</span><span class="s1">&#39;tot&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">),</span>
+      <span class="p">(</span><span class="s1">&#39;toa&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="read_header"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.read_header">[docs]</a><span class="k">def</span> <span class="nf">read_header</span><span class="p">(</span> <span class="n">fname</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read the header from the master file</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname: str</span>
+<span class="sd">        Filename of the master file</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    header: dict</span>
+<span class="sd">        Dictionary with the fields in the header file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Read all lines from the master file </span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+
+    <span class="c1">#Print the file if we are in debug mode</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">debug</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">tmp</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+
+    <span class="c1">#Put information in the dict</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">):</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">19</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">22</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s1">&#39;Dynamic Range&#39;</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">header</span><span class="p">[</span> <span class="n">field</span> <span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+
+    <span class="k">return</span> <span class="n">header</span></div>
+
+
+<div class="viewcode-block" id="read_frame_header"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.read_frame_header">[docs]</a><span class="k">def</span> <span class="nf">read_frame_header</span><span class="p">(</span> <span class="n">fname</span> <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read and decode the frame header of a raw file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">fname</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span> <span class="mi">48</span> <span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;Q2I2Q4HIH2B&#39;</span><span class="p">,</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fh</span></div>
+    
+
+<div class="viewcode-block" id="read_frame"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.read_frame">[docs]</a><span class="k">def</span> <span class="nf">read_frame</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dr</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads a single frame from an open file </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#Skip the frame header</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">48</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    
+    <span class="k">if</span> <span class="n">dr</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">]:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span> <span class="s1">&#39;uint</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dt</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="mi">512</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">))</span>
+        
+    <span class="k">elif</span> <span class="n">dr</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s1">&#39;uint8&#39;</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dt</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="mi">256</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="n">tmp</span><span class="o">.</span><span class="n">size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">dtype</span> <span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="load_file"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.load_file">[docs]</a><span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load EIGER raw file and return image data as numpy 2D array</span>
+<span class="sd">    To be used as base for loading frames for single and multi module systems </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1">#Assign correct dynamic range</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">header</span><span class="p">[</span><span class="s1">&#39;Dynamic Range&#39;</span><span class="p">]</span> <span class="p">)</span>
+    <span class="k">if</span> <span class="n">dr</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">]:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span> <span class="s1">&#39;uint</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dr</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span> <span class="s1">&#39;uint8&#39;</span> <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unknown dynamic range&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sls_detecot/io/load_file: Loading &#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        
+   <span class="c1">#Open file and read </span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>    
+            <span class="n">image</span> <span class="o">=</span> <span class="n">read_frame</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#Reading more than one frame from the file</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dt</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>        
+                <span class="n">image</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_frame</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image</span></div>
+
+
+<div class="viewcode-block" id="load_frame"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.io.load_frame">[docs]</a><span class="k">def</span> <span class="nf">load_frame</span><span class="p">(</span><span class="n">bname</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> 
+               <span class="n">frameindex</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+               <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> 
+               <span class="n">shift</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> 
+               <span class="n">geometry</span> <span class="o">=</span> <span class="s1">&#39;500k&#39;</span><span class="p">,</span>
+               <span class="n">default</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read one or several Eiger frames from a file. Default function to </span>
+<span class="sd">    read data form disk.</span>
+<span class="sd">    </span>
+<span class="sd">    .. note::</span>
+<span class="sd">        The function does always return the right size array and only prints</span>
+<span class="sd">        a warning if the file is missing. This is useful for example for the </span>
+<span class="sd">        9M if one or several files are missing. </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    bname: str</span>
+<span class="sd">        base name of the file used for consructing master and port files</span>
+<span class="sd">    frameindex: int</span>
+<span class="sd">        index of the starting file for multi image files</span>
+<span class="sd">        None if not used. Changes the pattern of the filename</span>
+<span class="sd">    N: int </span>
+<span class="sd">        Number of frames to read</span>
+<span class="sd">    shift: int</span>
+<span class="sd">        Determines which d number to start reading at. Can be used to read</span>
+<span class="sd">        parts of a larger detector</span>
+<span class="sd">    geometry: str</span>
+<span class="sd">        the geometry of the detector. Name identifies both number of pixels</span>
+<span class="sd">        and layout.</span>
+<span class="sd">    default: number</span>
+<span class="sd">        default value if the pixels are not filled. Can be used to highligt </span>
+<span class="sd">        missing data</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    data: numpu_array</span>
+<span class="sd">        data[row, col, N], of the same type as in the file or some cases </span>
+<span class="sd">        double.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#Construct ending of filename depending on index or not</span>
+    <span class="k">if</span> <span class="n">frameindex</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">fname_end</span> <span class="o">=</span>  <span class="s1">&#39;_</span><span class="si">%d</span><span class="s1">.raw&#39;</span> <span class="o">%</span> <span class="n">run_id</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fname_end</span> <span class="o">=</span>  <span class="s1">&#39;_f</span><span class="si">{:012d}</span><span class="s1">_</span><span class="si">{:d}</span><span class="s1">.raw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">frameindex</span><span class="p">,</span> <span class="n">run_id</span> <span class="p">)</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">read_header</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_master_</span><span class="si">{:d}</span><span class="s1">.raw&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bname</span><span class="p">,</span> <span class="n">run_id</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;500k&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Should we control the data type more strictly?</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">default</span><span class="p">)</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+                <span class="n">image</span><span class="p">[</span><span class="mi">256</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">512</span><span class="p">]</span> <span class="o">=</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span> <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing file: &#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+                
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+                <span class="n">image</span><span class="p">[</span><span class="mi">256</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">:</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span> <span class="p">)</span>    
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing file: &#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+                <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">512</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing file: &#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+                <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">:</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span> <span class="p">)</span> <span class="p">)</span>     
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Missing file: &#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#0 constructing from type of returned data, use header instead</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">load_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="p">)</span>        
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">default</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">256</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">512</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">tmp</span>
+            
+            <span class="c1">#1</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span><span class="mi">1</span> <span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">256</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">:</span><span class="mi">1024</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="p">)</span>
+
+            <span class="c1">#2</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span><span class="mi">2</span> <span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">512</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="p">)</span> <span class="p">)</span>
+            
+            <span class="c1">#3</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span><span class="mi">3</span> <span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">:</span><span class="mi">1024</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span><span class="n">header</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">N</span> <span class="p">)</span> <span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">image</span>
+
+    <span class="k">elif</span> <span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;250k&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1">#TODO! Fix dt</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">default</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">512</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">bname</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">shift</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fname_end</span>
+            <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">:</span><span class="mi">1024</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span> <span class="n">load_file</span><span class="p">(</span> <span class="n">fname</span> <span class="p">)</span> <span class="p">)</span>              
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Programmer was lazy&#39;</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">image</span>
+
+        
+    <span class="k">elif</span> <span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;9M&#39;</span><span class="p">:</span>
+        <span class="c1">#Recursive calling for multi module systems</span>
+        <span class="c1">#TODO verify with latest version of the software</span>
+        <span class="n">modules</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">72</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">3072</span><span class="p">,</span><span class="mi">3072</span><span class="p">),</span> <span class="n">default</span><span class="p">)</span>
+            <span class="n">image</span><span class="p">[:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> 
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">modules</span> <span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">image</span><span class="p">[</span> <span class="n">mask</span><span class="o">.</span><span class="n">detector</span><span class="p">[</span><span class="n">geometry</span><span class="p">]</span><span class="o">.</span><span class="n">module</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">]</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span>
+                                                      <span class="n">bname</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">shift</span> <span class="o">=</span> <span class="n">s</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">IOError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span> <span class="n">err</span> <span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;LOST FRAME IN: </span><span class="si">{:s}</span><span class="s1">, </span><span class="si">{:d}</span><span class="s1">, </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bname</span><span class="p">,</span> 
+                                                                   <span class="n">run_id</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">image</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Multi frame files for 9M is not yet implemented&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.load_tiff &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.load_tiff</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.load_tiff</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Limited support for loading TIFF files from Python</span>
+<span class="sd">Designed to work with the uXAS Eiger TIFF files</span>
+<span class="sd">Currently only supports single image files...</span>
+
+
+<span class="sd">.. warning:: </span>
+<span class="sd">    This module is not complete!!!</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#Python imports</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="n">debug</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="n">tag</span> <span class="o">=</span> <span class="p">{</span><span class="mi">256</span><span class="p">:</span> <span class="s1">&#39;ImageWidth&#39;</span><span class="p">,</span>
+       <span class="mi">257</span><span class="p">:</span> <span class="s1">&#39;ImageHeight&#39;</span><span class="p">,</span>
+       <span class="mi">258</span><span class="p">:</span> <span class="s1">&#39;BitsPerSample&#39;</span><span class="p">,</span>
+       <span class="mi">259</span><span class="p">:</span> <span class="s1">&#39;Compression&#39;</span><span class="p">,</span>
+       <span class="mi">262</span><span class="p">:</span> <span class="s1">&#39;PhotometricInterpretation&#39;</span><span class="p">,</span>
+       <span class="mi">271</span><span class="p">:</span> <span class="s1">&#39;Make&#39;</span><span class="p">,</span>
+       <span class="mi">272</span><span class="p">:</span> <span class="s1">&#39;Model&#39;</span><span class="p">,</span>
+       <span class="mi">273</span><span class="p">:</span> <span class="s1">&#39;StripOffsets&#39;</span><span class="p">,</span>
+       <span class="mi">277</span><span class="p">:</span> <span class="s1">&#39;SamplesPerPixel&#39;</span><span class="p">,</span>
+       <span class="mi">278</span><span class="p">:</span> <span class="s1">&#39;RowsPerStrip&#39;</span><span class="p">,</span>
+       <span class="mi">279</span><span class="p">:</span> <span class="s1">&#39;StripByteCounts&#39;</span><span class="p">,</span>
+       <span class="mi">284</span><span class="p">:</span> <span class="s1">&#39;PlanarConfiguration&#39;</span><span class="p">,</span>
+       <span class="mi">305</span><span class="p">:</span> <span class="s1">&#39;Software&#39;</span><span class="p">,</span>
+       <span class="mi">339</span><span class="p">:</span> <span class="s1">&#39;SampleFormat&#39;</span><span class="p">,</span>
+       <span class="mi">65000</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
+       <span class="mi">65001</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
+       <span class="mi">65002</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
+       <span class="mi">65003</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,</span>
+       <span class="mi">65010</span><span class="p">:</span> <span class="s1">&#39;Unknown&#39;</span><span class="p">,}</span>
+
+
+<span class="n">data_type</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span>    <span class="c1">#uint8</span>
+             <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span>    <span class="c1">#string</span>
+             <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span>    <span class="c1">#uint16</span>
+             <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;I&#39;</span><span class="p">,</span>     <span class="c1">#uint32</span>
+             <span class="mi">5</span><span class="p">:</span> <span class="s1">&#39;II&#39;</span><span class="p">,</span>      <span class="c1">#rational = 2 x uint32    </span>
+             <span class="mi">6</span><span class="p">:</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span>     <span class="c1">#int8</span>
+             <span class="mi">7</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span>     <span class="c1">#undefined uint8</span>
+             <span class="mi">8</span><span class="p">:</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span>     <span class="c1">#int16</span>
+             <span class="mi">9</span><span class="p">:</span> <span class="s1">&#39;i&#39;</span><span class="p">,</span>     <span class="c1">#int32</span>
+             <span class="mi">10</span><span class="p">:</span> <span class="s1">&#39;ii&#39;</span><span class="p">,</span>    <span class="c1">#srational 2 x int32</span>
+             <span class="mi">11</span><span class="p">:</span> <span class="s1">&#39;f&#39;</span><span class="p">,</span>    <span class="c1">#float</span>
+             <span class="mi">12</span><span class="p">:</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span>    <span class="c1">#double</span>
+             <span class="p">}</span>
+
+<span class="n">data_size</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="mi">2</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="mi">3</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+             <span class="mi">4</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+             <span class="mi">5</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+             <span class="mi">6</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="mi">7</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="mi">8</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+             <span class="mi">9</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+             <span class="mi">10</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+             <span class="mi">11</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+             <span class="mi">12</span><span class="p">:</span> <span class="mi">8</span><span class="p">}</span>
+
+<span class="n">h_size</span> <span class="o">=</span> <span class="mi">8</span> <span class="c1">#TIFF file header size</span>
+
+
+<div class="viewcode-block" id="load_tiff"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.load_tiff.load_tiff">[docs]</a><span class="k">def</span> <span class="nf">load_tiff</span><span class="p">(</span> <span class="n">fname</span> <span class="p">):</span>
+    
+    <span class="c1">#Open file</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span> <span class="n">fname</span><span class="p">,</span>  <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Read Image File Header</span>
+    <span class="n">byte_order</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;HHI&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span> <span class="n">h_size</span> <span class="p">))</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">--- TIFF Image File Header ---&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;byte_order: </span><span class="si">{:d}</span><span class="s1">, version: </span><span class="si">{:d}</span><span class="s1">, offset: </span><span class="si">{:d}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">byte_order</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+
+    <span class="c1">#Go to and read the first Image File Directory</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">offset</span> <span class="p">)</span>
+    <span class="n">n_tags</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">2</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;n_tags: </span><span class="si">{:d}</span><span class="s1"> </span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">n_tags</span> <span class="p">))</span>
+        
+    <span class="c1">#Loop over all tags</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="n">n_tags</span> <span class="p">):</span>
+    
+        <span class="c1">#Read tag</span>
+        <span class="n">tag_id</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">dcount</span><span class="p">,</span> <span class="n">doffset</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span> <span class="s1">&#39;HHII&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="p">)</span>  
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;tag_id: </span><span class="si">{:&gt;5d}</span><span class="s1"> type: </span><span class="si">{:&gt;20s}</span><span class="s1"> dtype: </span><span class="si">{:d}</span><span class="s1"> dcount: </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> 
+                        <span class="n">tag_id</span><span class="p">,</span> 
+                        <span class="n">tag</span><span class="p">[</span><span class="n">tag_id</span><span class="p">],</span>
+                        <span class="n">dtype</span><span class="p">,</span>
+                        <span class="n">dcount</span><span class="p">))</span>
+
+                <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;doffset/data:&#39;</span><span class="p">,</span> <span class="n">doffset</span> <span class="p">)</span>
+    
+            <span class="c1">#read tag data if we have more than four bits of data</span>
+            <span class="k">if</span> <span class="n">data_size</span><span class="p">[</span><span class="n">dtype</span><span class="p">]</span> <span class="o">*</span> <span class="n">dcount</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">doffset</span> <span class="p">)</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span> <span class="n">data_size</span><span class="p">[</span><span class="n">dtype</span><span class="p">]</span> <span class="o">*</span> <span class="n">dcount</span> <span class="p">)</span>  
+                <span class="n">tag_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span> <span class="nb">str</span><span class="p">(</span><span class="n">dcount</span><span class="p">)</span><span class="o">+</span><span class="n">data_type</span><span class="p">[</span><span class="n">dtype</span><span class="p">],</span> <span class="n">s</span> <span class="p">)</span>
+    <span class="c1">#            print s.strip(&#39;\x00&#39;)</span>
+                <span class="nb">print</span><span class="p">(</span> <span class="n">tag_data</span> <span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span> <span class="n">p</span> <span class="p">)</span>
+    
+    
+    
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;tag: </span><span class="si">{:d}</span><span class="s1"> not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tag_id</span><span class="p">)</span> <span class="p">)</span>
+            <span class="k">pass</span></div>
+
+
+
+<span class="c1">#f.seek(8)</span>
+<span class="c1">#data = np.fromfile(f, dtype = np.float64, count = 512*1024).reshape( (512,1024) )</span>
+<span class="c1">#ax, im = imshow(data)</span>
+
+
+<span class="c1">#Find the data </span>
+<span class="c1">#os.chdir(&#39;/mnt/disk1/elettra_testbeam/elettra_testbeam/T38/Cr/data/Energy12.8keV/high_wide&#39;)</span>
+<span class="c1">#os.chdir(&#39;/home/l_frojdh/python/sls_detector_tools/datasets&#39;)</span>
+
+
+<span class="c1">#image = load_frame(&#39;data&#39;, 0,  bitdepth = 32)</span>
+
+<span class="c1">#a = file_info(&#39;data_d0_0.raw&#39;)</span>
+
+<span class="c1">#f = open(&#39;data_d0_0.raw&#39;)</span>
+<span class="c1">#data = f.read(500)</span>
+
+
+<span class="c1">##Load and plot</span>
+<span class="c1">#for T in [&#39;T60&#39;]:</span>
+<span class="c1">#    for v in [150]:</span>
+<span class="c1">#        image = load_frame(&#39;{:s}_MoXRF_{:d}V&#39;.format(T,v), 10)</span>
+<span class="c1">#        image = fix_large_pixels( image )</span>
+<span class="c1">#        ax, im = imshow( image )</span>
+<span class="c1">#        v = 20</span>
+<span class="c1">#        im.set_clim(0,1500)</span>
+<span class="c1">#        ax.set_title(&#39;{:s} CuXRF {:d}V&#39;.format(T,v))</span>
+<span class="c1">#        </span>
+<span class="c1">#        fname = &#39;{:s}_CuXRF_{:d}V&#39;.format(T,v)</span>
+<span class="c1">#        path = &#39;/afs/psi.ch/project/pilatusXFS/Erik/9M/retest2&#39;</span>
+<span class="c1">#        pathname = os.path.join(path, fname)</span>
+<span class="c1">#        plt.savefig( pathname )</span>
+<span class="c1">##        plt.close()</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

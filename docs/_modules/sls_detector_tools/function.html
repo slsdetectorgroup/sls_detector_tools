@@ -1,0 +1,409 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sls_detector_tools.function &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>sls_detector_tools.function</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sls_detector_tools.function</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Commonly used functions</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="k">import</span> <span class="n">erf</span>
+
+
+
+<span class="c1">#------------------------------------------------------------General functions</span>
+
+<div class="viewcode-block" id="gaus"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.gaus">[docs]</a><span class="k">def</span> <span class="nf">gaus</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gaussian function</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        f(x) = A e^{-0.5*(x-\mu) / {\sigma^2}}</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    x:</span>
+<span class="sd">        x values to evaluate the function at</span>
+<span class="sd">    A: double</span>
+<span class="sd">        scaling</span>
+<span class="sd">    mu: double</span>
+<span class="sd">        center</span>
+<span class="sd">    sigma: double</span>
+<span class="sd">        width</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    y: value or array</span>
+<span class="sd">        evaluated vales at each x</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="o">*</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="expo"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.expo">[docs]</a><span class="k">def</span> <span class="nf">expo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Exponential</span>
+
+
+<span class="sd">    :math:`e^{p0+p1*x}`</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">p0</span><span class="o">+</span><span class="n">p1</span><span class="o">*</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pol1"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.pol1">[docs]</a><span class="k">def</span> <span class="nf">pol1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Linear function. Parameters in the same order as in ROOT</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        f(x) = p_0 + p_1x</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">p0</span><span class="o">+</span><span class="n">p1</span><span class="o">*</span><span class="n">x</span></div>
+
+<div class="viewcode-block" id="pol2"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.pol2">[docs]</a><span class="k">def</span> <span class="nf">pol2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Second degree polynomial</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        f(x) = p_0 + p_1x + p_2x^2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">p2</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">p1</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">p0</span></div>
+
+
+
+<span class="c1">#---------------------------------------------------------Special functions</span>
+
+<div class="viewcode-block" id="paralyzable"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.paralyzable">[docs]</a><span class="k">def</span> <span class="nf">paralyzable</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tau</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Paralyzable detector model, used for rate measurements</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        f(x) = xe^{- \\tau x}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tau</span><span class="o">*</span><span class="n">x</span><span class="p">)</span></div>
+
+<span class="c1">#--------------------------------------------------------- Edge functions</span>
+
+<div class="viewcode-block" id="double_gaus_edge"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.double_gaus_edge">[docs]</a><span class="k">def</span> <span class="nf">double_gaus_edge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    double gaussian</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">sigma1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))))</span> <span class="o">+</span>
+                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">sigma2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))))</span></div>
+
+<div class="viewcode-block" id="double_gaus_edge_new"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.double_gaus_edge_new">[docs]</a><span class="k">def</span> <span class="nf">double_gaus_edge_new</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">,</span> <span class="n">sigma2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Variant of the double gaussian.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">A</span><span class="o">/</span><span class="mi">4</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">sigma1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))))</span> <span class="o">+</span>
+                  <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">sigma2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))))</span></div>
+
+<span class="c1">#---------------------------------------------------------- scurves</span>
+
+<div class="viewcode-block" id="scurve"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.scurve">[docs]</a><span class="k">def</span> <span class="nf">scurve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    scruve function used for energy calibration</span>
+<span class="sd">    scurve(x, p0,p1, mu, sigma, A, C)</span>
+
+<span class="sd">    [0] - p0</span>
+<span class="sd">    [1] - p1</span>
+<span class="sd">    [2] - mu</span>
+<span class="sd">    [3] - sigma</span>
+<span class="sd">    [4] - A</span>
+<span class="sd">    [5] - C</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">p0</span><span class="o">+</span><span class="n">p1</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">sigma</span><span class="p">)))</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="scurve2"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.scurve2">[docs]</a><span class="k">def</span> <span class="nf">scurve2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    scruve function used for energy calibration</span>
+<span class="sd">    scurve(x, p0,p1, mu, sigma, A, C)</span>
+
+<span class="sd">    [0] - p0</span>
+<span class="sd">    [1] - p1</span>
+<span class="sd">    [2] - mu</span>
+<span class="sd">    [3] - sigma</span>
+<span class="sd">    [4] - A</span>
+<span class="sd">    [5] - C</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">p0</span><span class="o">+</span><span class="n">p1</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">sigma</span><span class="p">)))</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">y</span></div>
+
+<div class="viewcode-block" id="scurve4"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.scurve4">[docs]</a><span class="k">def</span> <span class="nf">scurve4</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    scruve function used for energy calibration</span>
+<span class="sd">    scurve(x, p0,p1, mu, sigma, A, C)</span>
+
+<span class="sd">    [0] - p0</span>
+<span class="sd">    [1] - p1</span>
+<span class="sd">    [2] - mu</span>
+<span class="sd">    [3] - sigma</span>
+<span class="sd">    [4] - A</span>
+<span class="sd">    [5] - C</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">p0</span><span class="o">+</span><span class="n">p1</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">erf</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">sigma</span><span class="p">)))</span> <span class="o">*</span> <span class="p">(</span><span class="n">A</span> <span class="o">+</span> <span class="n">A</span><span class="o">/</span><span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">mu</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ideal_mtf"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.ideal_mtf">[docs]</a><span class="k">def</span> <span class="nf">ideal_mtf</span><span class="p">(</span><span class="n">omega</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    mtf for an ideal pixel detector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">omega</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">omega</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ideal_dqe"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.ideal_dqe">[docs]</a><span class="k">def</span> <span class="nf">ideal_dqe</span><span class="p">(</span><span class="n">omega</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Expression for the ideal DQE given an ideal MTF</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ideal_mtf</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span></div>
+
+
+<span class="c1">#-- ROOT strings to create TF1 functions</span>
+<div class="viewcode-block" id="root"><a class="viewcode-back" href="../../functions.html#sls_detector_tools.function.root">[docs]</a><span class="k">class</span> <span class="nc">root</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Strings to build ROOT functions from</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scurve</span> <span class="o">=</span> <span class="s1">&#39; ([0]+[1]*x) + 0.5 * (1+TMath::Erf( (x-[2])/(sqrt(2)*[3]) ) )&#39;</span>\
+             <span class="s1">&#39;* ( [4] + [5]*(x-[2])) &#39;</span>
+    <span class="n">scurve2</span> <span class="o">=</span> <span class="s1">&#39; ([0]+[1]*x) + 0.5 * (1-TMath::Erf( (x-[2])/(sqrt(2)*[3]) ) )&#39;</span>\
+              <span class="s1">&#39;* ( [4] + [5]*(x-[2])) &#39;</span>
+
+    <span class="c1">#normalize [5]</span>
+    <span class="n">scurve4</span> <span class="o">=</span> <span class="s1">&#39; ([0]+[1]*x) + 0.5 * (1-TMath::Erf( (x-[2])/(sqrt(2)*[3]) ) )&#39;</span>\
+              <span class="s1">&#39;* ( [4] + [4]/[5]*(x-[2])) &#39;</span>
+
+    <span class="c1"># Doulble edge</span>
+    <span class="n">double_gaus_edge</span> <span class="o">=</span> <span class="s1">&#39;[0]+[1]/4 * ((1-TMath::Erf( (x-[2])/(sqrt(2)*[3])))&#39;</span>\
+                       <span class="s1">&#39;+ (1-TMath::Erf( (x-[2])/(sqrt(2)*[4]) ) ) ) &#39;</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

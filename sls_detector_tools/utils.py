@@ -12,6 +12,25 @@ from scipy.interpolate import interp1d
 from sls_detector_tools import function
 
 
+def get_dtype(dr):
+    """
+    Returns the correct numpy dtype from a number or string
+    """
+    if isinstance(dr, str):
+        dr = int(dr)
+        
+    if dr == 32:
+        return np.int32
+    elif dr == 16:
+        return np.int16
+    elif dr == 8:
+        return np.uint8
+    else:
+        raise TypeError('dtype: {:d} not supported'.format(dr))
+
+
+
+
 def normalize_flatfield(image):
     """
     Return a normalized flatfield image based on the current image
