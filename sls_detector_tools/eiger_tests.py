@@ -8,7 +8,7 @@ import time
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import matplotlib.patches as patches
 
 
 from .io import load_frame, save_txt, load_txt
@@ -21,17 +21,18 @@ from .mask import chip
 
 plt.ion()
 sns.set()
-
+sns.set_style('white')
 
 from contextlib import contextmanager
 @contextmanager
-def test(detector):
+def setup_test_and_receiver(detector,clk):
     #Setup for test
     detector.rx_datastream = False
     time.sleep(0.1)
     detector.rx_datastream = True
     detector.file_write = False
     detector.dynamic_range = 16 
+    detector.readout_clock = clk
     detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
@@ -41,12 +42,61 @@ def test(detector):
     detector.dacs.set_from_array( dacs )
     detector.pulse_chip(-1)
     
-def plot_lines(x, lines):
+def plot_lines(x, lines, interval, center):
+    max_value = 256*256*1.1
+    colors = sns.color_palette()
     fig = plt.figure()
-    ax = plt.subplot(1,1,1)
-    for i in range(8):
-        ax.plot(x, lines[i], 'o-')
+    ax = fig.add_subplot(111)
+    for patch in interval:
+        left, width = patch
+        width *= 3
+        left -= width/2
+        ax.add_patch(
+                patches.Rectangle(
+                        (left,0),
+                        width,
+                        max_value,
+                        fill=True,
+                        alpha = 0.3,
+                        )
+                )    
+    for y in lines:
+        ax.plot(x, y, '-')
+    ax.plot([center,center],[0, max_value], '--', color = colors[2], linewidth = 3)
+    ax.set_ylim(0, max_value)
+    ax.set_ylim(0, max_value)
+    plt.grid(True)
     return fig, ax
+
+#import seaborn as sns
+#sns.set()
+#sns.set_style('white')
+#plt.grid(True)
+#import matplotlib.patches as patches
+#max_value = 256*256*1.1
+#
+#
+#colors = sns.color_palette()
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#for interval in cfg.tests.rxb_interval['Half Speed']:
+#    left, width = interval
+#    width *= 3
+#    left -= width/2
+#    ax.add_patch(
+#            patches.Rectangle(
+#                    (left,0),
+#                    width,
+#                    max_value,
+#                    fill=True,
+#                    alpha = 0.3,
+#                    )
+#            )    
+#for values in out[1:]:
+#    ax.plot(out[0], values)
+#ax.plot([1100,1100],[0, max_value], '--', color = colors[2], linewidth = 3)
+#ax.set_ylim(0, max_value)
+#plt.grid(True) 
 
 def rx_bias(detector, clk = 'Full Speed', npulse = 1):
     """
@@ -55,19 +105,24 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1):
     Default number of pulses is 1. Probe station testing uses 721 pulses
     721 (1444 counter value)
     
+    
+    .. image:: _static/rxb.png
+    
+    
     """
     #Specific setup
-    detector.readout_clock = clk
-    detector.vthreshold = 4000
-    detector.dacs.vtr = 4000
+    
+
  
     #Scan range 
-    rxb_values = list(range(500,1801,100))
+    rxb_values = list(range(500,1801,10))
     N = np.zeros((8, len(rxb_values)))
-    print( "rx_bias test at: ", detector.readout_clock)
+    print( "rx_bias test at: ", clk)
     t0 = time.time()
     
-    with test(detector) as receiver:
+    with setup_test_and_receiver(detector, clk) as receiver:
+        detector.vthreshold = 4000
+        detector.dacs.vtr = 4000
         for i,rx in enumerate(rxb_values):
             detector.dacs.rxb_lb= rx
             detector.dacs.rxb_rb = rx
@@ -85,7 +140,7 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1):
 
     #plot rx bias
     if cfg.tests.plot is True:
-        fig, ax = plot_lines(rxb_values, N)
+        fig, ax = plot_lines(rxb_values, N, cfg.tests.rxb_interval[clk], 1100)
         ax.set_xlabel('rx_bias [DAC code]')
         ax.set_ylabel('number of pixels [1]')
         ax.set_title('RX bias test, clk: ' + str(clk))
@@ -110,20 +165,20 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
     """
     #Toggle data streaming to make sure it is set up correctly and that
     #buffers don't hold data
-    detector.rx_datastream = False
-    time.sleep(0.1)
-    detector.rx_datastream = True
-
-    #Receiver to have data in Python
-    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
-    path = os.path.join( cfg.path.test, cfg.det_id )    
-    detector.file_write = False
-    detector.dynamic_range = 16
-    detector.readout_clock = clk
-    detector.exposure_time = 0.01
+#    detector.rx_datastream = False
+#    time.sleep(0.1)
+#    detector.rx_datastream = True
+#
+#    #Receiver to have data in Python
+#    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+      
+#    detector.file_write = False
+#    detector.dynamic_range = 16
+#    detector.readout_clock = clk
+#    detector.exposure_time = 0.01
     
     #Save dacs
-    dacs = detector.dacs.get_asarray()
+#    dacs = detector.dacs.get_asarray()
 
     iodelay_values = list(range(550,851,10))
     N = np.zeros((8, len(iodelay_values)))
@@ -131,14 +186,15 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
     print("iodelay test at clkdivider:", clk )   
     
     #Iodelay scan
-    for i,io in enumerate(iodelay_values):
-        detector.dacs.iodelay = io
-        detector.acq()
-        data = receiver.get_frame()
-
-
-        for j,c in enumerate(chip):
-            N[j, i] = (data[c] != 0).sum()
+    with setup_test_and_receiver(detector, clk) as receiver:
+        detector.vthreshold = 1500
+        for i,io in enumerate(iodelay_values):
+            detector.dacs.iodelay = io
+            detector.acq()
+            data = receiver.get_frame()
+    
+            for j,c in enumerate(chip):
+                N[j, i] = (data[c] != 0).sum()
     
 
     print('iodelay scan done in: {:.2f}'.format(time.time()-t0))
@@ -154,6 +210,7 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
     #Saving result
     header = ['iodelay', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
     n = detector._speed_int[ detector.readout_clock ]
+    path = os.path.join( cfg.path.test, cfg.det_id )  
     fname = os.path.join(path, '{:s}_iodelay_{:d}.txt'.format(cfg.det_id, n))
     save_txt(fname, header, [iodelay_values] + [x for x in N])
 

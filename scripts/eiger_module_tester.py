@@ -48,11 +48,11 @@ print("module:", cfg.det_id)
 cfg.nmod = 2
 d.dacs.iodelay = 660
 d.dacs.rxb_lb = 1100
-d.dacs.rxb_rg = 1100
+d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
-out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
-#out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10, plot = True)
+#out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
+out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
 #
 ###################
 #out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)

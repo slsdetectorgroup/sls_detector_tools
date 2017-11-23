@@ -171,7 +171,7 @@
 <span class="kn">import</span> <span class="nn">matplotlib.gridspec</span> <span class="k">as</span> <span class="nn">gridspec</span>
 <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_pdf</span> <span class="k">import</span> <span class="n">PdfPages</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="k">import</span> <span class="n">make_axes_locatable</span>
-
+<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="k">as</span> <span class="nn">patches</span>
 
 
 <span class="kn">from</span> <span class="nn">.io</span> <span class="k">import</span> <span class="n">load_frame</span><span class="p">,</span> <span class="n">save_txt</span><span class="p">,</span> <span class="n">load_txt</span>
@@ -184,17 +184,18 @@
 
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
-<div class="viewcode-block" id="test"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.test">[docs]</a><span class="nd">@contextmanager</span>
-<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">detector</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_test_and_receiver"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.setup_test_and_receiver">[docs]</a><span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span><span class="n">clk</span><span class="p">):</span>
     <span class="c1">#Setup for test</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">rx_datastream</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">rx_datastream</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">file_write</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">16</span> 
+    <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="o">=</span> <span class="n">clk</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">=</span> <span class="mf">0.01</span> 
     <span class="n">dacs</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>  
     
@@ -204,12 +205,61 @@
     <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_from_array</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">pulse_chip</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="plot_lines"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.plot_lines">[docs]</a><span class="k">def</span> <span class="nf">plot_lines</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+<div class="viewcode-block" id="plot_lines"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.plot_lines">[docs]</a><span class="k">def</span> <span class="nf">plot_lines</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">center</span><span class="p">):</span>
+    <span class="n">max_value</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="mi">256</span><span class="o">*</span><span class="mf">1.1</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">()</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">patch</span> <span class="ow">in</span> <span class="n">interval</span><span class="p">:</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">patch</span>
+        <span class="n">width</span> <span class="o">*=</span> <span class="mi">3</span>
+        <span class="n">left</span> <span class="o">-=</span> <span class="n">width</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span>
+                <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span>
+                        <span class="n">width</span><span class="p">,</span>
+                        <span class="n">max_value</span><span class="p">,</span>
+                        <span class="n">fill</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="p">)</span>    
+    <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">center</span><span class="p">,</span><span class="n">center</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="p">],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">linewidth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+<span class="c1">#import seaborn as sns</span>
+<span class="c1">#sns.set()</span>
+<span class="c1">#sns.set_style(&#39;white&#39;)</span>
+<span class="c1">#plt.grid(True)</span>
+<span class="c1">#import matplotlib.patches as patches</span>
+<span class="c1">#max_value = 256*256*1.1</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#colors = sns.color_palette()</span>
+<span class="c1">#fig = plt.figure()</span>
+<span class="c1">#ax = fig.add_subplot(111)</span>
+<span class="c1">#for interval in cfg.tests.rxb_interval[&#39;Half Speed&#39;]:</span>
+<span class="c1">#    left, width = interval</span>
+<span class="c1">#    width *= 3</span>
+<span class="c1">#    left -= width/2</span>
+<span class="c1">#    ax.add_patch(</span>
+<span class="c1">#            patches.Rectangle(</span>
+<span class="c1">#                    (left,0),</span>
+<span class="c1">#                    width,</span>
+<span class="c1">#                    max_value,</span>
+<span class="c1">#                    fill=True,</span>
+<span class="c1">#                    alpha = 0.3,</span>
+<span class="c1">#                    )</span>
+<span class="c1">#            )    </span>
+<span class="c1">#for values in out[1:]:</span>
+<span class="c1">#    ax.plot(out[0], values)</span>
+<span class="c1">#ax.plot([1100,1100],[0, max_value], &#39;--&#39;, color = colors[2], linewidth = 3)</span>
+<span class="c1">#ax.set_ylim(0, max_value)</span>
+<span class="c1">#plt.grid(True) </span>
 
 <div class="viewcode-block" id="rx_bias"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.rx_bias">[docs]</a><span class="k">def</span> <span class="nf">rx_bias</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -218,19 +268,24 @@
 <span class="sd">    Default number of pulses is 1. Probe station testing uses 721 pulses</span>
 <span class="sd">    721 (1444 counter value)</span>
 <span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    .. image:: _static/rxb.png</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Specific setup</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="o">=</span> <span class="n">clk</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">4000</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">4000</span>
+    
+
  
     <span class="c1">#Scan range </span>
-    <span class="n">rxb_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">1801</span><span class="p">,</span><span class="mi">100</span><span class="p">))</span>
+    <span class="n">rxb_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">1801</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;rx_bias test at: &quot;</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;rx_bias test at: &quot;</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     
-    <span class="k">with</span> <span class="n">test</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">4000</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">4000</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">rx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">):</span>
             <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">rxb_lb</span><span class="o">=</span> <span class="n">rx</span>
             <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">rxb_rb</span> <span class="o">=</span> <span class="n">rx</span>
@@ -248,7 +303,7 @@
 
     <span class="c1">#plot rx bias</span>
     <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_lines</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_lines</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">rxb_interval</span><span class="p">[</span><span class="n">clk</span><span class="p">],</span> <span class="mi">1100</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;rx_bias [DAC code]&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;number of pixels [1]&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;RX bias test, clk: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
@@ -273,20 +328,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Toggle data streaming to make sure it is set up correctly and that</span>
     <span class="c1">#buffers don&#39;t hold data</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">rx_datastream</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">rx_datastream</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="c1">#Receiver to have data in Python</span>
-    <span class="n">receiver</span> <span class="o">=</span> <span class="n">ZmqReceiver</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">rx_zmqip</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">rx_zmqport</span><span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="p">)</span>    
-    <span class="n">detector</span><span class="o">.</span><span class="n">file_write</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">16</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="o">=</span> <span class="n">clk</span>
-    <span class="n">detector</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="c1">#    detector.rx_datastream = False</span>
+<span class="c1">#    time.sleep(0.1)</span>
+<span class="c1">#    detector.rx_datastream = True</span>
+<span class="c1">#</span>
+<span class="c1">#    #Receiver to have data in Python</span>
+<span class="c1">#    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)</span>
+      
+<span class="c1">#    detector.file_write = False</span>
+<span class="c1">#    detector.dynamic_range = 16</span>
+<span class="c1">#    detector.readout_clock = clk</span>
+<span class="c1">#    detector.exposure_time = 0.01</span>
     
     <span class="c1">#Save dacs</span>
-    <span class="n">dacs</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+<span class="c1">#    dacs = detector.dacs.get_asarray()</span>
 
     <span class="n">iodelay_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span><span class="mi">851</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">)))</span>
@@ -294,14 +349,15 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;iodelay test at clkdivider:&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>   
     
     <span class="c1">#Iodelay scan</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">io</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">):</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">iodelay</span> <span class="o">=</span> <span class="n">io</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
-
-
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
-            <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">1500</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">io</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">):</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">iodelay</span> <span class="o">=</span> <span class="n">io</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+    
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
+                <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;iodelay scan done in: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span>
@@ -317,6 +373,7 @@
     <span class="c1">#Saving result</span>
     <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iodelay&#39;</span><span class="p">,</span> <span class="s1">&#39;chip0&#39;</span><span class="p">,</span> <span class="s1">&#39;chip1&#39;</span><span class="p">,</span> <span class="s1">&#39;chip2&#39;</span><span class="p">,</span> <span class="s1">&#39;chip3&#39;</span><span class="p">,</span> <span class="s1">&#39;chip4&#39;</span><span class="p">,</span> <span class="s1">&#39;chip5&#39;</span><span class="p">,</span> <span class="s1">&#39;chip6&#39;</span><span class="p">,</span> <span class="s1">&#39;chip7&#39;</span><span class="p">]</span>
     <span class="n">n</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">_speed_int</span><span class="p">[</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="p">]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="p">)</span>  
     <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_iodelay_</span><span class="si">{:d}</span><span class="s1">.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
     <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="p">[</span><span class="n">iodelay_values</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">N</span><span class="p">])</span>
 

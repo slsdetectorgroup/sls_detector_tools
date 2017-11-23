@@ -44,6 +44,9 @@ class path:
 class tests:
     plot = True
     """Plot the result of each module test"""
+    
+    rxb_interval= {'Half Speed': [(787.75, 31.33),(1353.18, 33.03)]}
+
 
 #Configure logging
 def set_log(fname, level = logging.INFO, stream = False):
