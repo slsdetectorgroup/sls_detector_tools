@@ -49,7 +49,7 @@ def plot_lines(x, lines, interval, center):
     ax = fig.add_subplot(111)
     for patch in interval:
         left, width = patch
-        width *= 3
+        width *= 2
         left -= width/2
         ax.add_patch(
                 patches.Rectangle(
@@ -98,16 +98,26 @@ def plot_lines(x, lines, interval, center):
 #ax.set_ylim(0, max_value)
 #plt.grid(True) 
 
-def rx_bias(detector, clk = 'Full Speed', npulse = 1):
+def rx_bias(detector, clk = 'Full Speed', npulse = 10):
     """
-    Scans rx bias and checks for each value if the data is read
-    out correctly. Uses testing with enable to load counter values. 
-    Default number of pulses is 1. Probe station testing uses 721 pulses
-    721 (1444 counter value)
     
     
-    .. image:: _static/rxb.png
+    Scan rx bias and check for each value if the data is read
+    out correctly. Toggle the enable using d.pulse_chip(n) to load counter values. 
+    Default number of pulses used is 10 while the old software at the probe station 
+    uses 721 pulses. The expected number of counts is n_pulses*2 + 2
+
+    The output shows a line per chip in the module with blue patches for the normal
+    range (+/- 1 sigma) and a red dashed line for the standard value that we set.
     
+    
+    .. image:: _static/rxb0.png
+    
+    Running the chip at half speed should give a larger rx bias window.
+  
+    .. image:: _static/rxb1.png    
+    
+    Both tests are a part of the standard EIGER test suite.
     
     """
     #Specific setup
@@ -115,7 +125,7 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1):
 
  
     #Scan range 
-    rxb_values = list(range(500,1801,10))
+    rxb_values = list(range(500,1801,25))
     N = np.zeros((8, len(rxb_values)))
     print( "rx_bias test at: ", clk)
     t0 = time.time()
@@ -143,7 +153,7 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 1):
         fig, ax = plot_lines(rxb_values, N, cfg.tests.rxb_interval[clk], 1100)
         ax.set_xlabel('rx_bias [DAC code]')
         ax.set_ylabel('number of pixels [1]')
-        ax.set_title('RX bias test, clk: ' + str(clk))
+        ax.set_title('RX bias test at: {:s}'.format(clk))
         
     #Save data for report
     header = ['rx_bias', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
@@ -163,22 +173,6 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
                 
     npulse > 0 pulses using enable
     """
-    #Toggle data streaming to make sure it is set up correctly and that
-    #buffers don't hold data
-#    detector.rx_datastream = False
-#    time.sleep(0.1)
-#    detector.rx_datastream = True
-#
-#    #Receiver to have data in Python
-#    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
-      
-#    detector.file_write = False
-#    detector.dynamic_range = 16
-#    detector.readout_clock = clk
-#    detector.exposure_time = 0.01
-    
-    #Save dacs
-#    dacs = detector.dacs.get_asarray()
 
     iodelay_values = list(range(550,851,10))
     N = np.zeros((8, len(iodelay_values)))
@@ -198,14 +192,24 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
     
 
     print('iodelay scan done in: {:.2f}'.format(time.time()-t0))
-    #Plotting results 
-    if plot:
-        plt.figure()
-        for i in range(8):
-            plt.plot(iodelay_values, N[i], 'o-')
-        plt.xlabel('io delay [DAC code]')
-        plt.ylabel('nr of pixels [1]')
-        plt.title('io delay scan, clk: ' + str(clk))
+
+    #plot rx bias
+    if cfg.tests.plot is True:
+        fig, ax = plot_lines(iodelay_values, N, cfg.tests.iodelay_interval[clk], 660)
+        ax.set_xlabel('io delay [DAC code]')
+        ax.set_ylabel('nr of pixels [1]')
+        ax.set_title('IO delay scan at: {:s}'.format(clk))
+
+
+
+#    #Plotting results 
+#    if plot:
+#        plt.figure()
+#        for i in range(8):
+#            plt.plot(iodelay_values, N[i], 'o-')
+#        plt.xlabel('io delay [DAC code]')
+#        plt.ylabel('nr of pixels [1]')
+#        plt.title('io delay scan, clk: ' + str(clk))
 
     #Saving result
     header = ['iodelay', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']

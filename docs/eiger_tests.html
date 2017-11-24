@@ -215,12 +215,17 @@ of problems when going to overflow</p>
 
 <dl class="function">
 <dt id="sls_detector_tools.eiger_tests.rx_bias">
-<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">rx_bias</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Full Speed'</em>, <em>npulse=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#rx_bias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.rx_bias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Scans rx bias and checks for each value if the data is read
-out correctly. Uses testing with enable to load counter values.
-Default number of pulses is 1. Probe station testing uses 721 pulses
-721 (1444 counter value)</p>
-<img alt="_images/rxb.png" src="_images/rxb.png" />
+<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">rx_bias</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Full Speed'</em>, <em>npulse=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#rx_bias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.rx_bias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan rx bias and check for each value if the data is read
+out correctly. Toggle the enable using d.pulse_chip(n) to load counter values.
+Default number of pulses used is 10 while the old software at the probe station
+uses 721 pulses. The expected number of counts is n_pulses*2 + 2</p>
+<p>The output shows a line per chip in the module with blue patches for the normal
+range (+/- 1 sigma) and a red dashed line for the standard value that we set.</p>
+<img alt="_images/rxb0.png" src="_images/rxb0.png" />
+<p>Running the chip at half speed should give a larger rx bias window.</p>
+<img alt="_images/rxb1.png" src="_images/rxb1.png" />
+<p>Both tests are a part of the standard EIGER test suite.</p>
 </dd></dl>
 
 <dl class="function">
