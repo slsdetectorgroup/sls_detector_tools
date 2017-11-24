@@ -175,7 +175,7 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
-<div class="viewcode-block" id="DummyBox"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox">[docs]</a><span class="k">class</span> <span class="nc">DummyBox</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">DummyBox</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dummy version of the XrayBox. Can be used for testing or when using </span>
 <span class="sd">    an X-ray source that is not control but you don&#39;t want to modify </span>
@@ -186,33 +186,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mA</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Xray box initialized&#39;</span><span class="p">)</span>
         
-<div class="viewcode-block" id="DummyBox.shutter_open"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.shutter_open">[docs]</a>    <span class="nd">@contextmanager</span>
+    <span class="nd">@contextmanager</span>
     <span class="k">def</span> <span class="nf">shutter_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;OPEN&#39;</span><span class="p">)</span>
         <span class="k">yield</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CLOSE&#39;</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CLOSE&#39;</span><span class="p">)</span>
 
  
     
-<div class="viewcode-block" id="DummyBox.target"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.target">[docs]</a>    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write target name to logfile</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching to </span><span class="si">%s</span><span class="s1"> target&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching to </span><span class="si">%s</span><span class="s1"> target&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DummyBox.shutter"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.shutter">[docs]</a>    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write opening shutter to logfile</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Opening shutter&#39;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Opening shutter&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DummyBox.unlock"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write unlock to the logfile</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Unlocking the dummy Xraybox from other users&#39;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Unlocking the dummy Xraybox from other users&#39;</span><span class="p">)</span>
         
-<div class="viewcode-block" id="DummyBox.HV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.HV">[docs]</a>    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emulating High Voltage on and off</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -220,24 +220,24 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching on HV&#39;</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching off HV&#39;</span><span class="p">)</span></div>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching off HV&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DummyBox.set_kV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.set_kV">[docs]</a>    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kV</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kV</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kV</span> <span class="o">=</span> <span class="n">kV</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> kV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kV</span><span class="p">))</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> kV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kV</span><span class="p">))</span>
         
-<div class="viewcode-block" id="DummyBox.get_kV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.get_kV">[docs]</a>    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Voltage is </span><span class="si">{:.2f}</span><span class="s1"> kV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kV</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kV</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kV</span>
         
-<div class="viewcode-block" id="DummyBox.set_mA"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.set_mA">[docs]</a>    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mA</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mA</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mA</span> <span class="o">=</span> <span class="n">mA</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span></div>
-<div class="viewcode-block" id="DummyBox.get_mA"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.DummyBox.get_mA">[docs]</a>    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Tube current is </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mA</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mA</span>
         
-<div class="viewcode-block" id="XrayBox"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox">[docs]</a><span class="k">class</span> <span class="nc">XrayBox</span><span class="p">():</span>
+<div class="viewcode-block" id="XrayBox"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox">[docs]</a><span class="k">class</span> <span class="nc">XrayBox</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper around the xrayClient64, uses the executable from afs, make sure</span>
 <span class="sd">    that you have access. Supports logging of commands using the python logger.</span>
@@ -268,7 +268,7 @@
         <span class="k">return</span> <span class="n">out</span>
 
    
-<div class="viewcode-block" id="XrayBox.HV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.HV">[docs]</a>    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.HV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.HV">[docs]</a>    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Switch on the high voltage is True otherwise switch off</span>
 <span class="sd">        </span>
@@ -285,7 +285,7 @@
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">])</span></div>
 
             
-<div class="viewcode-block" id="XrayBox.set_kV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.set_kV">[docs]</a>    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">kV</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.set_kV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.set_kV">[docs]</a>    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">kV</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the kV of the tube</span>
 <span class="sd"> </span>
@@ -298,7 +298,7 @@
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;setv&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span> <span class="n">kV</span> <span class="p">)])</span>
         <span class="k">return</span> <span class="n">out</span></div>
         
-<div class="viewcode-block" id="XrayBox.get_kV"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.get_kV">[docs]</a>    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.get_kV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.get_kV">[docs]</a>    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read the tube voltage</span>
 <span class="sd">        </span>
@@ -322,7 +322,7 @@
         <span class="k">return</span> <span class="n">kV</span></div>
 
         
-<div class="viewcode-block" id="XrayBox.set_mA"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.set_mA">[docs]</a>    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">mA</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.set_mA"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.set_mA">[docs]</a>    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">mA</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the tube current in mA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -330,7 +330,7 @@
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;setc&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span> <span class="n">mA</span> <span class="p">)])</span></div>
 
         
-<div class="viewcode-block" id="XrayBox.get_mA"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.get_mA">[docs]</a>    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.get_mA"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.get_mA">[docs]</a>    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;getc&#39;</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
@@ -344,7 +344,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current is </span><span class="si">%f</span><span class="s1"> mA&#39;</span><span class="p">,</span> <span class="n">mA</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">mA</span></div>
         
-<div class="viewcode-block" id="XrayBox.shutter"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.shutter">[docs]</a>    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sh</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.shutter">[docs]</a>    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sh</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open the shutter th if value is True otherwise close shutter sh</span>
 <span class="sd">        </span>
@@ -370,7 +370,7 @@
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh</span><span class="p">),</span> <span class="s1">&#39;off&#39;</span><span class="p">])</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Closing shutter for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">shutter_type</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="XrayBox.target"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.target">[docs]</a>    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span> <span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.target"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.target">[docs]</a>    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the target of the xray box</span>
 
 <span class="sd">        Parameters</span>
@@ -398,7 +398,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Target set to: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">t_set</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">t_set</span></div>
               
-<div class="viewcode-block" id="XrayBox.unlock"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.XrayBox.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="XrayBox.unlock"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unlock the control from another user</span>
 <span class="sd">        &quot;&quot;&quot;</span>

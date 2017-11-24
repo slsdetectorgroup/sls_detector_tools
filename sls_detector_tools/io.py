@@ -74,7 +74,7 @@ def read_trimbit_file( fname, ndacs = 18):
         Filename for the trimbit file
     ndacs: int, optional
         Number of dacs to expect in the trimbit file . Defaults to 18.
-        *Note that for old files it used to be 16 dacs8
+        *Note that for old files it used to be 16 dacs8*
     
     Returns
     -------

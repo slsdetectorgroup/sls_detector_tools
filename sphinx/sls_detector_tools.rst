@@ -50,13 +50,7 @@ sls\_detector\_tools\.mask module
     :undoc-members:
     :show-inheritance:
 
-sls\_detector\_tools\.module\_tests module
-------------------------------------------
 
-.. automodule:: sls_detector_tools.module_tests
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 
 sls\_detector\_tools\.receiver module
@@ -77,13 +71,7 @@ sls\_detector\_tools\.utils module
     :undoc-members:
     :show-inheritance:
 
-sls\_detector\_tools\.xray\_box module
---------------------------------------
 
-.. automodule:: sls_detector_tools.xray_box
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 
 Module contents

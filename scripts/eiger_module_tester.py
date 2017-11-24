@@ -59,10 +59,10 @@ d.dacs.rxb_rb = 1100
 #out = eiger_tests.io_delay(d, clk = 'Half Speed', plot = True)
 #####################
 ##
-a = eiger_tests.analog_pulses(d)
+#a = eiger_tests.analog_pulses(d)
 #
 ######################
-#tests.counter(name, d, clk = 0)
+a = eiger_tests.counter(d, clk = 'Half Speed')
 #tests.counter(name, d, clk = 1)
 #####################
 #data = tests.overflow(name, d)

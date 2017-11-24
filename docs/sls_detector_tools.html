@@ -216,7 +216,7 @@ in the detector system.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>detector</strong> (<em>SlsDetector</em>) – The detector that should be scanned</li>
-<li><strong>xraybox</strong> (<a class="reference internal" href="instruments.html#sls_detector_tools.XrayBox" title="sls_detector_tools.XrayBox"><em>XrayBox</em></a><em> or </em><a class="reference internal" href="#sls_detector_tools.xray_box.DummyBox" title="sls_detector_tools.xray_box.DummyBox"><em>DummyBox</em></a>) – Used for selecting the right target and controlling the shutter</li>
+<li><strong>xraybox</strong> (<a class="reference internal" href="instruments.html#sls_detector_tools.XrayBox" title="sls_detector_tools.XrayBox"><em>XrayBox</em></a><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
 <li><strong>pixelmask</strong> (<em>np_array</em><em>(</em><em>bool</em><em>)</em><em>, </em><em>optional</em>) – Numpy array of bools of the same size and one frame or None to disable</li>
 <li><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – start value of the scan</li>
 <li><strong>stop</strong> (<em>int</em><em>, </em><em>optional</em>) – end value of the scan</li>
@@ -875,7 +875,7 @@ for chip testing</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fname</strong> (<em>str</em>) – Filename for the trimbit file</li>
 <li><strong>ndacs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of dacs to expect in the trimbit file . Defaults to 18.
-<a href="#id1"><span class="problematic" id="id2">*</span></a>Note that for old files it used to be 16 dacs8</li>
+<em>Note that for old files it used to be 16 dacs8</em></li>
 </ul>
 </td>
 </tr>
@@ -978,9 +978,6 @@ trough the cfg.geometry setting.</p>
 <p>9M detector for cSAXS</p>
 </dd></dl>
 
-</div>
-<div class="section" id="sls-detector-tools-module-tests-module">
-<h2>sls_detector_tools.module_tests module<a class="headerlink" href="#sls-detector-tools-module-tests-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-sls_detector_tools.receiver">
 <span id="sls-detector-tools-receiver-module"></span><h2>sls_detector_tools.receiver module<a class="headerlink" href="#module-sls_detector_tools.receiver" title="Permalink to this headline">¶</a></h2>
@@ -1092,180 +1089,6 @@ exptime = exposuretime in s</p>
 summed array.</p>
 <p>data = 1d numpy array
 sum_size = number of consecutive elements to sum</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-sls_detector_tools.xray_box">
-<span id="sls-detector-tools-xray-box-module"></span><h2>sls_detector_tools.xray_box module<a class="headerlink" href="#module-sls_detector_tools.xray_box" title="Permalink to this headline">¶</a></h2>
-<p>Module to control the big xray box at PSI. Communicates using the command line
-to the <em>/afs/psi.ch/project/sls_det_software/bin/xrayClient64</em>. Provides a
-DummyBox that only writes the commands to the log file without doing anything.</p>
-<dl class="class">
-<dt id="sls_detector_tools.xray_box.DummyBox">
-<em class="property">class </em><code class="descclassname">sls_detector_tools.xray_box.</code><code class="descname">DummyBox</code><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Dummy version of the XrayBox. Can be used for testing or when using
-an X-ray source that is not control but you don’t want to modify
-you calibration scripts</p>
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.HV">
-<code class="descname">HV</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.HV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.HV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Emulating High Voltage on and off</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.get_kV">
-<code class="descname">get_kV</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.get_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.get_kV" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.get_mA">
-<code class="descname">get_mA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.get_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.get_mA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.set_kV">
-<code class="descname">set_kV</code><span class="sig-paren">(</span><em>kV</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.set_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.set_kV" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.set_mA">
-<code class="descname">set_mA</code><span class="sig-paren">(</span><em>mA</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.set_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.set_mA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.shutter">
-<code class="descname">shutter</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.shutter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write opening shutter to logfile</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.shutter_open">
-<code class="descname">shutter_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.shutter_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.shutter_open" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.target">
-<code class="descname">target</code><span class="sig-paren">(</span><em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.target" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write target name to logfile</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.DummyBox.unlock">
-<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#DummyBox.unlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.DummyBox.unlock" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write unlock to the logfile</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="sls_detector_tools.xray_box.XrayBox">
-<em class="property">class </em><code class="descclassname">sls_detector_tools.xray_box.</code><code class="descname">XrayBox</code><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Wrapper around the xrayClient64, uses the executable from afs, make sure
-that you have access. Supports logging of commands using the python logger.</p>
-<p>TODO! Inspect return values to look for errors</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Requires access to afs</p>
-</div>
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.HV">
-<code class="descname">HV</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.HV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.HV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Switch on the high voltage is True otherwise switch off</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>bool</em>) – True for on, False for off</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.get_kV">
-<code class="descname">get_kV</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.get_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.get_kV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read the tube voltage</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>kV</strong> – Voltage of the tube in kV</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.get_mA">
-<code class="descname">get_mA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.get_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.get_mA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.set_kV">
-<code class="descname">set_kV</code><span class="sig-paren">(</span><em>kV</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.set_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.set_kV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the kV of the tube</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kV</strong> (<em>int</em>) – Voltage of the tube in kV</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.set_mA">
-<code class="descname">set_mA</code><span class="sig-paren">(</span><em>mA</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.set_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.set_mA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the tube current in mA</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.shutter">
-<code class="descname">shutter</code><span class="sig-paren">(</span><em>value</em>, <em>sh=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.shutter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open the shutter th if value is True otherwise close shutter sh</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>value</strong> (<em>bool</em>) – True for on, False for off</li>
-<li><strong>sh</strong> (<em>int</em><em>, </em><em>optional</em>) – 1 for XRF, 3 for direct beam</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.target">
-<code class="descname">target</code><span class="sig-paren">(</span><em>target_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.target" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the target of the xray box</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>target_name</em><em>, </em><em>str</em>) – Two letter name of the target: Ti, Sc, Fe etc.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>t_set</strong> – The name of the set target</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.xray_box.XrayBox.unlock">
-<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.unlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.xray_box.XrayBox.unlock" title="Permalink to this definition">¶</a></dt>
-<dd><p>Unlock the control from another user</p>
-</dd></dl>
-
 </dd></dl>
 
 </div>

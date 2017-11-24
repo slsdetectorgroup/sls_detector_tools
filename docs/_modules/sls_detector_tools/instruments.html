@@ -168,33 +168,81 @@
 
 <span class="sd">@author: l_frojdh</span>
 <span class="sd">&quot;&quot;&quot;</span>
-
 <span class="kn">import</span> <span class="nn">telnetlib</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
 <div class="viewcode-block" id="AgilentMultiMeter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.AgilentMultiMeter">[docs]</a><span class="k">class</span> <span class="nc">AgilentMultiMeter</span><span class="p">:</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;AgilentMultiMeter(host, port)</span>
+<span class="sd">        Open the communication with the instrument and resets the  outVals.</span>
+<span class="sd">        host: hostname of the instrument</span>
+<span class="sd">        port: communication port to open&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tn</span> <span class="o">=</span> <span class="n">telnetlib</span><span class="o">.</span><span class="n">Telnet</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">read_eager</span><span class="p">())</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">read_eager</span><span class="p">())</span>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">outVals</span><span class="o">=</span><span class="p">[]</span>
+        
 <div class="viewcode-block" id="AgilentMultiMeter.measure"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.AgilentMultiMeter.measure">[docs]</a>    <span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;AgilentMultiMeter.measure()</span>
+<span class="sd">        Does one measurement with the open instrument, adds the measured value to the outVals and returns it&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">b</span><span class="s1">&#39;Measure?</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">read_eager</span><span class="p">()</span>
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div></div>
+        <span class="n">v</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writeVal</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">do_something</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hej&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+<div class="viewcode-block" id="AgilentMultiMeter.measureNtimes"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.AgilentMultiMeter.measureNtimes">[docs]</a>    <span class="k">def</span> <span class="nf">measureNtimes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">N</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;AgilentMultiMeter.measureNtimes(N)</span>
+<span class="sd">        Does N measurements with the open instrument and calculates the average, adds the averaged value to the outVals and returns it&quot;&quot;&quot;</span>
+        <span class="n">v0</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">N</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">b</span><span class="s1">&#39;Measure?</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tn</span><span class="o">.</span><span class="n">read_eager</span><span class="p">()</span>
+            <span class="n">v</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">v</span><span class="o">=</span><span class="n">v0</span><span class="o">+</span><span class="n">v</span>
+        <span class="n">newVal</span><span class="o">=</span><span class="n">v</span><span class="o">/</span><span class="n">N</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writeVal</span><span class="p">(</span><span class="n">newVal</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+<div class="viewcode-block" id="AgilentMultiMeter.clearVals"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.AgilentMultiMeter.clearVals">[docs]</a>    <span class="k">def</span> <span class="nf">clearVals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;AgilentMultiMeter.clearVals()</span>
+<span class="sd">        Clears the output values outVals&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outVals</span><span class="o">=</span><span class="p">[]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;***Output values buffer cleared****&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AgilentMultiMeter.writeVal"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.AgilentMultiMeter.writeVal">[docs]</a>    <span class="k">def</span> <span class="nf">writeVal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;AgilentMultiMeter.writeVals(v)</span>
+<span class="sd">        Writes v into the output values outVals&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outVals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div></div>
 
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-        <span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;A-34410A-13330.psi.ch&#39;</span>
-        <span class="n">port</span> <span class="o">=</span> <span class="mi">5024</span>
-        <span class="n">inst</span> <span class="o">=</span> <span class="n">Agilent</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+<span class="c1">#if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#        host = &#39;A-34410A-13330.psi.ch&#39;</span>
+<span class="c1">#        port = 5024</span>
+<span class="c1">#        inst = Agilent(host, port)</span>
+<span class="c1">#     </span>
+<span class="c1">#class AgilentMultiMeterOld:</span>
+<span class="c1">#</span>
+<span class="c1">#    def __init__(self, host, port):</span>
+<span class="c1">#        self.tn = telnetlib.Telnet(host, port)</span>
+<span class="c1">#        time.sleep(1)</span>
+<span class="c1">#        print(self.tn.read_eager())</span>
+<span class="c1">#        time.sleep(1)</span>
+<span class="c1">#        print(self.tn.read_eager())</span>
+<span class="c1">#</span>
+<span class="c1">#    def measure(self):</span>
+<span class="c1">#        self.tn.write( b&#39;Measure?\n&#39; )</span>
+<span class="c1">#        time.sleep(0.1)</span>
+<span class="c1">#        out = self.tn.read_eager()</span>
+<span class="c1">#        return float(out.split(b&#39;\r&#39;)[0])</span>
 </pre></div>
 
            </div>

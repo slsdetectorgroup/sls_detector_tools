@@ -1,7 +1,8 @@
+"""
+These are the tests used for the EIGER module testing. 
+"""
 import os
-import sys
 import numpy as np
-#import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time 
@@ -26,6 +27,20 @@ sns.set_style('white')
 from contextlib import contextmanager
 @contextmanager
 def setup_test_and_receiver(detector,clk):
+    """
+    Contexmanger that is used in many of the tests. Sets up the detector 
+    and returns a receiver which can be used to get images from the receiver
+    zmq stream.
+    
+    ::
+        
+        clk = 'Full Speed'
+        with setup_test_and_receiver(detector, clk) as receiver:
+            detector.acq()
+            data = receiver.get_frame()
+            
+        
+    """
     #Setup for test
     detector.rx_datastream = False
     time.sleep(0.1)
@@ -225,30 +240,18 @@ def analog_pulses(detector, clk = 'Half Speed', N = 1000):
     """
     Test the analog side of the pixel using test pulses
     Normally this test is run only using clock divider 1
-    It is normal to see cosmics in the final image
+    Expect to see cosmics in the final image since the pulsing takes around
+    a minute. 
+    
+    .. image:: _static/pulse.png
+    
+    
     """
-    print( 'analog_pulses()' )
     print( "Analog pulsing with clkdivider", clk )
     
     #Output setup
     out = cfg.path.out
     path = os.path.join( cfg.path.test,cfg.det_id )
-#    tmp_fname = 'test'
-#    d.set_fname( tmp_fname )
-#    d.set_fwrite( True )
-#    d.set_clkdivider(clk)
-#    d.set_dr( 16 )
-#    d.set_exptime( 0.01 )        
-    
-    
-    #Get dacs
-#    dacs = d.dacs.get_asarray()
-#    d.set_all_trimbits(63)
-#    d.dacs['vtr'] = 2600
-#    d.dacs['vrf'] = 2900
-#    d.dacs['vcall'] = 3600
-#    d.set_threshold(1500)    
-
     
     with setup_test_and_receiver(detector, clk) as receiver:
         detector.trimbits = 63
@@ -262,88 +265,63 @@ def analog_pulses(detector, clk = 'Half Speed', N = 1000):
         detector.pulse_all_pixels(N)
         detector.acq()
         data = receiver.get_frame()
+        detector.eiger_matrix_reset = True
         print('Pulsed all pixels {:d} times in {:.2f}s'.format(N, time.time()-t0))
-#    print( d.dacs )
-#    t0 = time.time()
-#    d.set_index(0)
-#    d.pulse_all(N = N)
-#    d.acq()
-#    data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry)
-#    print( time.time()-t0 )
 
+
+    #Save txt file for making report later
     path = os.path.join( cfg.path.test, cfg.det_id )  
     pathname = os.path.join(path, '{:s}_pulse.txt'.format(cfg.det_id))
-
-#    np.savetxt(os.path.join(path, name+'_pulse.txt'), data)
     np.savetxt(pathname, data)
+    
     if cfg.tests.plot:
         ax, im = imshow( data )
         im.set_clim(N-1, N+1)
         plt.draw()
     
-    #Reset dacs
-#    d.dacs.set_asarray( dacs )
     return data
 
-def counter(name, d, clk = 1):
+def counter(detector, clk = 'Full Speed'):
     """
     Test the digital counter logic. 
-    Note this does not test the overflow
+    Note this does not test the overflow of the pixel
     
-    Test is done by toggeling enable:
-    1364 --> 2730 --> 101010101010
-    682 --> 1366 --> 010101010110
+    ::
+        
+        #Test is done by toggeling enable:
+        1364 --> 2730 --> 101010101010
+         682 --> 1366 --> 010101010110
+         
     
     Using enable only increments of 2 in the 
     counter value is possible
     """
     print( "Counter tests with clkdivider", clk )
     
+    n_pulses = [1364, 682]
+    
     #Keep bad pixels form the tests
     bad_pixels = np.zeros((512,1024), dtype = np.bool)    
     
-    #Output setup
-    out = cfg.path.out
-    path = os.path.join( cfg.path.test,name )
-    tmp_fname = 'test'
-    d.set_fname( tmp_fname )
-    d.set_fwrite( True )
-    d.set_clkdivider(clk)
-    d.set_dr( 16 )
-    d.set_exptime( 0.01 )  
+    with setup_test_and_receiver(detector, clk) as receiver:
+        detector.vthreshold = 4000
+        detector.dacs.vtr = 4000
+        
+        for n in n_pulses:
+            detector.pulse_chip(n)
+            detector.acq()
+            data = receiver.get_frame()
+            print('Found {:d} bad pixels'.format((data != n*2+2).sum()))
+            bad_pixels[data != n*2+2] = True
     
-    dacs = d.dacs.get_asarray()
-    
-    #To enter test mode
-    d.set_threshold(4000)
-    d.dacs['vtr'] = 4000
-    d.set_index(0)
-    
-    #Test 1
-    d.pulsechip(1364)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry)
-    print( 'Bad pixels:', (data != 2730).sum(), '\n' )
-    bad_pixels[data != 2730] = True
-    
-    #Test 2
-    d.set_index(0)
-    d.pulsechip(682)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry)
-    print( 'Bad pixels:', (data != 1366).sum(), '\n')  
-    bad_pixels[data != 1366] = True
-    
-    
-    #Output
-    tmp = np.where(bad_pixels == True)
-    fname = os.path.join(path, name+'_counter_'+str(clk)+'.txt')
-    save_txt(fname, ['row', 'col'], tmp)
 
-    #Reset
-    d.dacs.set_asarray( dacs )
-    d.pulsechip( -1 )
-    
+    #Output
+    path = os.path.join(cfg.path.test, cfg.det_id)
+    tmp = np.where(bad_pixels == True)
+    n = detector._speed_int[ detector.readout_clock ]
+    pathname = os.path.join(path, '{:s}_counter_{:d}.txt'.format(cfg.det_id,n))
+    save_txt(pathname, ['row', 'col'], tmp)
+
     return bad_pixels
 
     

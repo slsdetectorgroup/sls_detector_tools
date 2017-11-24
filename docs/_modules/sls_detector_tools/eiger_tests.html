@@ -161,10 +161,11 @@
            <div itemprop="articleBody">
             
   <h1>Source code for sls_detector_tools.eiger_tests</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">These are the tests used for the EIGER module testing. </span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="c1">#import matplotlib as mpl</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="kn">import</span> <span class="nn">time</span> 
@@ -181,7 +182,7 @@
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">ZmqReceiver</span>
 <span class="kn">from</span> <span class="nn">.mask</span> <span class="k">import</span> <span class="n">chip</span>
-
+<span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">imshow</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;white&#39;</span><span class="p">)</span>
@@ -189,6 +190,20 @@
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <div class="viewcode-block" id="setup_test_and_receiver"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.setup_test_and_receiver">[docs]</a><span class="nd">@contextmanager</span>
 <span class="k">def</span> <span class="nf">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span><span class="n">clk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Contexmanger that is used in many of the tests. Sets up the detector </span>
+<span class="sd">    and returns a receiver which can be used to get images from the receiver</span>
+<span class="sd">    zmq stream.</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        clk = &#39;Full Speed&#39;</span>
+<span class="sd">        with setup_test_and_receiver(detector, clk) as receiver:</span>
+<span class="sd">            detector.acq()</span>
+<span class="sd">            data = receiver.get_frame()</span>
+<span class="sd">            </span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Setup for test</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">rx_datastream</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
@@ -327,7 +342,7 @@
     
     <span class="k">return</span> <span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span></div>
 
-<div class="viewcode-block" id="io_delay"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.io_delay">[docs]</a><span class="k">def</span> <span class="nf">io_delay</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="io_delay"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.io_delay">[docs]</a><span class="k">def</span> <span class="nf">io_delay</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Scan iodelay and for each step verify that the readout works. Run without</span>
 <span class="sd">    pulsing the detector. But half speen and full speed are run as a part of </span>
@@ -384,111 +399,92 @@
 
     <span class="k">return</span> <span class="n">iodelay_values</span><span class="p">,</span> <span class="n">N</span></div>
 
-<div class="viewcode-block" id="analog_pulses"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.analog_pulses">[docs]</a><span class="k">def</span> <span class="nf">analog_pulses</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="analog_pulses"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.analog_pulses">[docs]</a><span class="k">def</span> <span class="nf">analog_pulses</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Half Speed&#39;</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test the analog side of the pixel using test pulses</span>
 <span class="sd">    Normally this test is run only using clock divider 1</span>
-<span class="sd">    It is normal to see cosmics in the final image</span>
+<span class="sd">    Expect to see cosmics in the final image since the pulsing takes around</span>
+<span class="sd">    a minute. </span>
+<span class="sd">    </span>
+<span class="sd">    .. image:: _static/pulse.png</span>
+<span class="sd">    </span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;analog_pulses()&#39;</span> <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Analog pulsing with clkdivider&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>
     
     <span class="c1">#Output setup</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
-    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>        
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="p">)</span>
     
+    <span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">trimbits</span> <span class="o">=</span> <span class="mi">63</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">2600</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vrf</span> <span class="o">=</span> <span class="mi">2900</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vcall</span> <span class="o">=</span> <span class="mi">3600</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">1500</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">eiger_matrix_reset</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="p">)</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">pulse_all_pixels</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">eiger_matrix_reset</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pulsed all pixels </span><span class="si">{:d}</span><span class="s1"> times in </span><span class="si">{:.2f}</span><span class="s1">s&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span>
+
+
+    <span class="c1">#Save txt file for making report later</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="p">)</span>  
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_pulse.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">))</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">pathname</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     
-    <span class="c1">#Get dacs</span>
-    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_all_trimbits</span><span class="p">(</span><span class="mi">63</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2600</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vrf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2900</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3600</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>    
-
-    <span class="nb">print</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="n">N</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span> <span class="p">)</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_pulse.txt&#39;</span><span class="p">),</span> <span class="n">data</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
         <span class="n">ax</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="n">imshow</span><span class="p">(</span> <span class="n">data</span> <span class="p">)</span>
         <span class="n">im</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
     
-    <span class="c1">#Reset dacs</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_asarray</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
     <span class="k">return</span> <span class="n">data</span></div>
 
-<div class="viewcode-block" id="counter"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.counter">[docs]</a><span class="k">def</span> <span class="nf">counter</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="counter"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.counter">[docs]</a><span class="k">def</span> <span class="nf">counter</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test the digital counter logic. </span>
-<span class="sd">    Note this does not test the overflow</span>
+<span class="sd">    Note this does not test the overflow of the pixel</span>
 <span class="sd">    </span>
-<span class="sd">    Test is done by toggeling enable:</span>
-<span class="sd">    1364 --&gt; 2730 --&gt; 101010101010</span>
-<span class="sd">    682 --&gt; 1366 --&gt; 010101010110</span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        #Test is done by toggeling enable:</span>
+<span class="sd">        1364 --&gt; 2730 --&gt; 101010101010</span>
+<span class="sd">         682 --&gt; 1366 --&gt; 010101010110</span>
+<span class="sd">         </span>
 <span class="sd">    </span>
 <span class="sd">    Using enable only increments of 2 in the </span>
 <span class="sd">    counter value is possible</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Counter tests with clkdivider&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>
     
+    <span class="n">n_pulses</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1364</span><span class="p">,</span> <span class="mi">682</span><span class="p">]</span>
+    
     <span class="c1">#Keep bad pixels form the tests</span>
     <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>    
     
-    <span class="c1">#Output setup</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
-    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>  
+    <span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">4000</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">4000</span>
+        
+        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n_pulses</span><span class="p">:</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">pulse_chip</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found </span><span class="si">{:d}</span><span class="s1"> bad pixels&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="n">data</span> <span class="o">!=</span> <span class="n">n</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+            <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="n">n</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     
-    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
-    
-    <span class="c1">#To enter test mode</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">4000</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4000</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    
-    <span class="c1">#Test 1</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span><span class="mi">1364</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Bad pixels:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">2730</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span>
-    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">2730</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    
-    <span class="c1">#Test 2</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span><span class="mi">682</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">geometry</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;Bad pixels:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">1366</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>  
-    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">1366</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    
-    
-    <span class="c1">#Output</span>
-    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bad_pixels</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_counter_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
-    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
 
-    <span class="c1">#Reset</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_asarray</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulsechip</span><span class="p">(</span> <span class="o">-</span><span class="mi">1</span> <span class="p">)</span>
-    
+    <span class="c1">#Output</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">)</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bad_pixels</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">_speed_int</span><span class="p">[</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="p">]</span>
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_counter_</span><span class="si">{:d}</span><span class="s1">.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">pathname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">bad_pixels</span></div>
 
     

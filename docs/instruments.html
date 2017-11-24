@@ -175,9 +175,29 @@
 <em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">AgilentMultiMeter</code><span class="sig-paren">(</span><em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/instruments.html#AgilentMultiMeter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.AgilentMultiMeter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="method">
+<dt id="sls_detector_tools.AgilentMultiMeter.clearVals">
+<code class="descname">clearVals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/instruments.html#AgilentMultiMeter.clearVals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.AgilentMultiMeter.clearVals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the output values outVals</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="sls_detector_tools.AgilentMultiMeter.measure">
 <code class="descname">measure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/instruments.html#AgilentMultiMeter.measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.AgilentMultiMeter.measure" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Does one measurement with the open instrument, adds the measured value to the outVals and returns it</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.AgilentMultiMeter.measureNtimes">
+<code class="descname">measureNtimes</code><span class="sig-paren">(</span><em>N</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/instruments.html#AgilentMultiMeter.measureNtimes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.AgilentMultiMeter.measureNtimes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does N measurements with the open instrument and calculates the average, adds the averaged value to the outVals and returns it</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.AgilentMultiMeter.writeVal">
+<code class="descname">writeVal</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/instruments.html#AgilentMultiMeter.writeVal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.AgilentMultiMeter.writeVal" title="Permalink to this definition">¶</a></dt>
+<dd><p>AgilentMultiMeter.writeVals(v)
+Writes v into the output values outVals</p>
+</dd></dl>
 
 </dd></dl>
 
