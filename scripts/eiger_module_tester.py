@@ -55,11 +55,11 @@ d.dacs.rxb_rb = 1100
 #out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
 #
 ###################
-out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
+#out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
 #out = eiger_tests.io_delay(d, clk = 'Half Speed', plot = True)
 #####################
 ##
-#tests.analog_pulses(name, d, plot = True)
+a = eiger_tests.analog_pulses(d)
 #
 ######################
 #tests.counter(name, d, clk = 0)

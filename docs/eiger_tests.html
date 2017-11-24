@@ -191,13 +191,12 @@ outputs a multipage pdf file</p>
 
 <dl class="function">
 <dt id="sls_detector_tools.eiger_tests.io_delay">
-<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">io_delay</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Full Speed'</em>, <em>npulse=-1</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#io_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.io_delay" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test to determine the settings for iodelay
-npulses = -1 makes the test using a normal readout
-npulses = 0 puts the threshold on the far side of noise</p>
-<blockquote>
-<div>but does not pulse</div></blockquote>
-<p>npulse &gt; 0 pulses using enable</p>
+<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">io_delay</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Full Speed'</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#io_delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.io_delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scan iodelay and for each step verify that the readout works. Run without
+pulsing the detector. But half speen and full speed are run as a part of
+the standard tests.</p>
+<img alt="_images/iodelay0.png" src="_images/iodelay0.png" />
+<img alt="_images/iodelay1.png" src="_images/iodelay1.png" />
 </dd></dl>
 
 <dl class="function">

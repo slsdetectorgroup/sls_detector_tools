@@ -18,7 +18,7 @@ from . import config as cfg
 
 from . import ZmqReceiver
 from .mask import chip
-
+from .plot import imshow
 plt.ion()
 sns.set()
 sns.set_style('white')
@@ -164,17 +164,18 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 10):
     
     return rxb_values, N
 
-def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
+def io_delay(detector, clk = 'Full Speed'):
     """
-    Test to determine the settings for iodelay
-    npulses = -1 makes the test using a normal readout
-    npulses = 0 puts the threshold on the far side of noise
-                but does not pulse 
-                
-    npulse > 0 pulses using enable
+    Scan iodelay and for each step verify that the readout works. Run without
+    pulsing the detector. But half speen and full speed are run as a part of 
+    the standard tests.
+    
+    .. image:: _static/iodelay0.png
+    
+    .. image:: _static/iodelay1.png
     """
 
-    iodelay_values = list(range(550,851,10))
+    iodelay_values = list(range(550,851,2))
     N = np.zeros((8, len(iodelay_values)))
     t0 = time.time()
     print("iodelay test at clkdivider:", clk )   
@@ -218,11 +219,9 @@ def io_delay(detector, clk = 'Full Speed', npulse = -1, plot = False):
     fname = os.path.join(path, '{:s}_iodelay_{:d}.txt'.format(cfg.det_id, n))
     save_txt(fname, header, [iodelay_values] + [x for x in N])
 
-
-    detector.dacs.set_from_array( dacs )
     return iodelay_values, N
 
-def analog_pulses(name, d, clk = 1, N = 1000, plot = False):
+def analog_pulses(detector, clk = 'Half Speed', N = 1000):
     """
     Test the analog side of the pixel using test pulses
     Normally this test is run only using clock divider 1
@@ -233,39 +232,57 @@ def analog_pulses(name, d, clk = 1, N = 1000, plot = False):
     
     #Output setup
     out = cfg.path.out
-    path = os.path.join( cfg.path.test,name )
-    tmp_fname = 'test'
-    d.set_fname( tmp_fname )
-    d.set_fwrite( True )
-    d.set_clkdivider(clk)
-    d.set_dr( 16 )
-    d.set_exptime( 0.01 )        
+    path = os.path.join( cfg.path.test,cfg.det_id )
+#    tmp_fname = 'test'
+#    d.set_fname( tmp_fname )
+#    d.set_fwrite( True )
+#    d.set_clkdivider(clk)
+#    d.set_dr( 16 )
+#    d.set_exptime( 0.01 )        
     
     
     #Get dacs
-    dacs = d.dacs.get_asarray()
-    d.set_all_trimbits(63)
-    d.dacs['vtr'] = 2600
-    d.dacs['vrf'] = 2900
-    d.dacs['vcall'] = 3600
-    d.set_threshold(1500)    
+#    dacs = d.dacs.get_asarray()
+#    d.set_all_trimbits(63)
+#    d.dacs['vtr'] = 2600
+#    d.dacs['vrf'] = 2900
+#    d.dacs['vcall'] = 3600
+#    d.set_threshold(1500)    
 
-    print( d.dacs )
-    t0 = time.time()
-    d.set_index(0)
-    d.pulse_all(N = N)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry)
-    print( time.time()-t0 )
-    np.savetxt(os.path.join(path, name+'_pulse.txt'), data)
+    
+    with setup_test_and_receiver(detector, clk) as receiver:
+        detector.trimbits = 63
+        detector.dacs.vtr = 2600
+        detector.dacs.vrf = 2900
+        detector.dacs.vcall = 3600
+        detector.vthreshold = 1500
+        detector.eiger_matrix_reset = False
+        print(detector.dacs)
+        t0 = time.time()
+        detector.pulse_all_pixels(N)
+        detector.acq()
+        data = receiver.get_frame()
+        print('Pulsed all pixels {:d} times in {:.2f}s'.format(N, time.time()-t0))
+#    print( d.dacs )
+#    t0 = time.time()
+#    d.set_index(0)
+#    d.pulse_all(N = N)
+#    d.acq()
+#    data = load_frame(os.path.join(out, tmp_fname), 0, geometry = cfg.geometry)
+#    print( time.time()-t0 )
 
-    if plot:
+    path = os.path.join( cfg.path.test, cfg.det_id )  
+    pathname = os.path.join(path, '{:s}_pulse.txt'.format(cfg.det_id))
+
+#    np.savetxt(os.path.join(path, name+'_pulse.txt'), data)
+    np.savetxt(pathname, data)
+    if cfg.tests.plot:
         ax, im = imshow( data )
         im.set_clim(N-1, N+1)
         plt.draw()
     
     #Reset dacs
-    d.dacs.set_asarray( dacs )
+#    d.dacs.set_asarray( dacs )
     return data
 
 def counter(name, d, clk = 1):

@@ -316,7 +316,7 @@
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_lines</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">rxb_interval</span><span class="p">[</span><span class="n">clk</span><span class="p">],</span> <span class="mi">1100</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;rx_bias [DAC code]&#39;</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;number of pixels [1]&#39;</span><span class="p">)</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;RX bias test, clk: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;RX bias test at: </span><span class="si">{:s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
         
     <span class="c1">#Save data for report</span>
     <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rx_bias&#39;</span><span class="p">,</span> <span class="s1">&#39;chip0&#39;</span><span class="p">,</span> <span class="s1">&#39;chip1&#39;</span><span class="p">,</span> <span class="s1">&#39;chip2&#39;</span><span class="p">,</span> <span class="s1">&#39;chip3&#39;</span><span class="p">,</span> <span class="s1">&#39;chip4&#39;</span><span class="p">,</span> <span class="s1">&#39;chip5&#39;</span><span class="p">,</span> <span class="s1">&#39;chip6&#39;</span><span class="p">,</span> <span class="s1">&#39;chip7&#39;</span><span class="p">]</span>
@@ -327,33 +327,18 @@
     
     <span class="k">return</span> <span class="n">rxb_values</span><span class="p">,</span> <span class="n">N</span></div>
 
-<div class="viewcode-block" id="io_delay"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.io_delay">[docs]</a><span class="k">def</span> <span class="nf">io_delay</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="io_delay"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.io_delay">[docs]</a><span class="k">def</span> <span class="nf">io_delay</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Test to determine the settings for iodelay</span>
-<span class="sd">    npulses = -1 makes the test using a normal readout</span>
-<span class="sd">    npulses = 0 puts the threshold on the far side of noise</span>
-<span class="sd">                but does not pulse </span>
-<span class="sd">                </span>
-<span class="sd">    npulse &gt; 0 pulses using enable</span>
+<span class="sd">    Scan iodelay and for each step verify that the readout works. Run without</span>
+<span class="sd">    pulsing the detector. But half speen and full speed are run as a part of </span>
+<span class="sd">    the standard tests.</span>
+<span class="sd">    </span>
+<span class="sd">    .. image:: _static/iodelay0.png</span>
+<span class="sd">    </span>
+<span class="sd">    .. image:: _static/iodelay1.png</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#Toggle data streaming to make sure it is set up correctly and that</span>
-    <span class="c1">#buffers don&#39;t hold data</span>
-<span class="c1">#    detector.rx_datastream = False</span>
-<span class="c1">#    time.sleep(0.1)</span>
-<span class="c1">#    detector.rx_datastream = True</span>
-<span class="c1">#</span>
-<span class="c1">#    #Receiver to have data in Python</span>
-<span class="c1">#    receiver = ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)</span>
-      
-<span class="c1">#    detector.file_write = False</span>
-<span class="c1">#    detector.dynamic_range = 16</span>
-<span class="c1">#    detector.readout_clock = clk</span>
-<span class="c1">#    detector.exposure_time = 0.01</span>
-    
-    <span class="c1">#Save dacs</span>
-<span class="c1">#    dacs = detector.dacs.get_asarray()</span>
 
-    <span class="n">iodelay_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span><span class="mi">851</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">iodelay_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">550</span><span class="p">,</span><span class="mi">851</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">)))</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;iodelay test at clkdivider:&quot;</span><span class="p">,</span> <span class="n">clk</span> <span class="p">)</span>   
@@ -371,14 +356,24 @@
     
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;iodelay scan done in: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">))</span>
-    <span class="c1">#Plotting results </span>
-    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">,</span> <span class="n">N</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;io delay [DAC code]&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;nr of pixels [1]&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;io delay scan, clk: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
+
+    <span class="c1">#plot rx bias</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot_lines</span><span class="p">(</span><span class="n">iodelay_values</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">iodelay_interval</span><span class="p">[</span><span class="n">clk</span><span class="p">],</span> <span class="mi">660</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;io delay [DAC code]&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;nr of pixels [1]&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;IO delay scan at: </span><span class="si">{:s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clk</span><span class="p">))</span>
+
+
+
+<span class="c1">#    #Plotting results </span>
+<span class="c1">#    if plot:</span>
+<span class="c1">#        plt.figure()</span>
+<span class="c1">#        for i in range(8):</span>
+<span class="c1">#            plt.plot(iodelay_values, N[i], &#39;o-&#39;)</span>
+<span class="c1">#        plt.xlabel(&#39;io delay [DAC code]&#39;)</span>
+<span class="c1">#        plt.ylabel(&#39;nr of pixels [1]&#39;)</span>
+<span class="c1">#        plt.title(&#39;io delay scan, clk: &#39; + str(clk))</span>
 
     <span class="c1">#Saving result</span>
     <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;iodelay&#39;</span><span class="p">,</span> <span class="s1">&#39;chip0&#39;</span><span class="p">,</span> <span class="s1">&#39;chip1&#39;</span><span class="p">,</span> <span class="s1">&#39;chip2&#39;</span><span class="p">,</span> <span class="s1">&#39;chip3&#39;</span><span class="p">,</span> <span class="s1">&#39;chip4&#39;</span><span class="p">,</span> <span class="s1">&#39;chip5&#39;</span><span class="p">,</span> <span class="s1">&#39;chip6&#39;</span><span class="p">,</span> <span class="s1">&#39;chip7&#39;</span><span class="p">]</span>
@@ -387,8 +382,6 @@
     <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_iodelay_</span><span class="si">{:d}</span><span class="s1">.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
     <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="p">[</span><span class="n">iodelay_values</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">N</span><span class="p">])</span>
 
-
-    <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_from_array</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span>
     <span class="k">return</span> <span class="n">iodelay_values</span><span class="p">,</span> <span class="n">N</span></div>
 
 <div class="viewcode-block" id="analog_pulses"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.analog_pulses">[docs]</a><span class="k">def</span> <span class="nf">analog_pulses</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">plot</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
