@@ -212,7 +212,7 @@
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">patch</span> <span class="ow">in</span> <span class="n">interval</span><span class="p">:</span>
         <span class="n">left</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">patch</span>
-        <span class="n">width</span> <span class="o">*=</span> <span class="mi">3</span>
+        <span class="n">width</span> <span class="o">*=</span> <span class="mi">2</span>
         <span class="n">left</span> <span class="o">-=</span> <span class="n">width</span><span class="o">/</span><span class="mi">2</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span>
                 <span class="n">patches</span><span class="o">.</span><span class="n">Rectangle</span><span class="p">(</span>
@@ -261,16 +261,26 @@
 <span class="c1">#ax.set_ylim(0, max_value)</span>
 <span class="c1">#plt.grid(True) </span>
 
-<div class="viewcode-block" id="rx_bias"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.rx_bias">[docs]</a><span class="k">def</span> <span class="nf">rx_bias</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="rx_bias"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.rx_bias">[docs]</a><span class="k">def</span> <span class="nf">rx_bias</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span><span class="p">,</span> <span class="n">npulse</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Scans rx bias and checks for each value if the data is read</span>
-<span class="sd">    out correctly. Uses testing with enable to load counter values. </span>
-<span class="sd">    Default number of pulses is 1. Probe station testing uses 721 pulses</span>
-<span class="sd">    721 (1444 counter value)</span>
 <span class="sd">    </span>
 <span class="sd">    </span>
-<span class="sd">    .. image:: _static/rxb.png</span>
+<span class="sd">    Scan rx bias and check for each value if the data is read</span>
+<span class="sd">    out correctly. Toggle the enable using d.pulse_chip(n) to load counter values. </span>
+<span class="sd">    Default number of pulses used is 10 while the old software at the probe station </span>
+<span class="sd">    uses 721 pulses. The expected number of counts is n_pulses*2 + 2</span>
+
+<span class="sd">    The output shows a line per chip in the module with blue patches for the normal</span>
+<span class="sd">    range (+/- 1 sigma) and a red dashed line for the standard value that we set.</span>
 <span class="sd">    </span>
+<span class="sd">    </span>
+<span class="sd">    .. image:: _static/rxb0.png</span>
+<span class="sd">    </span>
+<span class="sd">    Running the chip at half speed should give a larger rx bias window.</span>
+<span class="sd">  </span>
+<span class="sd">    .. image:: _static/rxb1.png    </span>
+<span class="sd">    </span>
+<span class="sd">    Both tests are a part of the standard EIGER test suite.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Specific setup</span>
@@ -278,7 +288,7 @@
 
  
     <span class="c1">#Scan range </span>
-    <span class="n">rxb_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">1801</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+    <span class="n">rxb_values</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="mi">1801</span><span class="p">,</span><span class="mi">25</span><span class="p">))</span>
     <span class="n">N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rxb_values</span><span class="p">)))</span>
     <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;rx_bias test at: &quot;</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span>
     <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>

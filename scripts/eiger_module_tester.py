@@ -52,10 +52,10 @@ d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
 #out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
-out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
+#out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
 #
 ###################
-#out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
+out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
 #out = eiger_tests.io_delay(d, clk = 'Half Speed', plot = True)
 #####################
 ##
