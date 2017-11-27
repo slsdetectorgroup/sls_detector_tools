@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import seaborn as sns
-from time import time, clock
+import time
 
 #Copy files
 import shutil
@@ -37,8 +37,43 @@ from . import config as cfg
 from . import function
 from . import mask
 from . import io 
+from . import ZmqReceiver
 #from . import Dacs
 #from . import mpfit
+
+
+from contextlib import contextmanager
+@contextmanager
+def setup_measurement(detector):
+    """
+    Contexmanger that is used in many of the tests. Sets up the detector 
+    and returns a receiver which can be used to get images from the receiver
+    zmq stream.
+    
+    ::
+        
+        clk = 'Full Speed'
+        with setup_test_and_receiver(detector, clk) as receiver:
+            detector.acq()
+            data = receiver.get_frame()
+            
+        
+    """
+    #Setup for test
+    detector.rx_datastream = False
+    time.sleep(0.1)
+    detector.rx_datastream = True
+    detector.file_write = False
+#    detector.dynamic_range = 16 
+#    detector.readout_clock = clk
+#    detector.exposure_time = 0.01 
+    dacs = detector.dacs.get_asarray()  
+    
+    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+    
+    #Teardown after test
+    detector.dacs.set_from_array( dacs )
+
 
 
 xrf = {'In':3.29,'Ti': 4.5, 'Cr': 5.4, 'Fe': 6.4, 'Cu': 8.02, 'Ge': 9.9, 'Zr': 15.7,
@@ -205,7 +240,7 @@ def get_halfmodule_mask():
                                   'selected geometry:', cfg.geometry)
         
 
-def setup_detector( detector ):
+def setup_detector(detector):
     """
     Make sure that the detector is in a correct state for calibration.
     Settings that are applied are taken from the config file:
@@ -221,32 +256,32 @@ def setup_detector( detector ):
     
     """
     #Exposure
-    detector.set_nframes( cfg.calibration.nframes )
-    detector.set_period( cfg.calibration.period )
+    detector.n_frames = cfg.calibration.nframes
+    detector.period = cfg.calibration.period
     if cfg.calibration.type == 'TP':
-        detector.set_exptime( cfg.calibration.tp_exptime )
+        detector.exposure_time = cfg.calibration.tp_exptime
     else:
-        detector.set_exptime( cfg.calibration.exptime )
+        detector.exposure_time = cfg.calibration.exptime
     
     #Data format and communication
     if cfg.calibration.type == 'TP':
-        detector.set_dr( cfg.calibration.tp_dynamic_range )
+        detector.dynamic_range = cfg.calibration.tp_dynamic_range 
     else:
-        detector.set_dr( cfg.calibration.dynamic_range )
+        detector.dynamic_range = cfg.calibration.dynamic_range
         
-    detector.set_clkdivider( cfg.calibration.clkdivider )
-    for flag in cfg.calibration.flags:
-        detector.set_flags( flag )
+    detector.readout_clock = cfg.calibration.speed
+#    for flag in cfg.calibration.flags:
+#        detector.set_flags( flag )
     
     #Trimming
-    detector.set_all_trimbits( cfg.calibration.trimval )
-    detector.dacs['vtr'] = cfg.calibration.vtr
-    detector.dacs['vrs'] = cfg.calibration.vrs
+    detector.trimbits = cfg.calibration.trimval
+    detector.dacs.vtr = cfg.calibration.vtr
+    detector.dacs.vrs = cfg.calibration.vrs
     
 #    detector.set_dac('vthreshold', cfg.calibration.threshold)    
     
-    detector.set_fwrite( True )
-    detector.set_overwrite(True)
+#    detector.set_fwrite( True )
+#    detector.set_overwrite(True)
 #    detector.s
 
 
@@ -260,24 +295,37 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
      #Switch to 16bit since we always scan this fast
     dr = detector.dynamic_range
     detector.dynamic_range = 16
-    fname = get_vrf_fname().strip( '_{:d}.npz'.format(cfg.calibration.run_id))  
+#    fname = get_vrf_fname().strip( '_{:d}.npz'.format(cfg.calibration.run_id))  
     detector.vthreshold = cfg.calibration.threshold  
-
+    detector.exposure_time = cfg.calibration.vrf_scan_exptime
 
         
     #Vrf scan and save npz data to path defined in config
-    detector.scan_dac(start,stop,step,
-           dac = 'vrf',
-           fname = fname,
-           run_id = cfg.calibration.run_id,
-           exptime = cfg.calibration.vrf_scan_exptime,
-           vcp = False,
-           npz = True,
-           plot = False)
+#    detector.scan_dac(start,stop,step,
+#           dac = 'vrf',
+#           fname = fname,
+#           run_id = cfg.calibration.run_id,
+#           exptime = cfg.calibration.vrf_scan_exptime,
+#           vcp = False,
+#           npz = True,
+#           plot = False)
+    vrf_array = np.arange(start, stop, step)
+    print(vrf_array)
+    
+    _s = detector.image_size
+    data = np.zeros((_s.rows, _s.cols, vrf_array.size))
+    
+    with setup_measurement(detector) as receiver:
+        for i,v in enumerate(vrf_array):
+            detector.acq()
+            data[:,:,i] = receiver.get_frame()
+    
+#    filepath = cfg.calibration
 
 
     #Reset dr
     detector.dynamic_range = dr
+    return data, vrf_array
 
 def do_vrf_scan(detector, xraybox, pixelmask = None, 
                 start = 1500, 
@@ -312,33 +360,24 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
         
         
     """   
-    
-    #Switch to 16bit since we always scan this fast
-#    dr = detector.get_dr()
-#    detector.set_dr( 16 )
-#    
-#    fname = get_vrf_fname().strip( '_{:d}.npz'.format(cfg.calibration.run_id))  
-#    
-#    detector.set_threshold( cfg.calibration.threshold )  
-#    detector.dacs['vcp'] = cfg.calibration.threshold
-    
+        
     xraybox.target( cfg.calibration.target )
     colors = sns.color_palette(  n_colors = cfg.nmod )
-    hostnames = detector.get_hostname()    
+#    hostnames = detector.get_hostname()    
     
         
     #Vrf scan and save npz data to path defined in config
     xraybox.shutter(True)
-    take_vrf_data(detector, start, stop, step)
+    data,x = _vrf_scan(detector, start, stop, step)
     xraybox.shutter(False)     
      
     #Load data to do fitting
-    fname = get_vrf_fname()
-    pathname = os.path.join( cfg.path.data, fname)
-    print( pathname )
-    with np.load( pathname) as f:
-        data = f['data']
-        x = f['x'] 
+#    fname = get_vrf_fname()
+#    pathname = os.path.join( cfg.path.data, fname)
+#    print( pathname )
+#    with np.load( pathname) as f:
+#        data = f['data']
+#        x = f['x'] 
  
 
     #Set pixels that are True in the mask to zero for all scan steps
@@ -374,12 +413,14 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
         #Graph and fit function
         c,h = r.plot(x,yd)
         func = TF1('func', 'gaus', xmin, xmax)
-        fit = h.Fit('func', 'SQR')        
+        fit = h.Fit('func', 'SQR') 
+        c.Draw()
 
         
         par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
         
         if cfg.calibration.plot:
+            hostnames = detector.hostname #read once
             y_fit = function.gaus(xx, *par)
             plt.subplot(1,2,1)
             plt.plot(x, y, 'o', color = colors[i], label = hostnames[i])
@@ -400,7 +441,7 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
         plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz')) )
 
     #Save data again adding vrf?
-    detector.set_dr( dr )
+#    detector.set_dr( dr )
     
     
     return vrf  

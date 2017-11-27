@@ -93,7 +93,7 @@ class calibration():
     run_id = 0
     period = 0
     nframes = 1
-    clkdivider = 2
+    speed = 'Quarter Speed'
     dynamic_range = 32
     nproc = 12
 

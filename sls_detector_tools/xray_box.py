@@ -11,6 +11,8 @@ from subprocess import Popen, PIPE
 import logging
 logger = logging.getLogger()
 
+import re
+
 from contextlib import contextmanager
 class DummyBox:
     """
@@ -159,27 +161,44 @@ class XrayBox():
         return kV
 
         
-    def set_mA( self, mA ):
-        """
-        Set the tube current in mA
-        """
-        logger.info('Setting current to: %f mA', mA)
-        out = self._call([self.box, 'setc', str( mA )])
+#    def set_mA( self, mA ):
+#        """
+#        Set the tube current in mA
+#        """
+#        logger.info('Setting current to: %f mA', mA)
+#        out = self._call([self.box, 'setc', str( mA )])
+#
+#        
+#    def get_mA( self ):
+#
+#        out = self._call([self.box, 'getc'])
+#        try:
+#            mA = float(out[2].split()[-1].split(':')[-1])/1e3
+#        except IndexError:
+#            print(out)
+#            mA = False
+#            
+#        if cfg.verbose:
+#            print('XrayBox: Current '+str(mA) + ' mA')
+#        logger.info('Current is %f mA', mA)
+#        return mA
 
-        
-    def get_mA( self ):
-
+    @property
+    def current(self):
+        """
+        Tube current in mA
+        """
         out = self._call([self.box, 'getc'])
-        try:
-            mA = float(out[2].split()[-1].split(':')[-1])/1e3
-        except IndexError:
-            print(out)
-            mA = False
-            
-        if cfg.verbose:
-            print('XrayBox: Current '+str(mA) + ' mA')
-        logger.info('Current is %f mA', mA)
+        a = re.search('(?<=:)\w+', out[3].decode())
+        mA = float(a.group())/1e3
+        logger.info('Current is {:.2f} mA'.format(mA))
         return mA
+    
+    @current.setter
+    def current(self, mA):
+        logger.info('Setting current to: {:.2f} mA'.format(mA))
+        out = self._call([self.box, 'setc', str( mA )])  
+        print(out)
         
     def shutter(self, value, sh = 1):
         """
@@ -207,6 +226,8 @@ class XrayBox():
             out = self._call([self.box, 'shutter', str(sh), 'off'])
             logger.info('Closing shutter for %s', shutter_type)
 
+    
+
     def target( self, target_name ):
         """Set the target of the xray box
 
@@ -227,13 +248,14 @@ class XrayBox():
         out = self._call([self.box, 'movefl', target_name])
         if cfg.debug:
             print(out)
-        t_set = out[3].split()[4].strip(':')
+        return out
+        t_set = re.search('(?<=to )\w+', out[3].decode()).group()
         if t_set != target_name:
             print(out)
             logger.error('Target not found')
             raise ValueError('Target not found!') 
         logger.debug('Target set to: %s', t_set)
-        return t_set
+#        return t_set
               
     def unlock(self):
         """

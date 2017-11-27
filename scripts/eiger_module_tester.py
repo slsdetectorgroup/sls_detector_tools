@@ -51,7 +51,7 @@ d.dacs.rxb_lb = 1100
 d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
-#out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
+out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
 #out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
 #
 ###################
@@ -62,7 +62,7 @@ d.dacs.rxb_rb = 1100
 #a = eiger_tests.analog_pulses(d)
 #
 ######################
-a = eiger_tests.counter(d, clk = 'Half Speed')
+#a = eiger_tests.counter(d, clk = 'Half Speed')
 #tests.counter(name, d, clk = 1)
 #####################
 #data = tests.overflow(name, d)
