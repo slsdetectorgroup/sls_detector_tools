@@ -15,6 +15,7 @@ import ROOT
 from ROOT import TF1
     
 
+
 #Python imports
 import os
 import sys
@@ -38,8 +39,8 @@ from . import function
 from . import mask
 from . import io 
 from . import ZmqReceiver
-#from . import Dacs
-#from . import mpfit
+from . import xrf_shutter_open
+from . import mpfit
 
 
 from contextlib import contextmanager
@@ -294,21 +295,10 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     """
      #Switch to 16bit since we always scan this fast
     dr = detector.dynamic_range
-    detector.dynamic_range = 16
-#    fname = get_vrf_fname().strip( '_{:d}.npz'.format(cfg.calibration.run_id))  
+    detector.dynamic_range = 16 
     detector.vthreshold = cfg.calibration.threshold  
     detector.exposure_time = cfg.calibration.vrf_scan_exptime
 
-        
-    #Vrf scan and save npz data to path defined in config
-#    detector.scan_dac(start,stop,step,
-#           dac = 'vrf',
-#           fname = fname,
-#           run_id = cfg.calibration.run_id,
-#           exptime = cfg.calibration.vrf_scan_exptime,
-#           vcp = False,
-#           npz = True,
-#           plot = False)
     vrf_array = np.arange(start, stop, step)
     print(vrf_array)
     
@@ -317,15 +307,104 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(vrf_array):
+            detector.dacs.vrf = v
+            print(detector.dacs.vrf)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
     
-#    filepath = cfg.calibration
-
-
     #Reset dr
     detector.dynamic_range = dr
     return data, vrf_array
+
+def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
+     #Switch to 16bit since we always scan this fast
+
+    detector.dynamic_range = cfg.calibration.dynamic_range 
+    detector.exposure_time = cfg.calibration.exptime
+
+    threshold = np.arange(start, stop, step)
+
+    _s = detector.image_size
+    data = np.zeros((_s.rows, _s.cols, threshold.size))
+    
+    with setup_measurement(detector) as receiver:
+        for i,th in enumerate(threshold):
+            detector.vthreshold = th
+            print(detector.vthreshold)
+            detector.acq()
+            data[:,:,i] = receiver.get_frame()
+    
+    return data, threshold    
+
+
+def _clean_vrf_data(data):
+    """
+    Clean the data based on median
+    """
+    _pm = np.zeros((data.shape[0], data.shape[1]), dtype = np.bool)
+    for i in range(data.shape[2]):
+        _threshold = np.median(data[:,:,i])*3
+        if _threshold < 50:
+            _threshold = 50
+        _pm[data[:,:,i]>_threshold] = True
+    for i in range(data.shape[2]):
+        data[:,:,i][_pm] = 0
+    return data
+
+def _fit_and_plot_vrf_data(data, x, hostnames):
+    """
+    Plot and fit
+    """
+    vrf = []
+    
+    if cfg.calibration.plot:
+        colors = sns.color_palette(  n_colors = cfg.nmod )
+        fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
+        xx = np.linspace(x.min(), x.max(), 300)
+    
+    
+    halfmodule = get_halfmodule_mask()
+    
+    for i in range( len(halfmodule) ):
+        y = data[halfmodule[i]].sum(axis = 0).sum(axis = 0)
+        yd = np.gradient( y )
+        center = np.argmax( yd )
+        print( center )
+        if center > 75:
+            xmin = x[72]
+            xmax = x[-1]
+        else:
+            xmin = x[center-4]
+            xmax = x[center+3]
+            print( xmin, xmax )
+        
+        #Graph and fit function
+        c,h = r.plot(x,yd)
+        func = TF1('func', 'gaus', xmin, xmax)
+        fit = h.Fit('func', 'SQR') 
+        
+        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
+        
+        if cfg.calibration.plot:
+            ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
+            ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
+            ax2.plot(xx, function.gaus(xx, *par), color = colors[i])
+        
+        vrf.append( int( np.round( fit.Get().Parameter(1))) )
+    
+    if cfg.calibration.plot:
+        ax1.legend(loc = 'upper left')
+        ax1.set_ylabel('Counts [1]')
+        ax1.set_xlabel('vrf [1]')
+        ax2.legend(loc = 'upper left')
+        ax2.set_ylabel('Counts (differential) [1]')
+        ax2.set_xlabel('vrf [1]')
+        ax2.set_xlim(xmin-100, xmax+100)
+        fig.suptitle('{:s} vrf scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
+        plt.tight_layout()
+        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz')) ) 
+    
+    return vrf
 
 def do_vrf_scan(detector, xraybox, pixelmask = None, 
                 start = 1500, 
@@ -360,89 +439,22 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
         
         
     """   
-        
-    xraybox.target( cfg.calibration.target )
-    colors = sns.color_palette(  n_colors = cfg.nmod )
-#    hostnames = detector.get_hostname()    
-    
-        
-    #Vrf scan and save npz data to path defined in config
-    xraybox.shutter(True)
-    data,x = _vrf_scan(detector, start, stop, step)
-    xraybox.shutter(False)     
-     
-    #Load data to do fitting
-#    fname = get_vrf_fname()
-#    pathname = os.path.join( cfg.path.data, fname)
-#    print( pathname )
-#    with np.load( pathname) as f:
-#        data = f['data']
-#        x = f['x'] 
- 
+
+    #data taking in the xray box        
+    with xrf_shutter_open(xraybox, cfg.calibration.target):
+        data,x = _vrf_scan(detector, start, stop, step)
+
+
 
     #Set pixels that are True in the mask to zero for all scan steps
     if pixelmask is not None:
         for i in range( data.shape[2] ):
             data[:,:,i][pixelmask] = 0
    
-
-
+    data = _clean_vrf_data(data)
+    vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
-    vrf = []
-    
-    if cfg.calibration.plot:
-        plt.figure()
-        xx = np.linspace(x.min(), x.max(), 300)
-    
-    
-    halfmodule = get_halfmodule_mask()
-    
-    for i in range( len(halfmodule) ):
-        y = data[halfmodule[i]].sum(axis = 0).sum(axis = 0)
-        yd = np.gradient( y )
-        center = np.argmax( yd )
-        print( center )
-        if center > 75:
-            xmin = x[72]
-            xmax = x[-1]
-        else:
-            xmin = x[center-4]
-            xmax = x[center+3]
-            print( xmin, xmax )
-        
-        #Graph and fit function
-        c,h = r.plot(x,yd)
-        func = TF1('func', 'gaus', xmin, xmax)
-        fit = h.Fit('func', 'SQR') 
-        c.Draw()
-
-        
-        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
-        
-        if cfg.calibration.plot:
-            hostnames = detector.hostname #read once
-            y_fit = function.gaus(xx, *par)
-            plt.subplot(1,2,1)
-            plt.plot(x, y, 'o', color = colors[i], label = hostnames[i])
-            plt.legend(loc = 'upper left')
-            
-            plt.subplot(1,2,2)
-            plt.plot(x, yd, 'o', color = colors[i], label = hostnames[i])
-            plt.plot(xx, y_fit, color = colors[i])
-            plt.legend(loc = 'upper left')
-            plt.xlim(xmin-100, xmax+100)
-            
-    
-        
-        vrf.append( int( np.round( fit.Get().Parameter(1))) )
-    
-    if cfg.calibration.plot:
-        c.Draw()
-        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz')) )
-
-    #Save data again adding vrf?
-#    detector.set_dr( dr )
-    
+    #Save vrf?
     
     return vrf  
     
@@ -499,6 +511,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
         
     elif cfg.geometry == '500k':
         #Module
+
         for i in range( cfg.nmod*4 ):
             m = fit_result['mu'][mask.chip[i]]
             try:
@@ -635,48 +648,55 @@ def find_initial_parameters(x,y, thrange = (0,2200)):
     return par
 
 
+def _plot_scurve(data, x):
+    """
+    The purpouse of this plot is to verify that the scurve data is ok
+    """
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
+    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+        ax1.plot(x, data[p[0], p[1], :])
     
-def do_scurve(detector, xraybox, step = 40, mask = None, thrange = (0,2000)):
+    for c in mask.chip:
+        ax2.plot(x, data[c].sum(axis = 0).sum(axis = 0))
+        
+    ax1.set_xlabel('vcmp [1]')
+    ax1.set_ylabel('counts [1]')
+    ax1.set_title('Sample pixels')
+    ax2.set_xlabel('vcmp [1]')
+    ax2.set_ylabel('counts [1]')
+    ax2.set_title('Sum per chip')    
+    
+    
+    fig.suptitle('{:s} threshold scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
+    fig.tight_layout()
+    plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') ) )
+    
+def do_scurve(detector, xraybox,
+              start = 0, 
+              stop = 2001,
+              step = 40,):
     """
     Take scurve data for calibration. When not using the Xray box pass a 
     dummy xray box to the function and make sure that shutter is open and 
     target is correct!
     """
-    
-    base = cfg.det_id + '_vcmp_'
-    
-    xraybox.target( cfg.calibration.target ) 
-    xraybox.shutter(True) 
-    
-    detector.scan_dac(thrange[0],thrange[1],step,
-               dac = 'vthreshold',
-               fname = base + cfg.calibration.target + 'XRF',
-               run_id = cfg.calibration.run_id,
-               exptime = cfg.calibration.exptime,
-               vcp = True,
-               npz = True,
-               plot = cfg.calibration.plot)
-               
-    xraybox.shutter( False )
-    
-    #Load data and plot some pixel data
-    with np.load( cfg.path.data +'/'+ base +cfg.calibration.target + 'XRF'+'_'+str(cfg.calibration.run_id)+'.npz') as f:
-        data = f['data']
-        x = f['x']          
+        
+    with xrf_shutter_open(xraybox, cfg.calibration.target):
+        data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
 
     #plotting the result of the scurve scan
     if cfg.calibration.plot:
-        plt.figure()
-        for p in u.random_pixel(N = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
-            plt.plot(x, data[p[0], p[1], :])
-        plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') ) )
+        _plot_scurve(data, x)
    
+    #Save data
+    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
+    
     #if data should be used interactivly
     return data, x
     
-def do_scurve_fit(  mask = None, fname = None, thrange = (0,2000) ):
+def do_scurve_fit(mask = None, fname = None, thrange = (0,2000)):
     """
-    Per pixel scurve fit from saved data and save the result in an npy file
+    Per pixel scurve fit from saved data and save the result in an npz file
     """
     #Load the scurve data
     if type(fname) == type(None):

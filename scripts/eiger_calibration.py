@@ -30,8 +30,8 @@ sns.set_context('talk', font_scale = 1.2)
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
 from sls_detector import Detector
-from sls_detector_tools import XrayBox
-
+from sls_detector_tools import XrayBox, xrf_shutter_open
+from sls_detector_tools.plot import imshow
 
 #Current Eiger calibration plan
 """
@@ -78,8 +78,36 @@ box.HV( True )
 d = Detector()
 #calibration.setup_detector(d)
 ##
-##data, x = calibration._vrf_scan(d)
+#with xrf_shutter_open(box, cfg.calibration.target):
+#    data, x = calibration._vrf_scan(d)
+
+#np.savez('/home/l_frojdh/data/sample_th_scan.npz', data = data, x = x)
+
+#with np.load('/home/l_frojdh/data/sample_vrf_scan.npz') as f:
+#    data = f['data']
+#    x = f['x']
+#data = calibration._clean_vrf_data(data)
+#vrf = calibration._fit_and_plot_vrf_data(data, x, d.hostname)
+
 #vrf = calibration.do_vrf_scan(d, box)
+cfg.calibration.exptime = 1
+#with xrf_shutter_open(box, cfg.calibration.target):
+#    data, x = calibration._threshold_scan(d)
+
+#with np.load('/home/l_frojdh/data/sample_th_scan.npz') as f:
+#    data = f['data']
+#    x = f['x']
+
+#data, x = calibration.do_scurve(d, box)
+fit_result = calibration.do_scurve_fit()
+#Two pass algorithm find bad pixels and masks them
+
+
+
+
+#for i in range(data.shape[2]):
+#    data[:,:,i][data[:,:,i]>500] = 0
+#plt.plot(x, data.sum(axis = 0).sum(axis = 0))
 #cfg.calibration.threshold = 1200
 #vrf = calibration.do_vrf_scan(d, box, start = 2500, stop = 3950, step = 30)
 #d.set_dac('0:vrf', vrf[0]) 

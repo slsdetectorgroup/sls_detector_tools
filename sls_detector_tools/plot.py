@@ -17,9 +17,9 @@ import seaborn as sns
 
 
 #sls_detector imports
-from sls_detector_tools import mask
-#from sls_detector import config as cfg
-from sls_detector_tools import utils
+from . import mask
+from . import config as cfg
+from . import utils
 #from sls_detector import function
 
 

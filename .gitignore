@@ -1,2 +1,4 @@
 __
 *.pyc
+*.so
+build

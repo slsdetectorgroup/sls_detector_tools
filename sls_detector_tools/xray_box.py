@@ -14,6 +14,18 @@ logger = logging.getLogger()
 import re
 
 from contextlib import contextmanager
+
+@contextmanager
+def xrf_shutter_open(box, target):
+    box.target(target)
+    box.shutter(True)
+    print('open')
+    yield
+    box.shutter(False)
+    print('close')
+    
+    
+    
 class DummyBox:
     """
     Dummy version of the XrayBox. Can be used for testing or when using 
@@ -25,13 +37,6 @@ class DummyBox:
         self.mA = 0
         logger.info('Xray box initialized')
         
-    @contextmanager
-    def shutter_open(self):
-        print('OPEN')
-        yield
-        print('CLOSE')
-
- 
     
     def target(self, t):
         """
@@ -183,10 +188,43 @@ class XrayBox():
 #        logger.info('Current is %f mA', mA)
 #        return mA
 
+
+    @property 
+    def voltage(self):
+        """
+        High voltage of the X-ray tube in kV
+        
+        ::
+            
+            xray_box.voltge = 60
+            
+            xray_box.voltage
+            >> 60.0
+            
+        """
+        out = self._call([self.box, 'getv'])
+        a = re.search('(?<=:)\w+', out[3].decode())
+        kV = float(a.group())/1e3
+        logger.info('Voltage is %f kV', kV)
+        return kV
+    
+    @voltage.setter
+    def voltage(self, kV):
+        logger.info('Setting HV to %f kV', kV)
+        self._call([self.box, 'setv', str( kV )])
+
     @property
     def current(self):
         """
         Tube current in mA
+        
+        ::
+            
+            xray_box.current = 40
+            
+            xray_box.current
+            >> 40.0
+        
         """
         out = self._call([self.box, 'getc'])
         a = re.search('(?<=:)\w+', out[3].decode())
