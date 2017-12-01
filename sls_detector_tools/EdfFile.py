@@ -23,6 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
+# Light modifications by Erik Frojdh, PSI
 # ############################################################################*/
 __author__ = "Alexandre Gobbo, V.A. Sole - ESRF Data Analysis"
 __contact__ = "sole@esrf.fr"
@@ -719,6 +720,15 @@ class EdfFile(object):
             ret[i] = self.Images[Index].Header[i]
         return ret
 
+    def PrintHeader(self, Index):
+        """
+        Print header
+        """
+        h = self.GetHeader(0)
+        print('\nEDF Frame Header\n--------------------------------------\n{: <30}{: <10}'.format('NAME', 'VALUE'))
+        for item in h:
+            print('{: <30}{: <10}'.format(item, h[item]))
+
     def GetStaticHeader(self, Index):
         """ Returns dictionary with static parameters
             Data format and file position dependent information
@@ -732,6 +742,16 @@ class EdfFile(object):
         for i in self.Images[Index].StaticHeader.keys():
             ret[i] = self.Images[Index].StaticHeader[i]
         return ret
+    
+    def PrintStaticHeader(self, Index):
+        """
+        Print header
+        """
+        h = self.GetStaticHeader(0)
+        print('EDF Static Header\n--------------------------------------\n{: <30}{: <10}'.format('NAME', 'VALUE'))
+        for item in h:
+            print('{: <30}{: <10}'.format(item, h[item]))
+
 
     def WriteImage(self, *var, **kw):
         try:
