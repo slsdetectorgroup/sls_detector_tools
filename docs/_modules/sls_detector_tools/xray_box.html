@@ -170,11 +170,26 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
-<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+<span class="c1">#from subprocess import Popen, PIPE, run</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+    <span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;open&#39;</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">box</span><span class="o">.</span><span class="n">close_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;close&#39;</span><span class="p">)</span>
+    
+    
+    
 <span class="k">class</span> <span class="nc">DummyBox</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dummy version of the XrayBox. Can be used for testing or when using </span>
@@ -186,13 +201,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mA</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Xray box initialized&#39;</span><span class="p">)</span>
         
-    <span class="nd">@contextmanager</span>
-    <span class="k">def</span> <span class="nf">shutter_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;OPEN&#39;</span><span class="p">)</span>
-        <span class="k">yield</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;CLOSE&#39;</span><span class="p">)</span>
-
- 
     
     <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -242,135 +250,286 @@
 <span class="sd">    Wrapper around the xrayClient64, uses the executable from afs, make sure</span>
 <span class="sd">    that you have access. Supports logging of commands using the python logger.</span>
 <span class="sd">    </span>
-<span class="sd">    TODO! Inspect return values to look for errors</span>
+<span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    -----------</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">       from sls_detector_tools import XrayBox</span>
+<span class="sd">       box = XrayBox()</span>
+<span class="sd">       box.unlock()</span>
+<span class="sd">       </span>
+<span class="sd">       box.current = 40</span>
+<span class="sd">       box.voltage = 30</span>
+<span class="sd">       box.target = &#39;Cu&#39;</span>
+<span class="sd">       </span>
+<span class="sd">       box.voltage</span>
+<span class="sd">       &gt;&gt; 30.0</span>
+<span class="sd">       box.current</span>
+<span class="sd">       &gt;&gt; 40.0</span>
+<span class="sd">       </span>
+<span class="sd">       #For setting target open and close shutter we have a context manager</span>
+<span class="sd">       from sls_detector_tools import xrf_shutter_open</span>
+<span class="sd">       </span>
+<span class="sd">       with xrf_shutter_open(box, &#39;Cu&#39;):</span>
+<span class="sd">           #do your measurement</span>
+<span class="sd">           #shutter is closed when exiting</span>
+<span class="sd">           #this block</span>
 <span class="sd">    </span>
 <span class="sd">    .. note:: </span>
-<span class="sd">        Requires access to afs </span>
+<span class="sd">        Requires access to afs, make sure that you klog or (kinit+aklog)</span>
+<span class="sd">        before starting measurement</span>
+<span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">_shutter_name_to_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="s1">&#39;Direct beam&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+    <span class="n">_shutter_index_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;XRF&#39;</span><span class="p">,</span>
+                              <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;Direct beam&#39;</span><span class="p">}</span>    
+    
+    <span class="n">_xrayClient</span> <span class="o">=</span> <span class="s1">&#39;/afs/psi.ch/project/sls_det_software/bin/xrayClient64&#39;</span>
+    
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="s1">&#39;/afs/psi.ch/project/sls_det_software/bin/xrayClient64&#39;</span>
         <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;XrayBox&#39;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Class instace initialized&#39;</span><span class="p">)</span>
         
-
-            
-    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        
+    <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Default function to handle command line calls</span>
 <span class="sd">        Waits for process to return then returns the output</span>
-<span class="sd">        as a list</span>
+<span class="sd">        as a list using a CompletedProcess object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>            
-        <span class="k">return</span> <span class="n">out</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xrayClient</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>   
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
-   
-<div class="viewcode-block" id="XrayBox.HV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.HV">[docs]</a>    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Switch on the high voltage is True otherwise switch off</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value: bool</span>
-<span class="sd">            True for on, False for off</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching on HV&#39;</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching off HV&#39;</span><span class="p">)</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">])</span></div>
 
-            
-<div class="viewcode-block" id="XrayBox.set_kV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.set_kV">[docs]</a>    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">kV</span> <span class="p">):</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the kV of the tube</span>
-<span class="sd"> </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        kV: int</span>
-<span class="sd">            Voltage of the tube in kV       </span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">%f</span><span class="s1"> kV&#39;</span><span class="p">,</span> <span class="n">kV</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;setv&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span> <span class="n">kV</span> <span class="p">)])</span>
-        <span class="k">return</span> <span class="n">out</span></div>
-        
-<div class="viewcode-block" id="XrayBox.get_kV"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.get_kV">[docs]</a>    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Read the tube voltage</span>
+<span class="sd">        Check or switch on/off the high voltage of the xray tube.</span>
+
 <span class="sd">        </span>
-<span class="sd">        Returns</span>
+<span class="sd">        Examples</span>
 <span class="sd">        ----------</span>
-<span class="sd">        kV: int</span>
-<span class="sd">            Voltage of the tube in kV</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            box.HV</span>
+<span class="sd">            &gt;&gt; True</span>
+<span class="sd">        </span>
+<span class="sd">            box.HV = False</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kV</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getHV&#39;</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Yes&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">==</span><span class="s1">&#39;No&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Could not see if HV is on&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+   
+    <span class="nd">@HV</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span> <span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching on HV&#39;</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;on&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching off HV&#39;</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;HV&#39;</span><span class="p">,</span> <span class="s1">&#39;off&#39;</span><span class="p">)</span>
 
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;getv&#39;</span><span class="p">])</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">kV</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">1e3</span>
-        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-            
-        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;XrayBox: Voltage &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">kV</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; kV&#39;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Voltage is </span><span class="si">%f</span><span class="s1"> kV&#39;</span><span class="p">,</span> <span class="n">kV</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">kV</span></div>
-
-        
-<div class="viewcode-block" id="XrayBox.set_mA"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.set_mA">[docs]</a>    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">mA</span> <span class="p">):</span>
+<span class="c1">#            </span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">safe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set the tube current in mA</span>
+<span class="sd">        Check if it is safe to open the door.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        value: bool</span>
+<span class="sd">            :py:obj:`True` if it is safe and otherwise :py:obj:`False`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting current to: </span><span class="si">%f</span><span class="s1"> mA&#39;</span><span class="p">,</span> <span class="n">mA</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;setc&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span> <span class="n">mA</span> <span class="p">)])</span></div>
-
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;issafe&#39;</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;[^:]+[!]&#39;</span><span class="p">,</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
         
-<div class="viewcode-block" id="XrayBox.get_mA"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.get_mA">[docs]</a>    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Yes, You may open the door now!&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
 
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;getc&#39;</span><span class="p">])</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">mA</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="mf">1e3</span>
-        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-            <span class="n">mA</span> <span class="o">=</span> <span class="kc">False</span>
-            
-        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;XrayBox: Current &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">mA</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; mA&#39;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current is </span><span class="si">%f</span><span class="s1"> mA&#39;</span><span class="p">,</span> <span class="n">mA</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">mA</span></div>
-        
-<div class="viewcode-block" id="XrayBox.shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.shutter">[docs]</a>    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sh</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">warmup_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Open the shutter th if value is True otherwise close shutter sh</span>
+<span class="sd">        Read the warmuptime left, returns 0 if warmup not in progress</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getwtime&#39;</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+
+    <span class="nd">@property</span> 
+    <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        High voltage of the X-ray tube in kV</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            xray_box.voltge = 60</span>
+<span class="sd">            </span>
+<span class="sd">            xray_box.voltage</span>
+<span class="sd">            &gt;&gt; 60.0</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getActualV&#39;</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="n">kV</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span><span class="o">/</span><span class="mf">1e3</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Voltage is </span><span class="si">%f</span><span class="s1"> kV&#39;</span><span class="p">,</span> <span class="n">kV</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kV</span>
+    
+    <span class="nd">@voltage</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kV</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">%f</span><span class="s1"> kV&#39;</span><span class="p">,</span> <span class="n">kV</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;setv&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">kV</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tube current in mA</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            xray_box.current = 40</span>
+<span class="sd">            </span>
+<span class="sd">            xray_box.current</span>
+<span class="sd">            &gt;&gt; 40.0</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getActualC&#39;</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        <span class="n">mA</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span><span class="o">/</span><span class="mf">1e3</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current is </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">mA</span>
+    
+    <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mA</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting current to: </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span> <span class="s1">&#39;setc&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>  
+
+        
+
+    <span class="k">def</span> <span class="nf">_set_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal function to open and close shutter. For scripting</span>
+<span class="sd">        use open_shutter() and close_shutter()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sh_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter_name_to_index</span><span class="p">[</span><span class="n">sh</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Shutter name not recognised&#39;</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh_index</span><span class="p">),</span> <span class="n">status</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Shutter </span><span class="si">{:s}</span><span class="s1">: </span><span class="si">{:s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+            
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sh_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter_index_to_name</span><span class="p">[</span><span class="n">sh</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Shutter index not found&#39;</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh</span><span class="p">),</span> <span class="n">status</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Shutter </span><span class="si">{:s}</span><span class="s1">: </span><span class="si">{:s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh_name</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>   
+
+<div class="viewcode-block" id="XrayBox.open_shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.open_shutter">[docs]</a>    <span class="k">def</span> <span class="nf">open_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open shutter</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value: bool</span>
-<span class="sd">            True for on, False for off</span>
-<span class="sd">        sh: int, optional</span>
-<span class="sd">            1 for XRF, 3 for direct beam</span>
-<span class="sd">    </span>
+<span class="sd">        -----------</span>
+<span class="sd">        sh: :py:obj:`int` or :py:obj:`str` </span>
+<span class="sd">            Shutter to open</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            box.open_shutter(&#39;XRF&#39;)</span>
+<span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">sh</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">shutter_type</span> <span class="o">=</span> <span class="s1">&#39;XRF&#39;</span>
-        <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
-            <span class="n">shutter_type</span> <span class="o">=</span> <span class="s1">&#39;Direct beam&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid shutter index, needs to be 1 for XRF or 3 for direct beam&#39;</span><span class="p">)</span>
-            
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh</span><span class="p">),</span> <span class="s1">&#39;on&#39;</span><span class="p">])</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Opening shutter for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">shutter_type</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh</span><span class="p">),</span> <span class="s1">&#39;off&#39;</span><span class="p">])</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Closing shutter for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">shutter_type</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;on&#39;</span><span class="p">)</span>        </div>
+        
+<div class="viewcode-block" id="XrayBox.close_shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.close_shutter">[docs]</a>    <span class="k">def</span> <span class="nf">close_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close shutter</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        sh: :py:obj:`int` or :py:obj:`str` </span>
+<span class="sd">            Shutter to close</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            box.close_shutter(&#39;XRF&#39;)</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="XrayBox.target"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.target">[docs]</a>    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span> <span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shutter_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check status of shutters and return dictionary</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            box.shutter_status</span>
+<span class="sd">            &gt;&gt; {&#39;Direct beam&#39;: &#39;OFF&#39;, &#39;XRF&#39;: &#39;OFF&#39;}</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getshutter</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> 
+            <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Shutter )\d:\S+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+            <span class="n">j</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">sh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter_index_to_name</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">j</span><span class="p">)]</span>
+            <span class="n">status</span><span class="p">[</span><span class="n">sh</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+      
+        <span class="k">return</span> <span class="n">status</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fluorescence target</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        </span>
+<span class="sd">        ::</span>
+<span class="sd">            </span>
+<span class="sd">            box.target = &#39;Fe&#39;</span>
+<span class="sd">            </span>
+<span class="sd">            box.target</span>
+<span class="sd">            &gt;&gt; &#39;Fe&#39;</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getfl&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Fl is )\w\S+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
+
+               
+    <span class="nd">@target</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span> <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the target of the xray box</span>
 
 <span class="sd">        Parameters</span>
@@ -387,23 +546,25 @@
         <span class="k">if</span> <span class="n">target_name</span> <span class="o">==</span> <span class="s1">&#39;Zr&#39;</span><span class="p">:</span>
             <span class="n">target_name</span> <span class="o">=</span> <span class="s1">&#39;Empty&#39;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching to </span><span class="si">%s</span><span class="s1"> target&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;movefl&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">])</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;movefl&#39;</span><span class="p">,</span> <span class="n">target_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="n">t_set</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+        <span class="n">t_set</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=to )\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">t_set</span> <span class="o">!=</span> <span class="n">target_name</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Target not found&#39;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Target not found!&#39;</span><span class="p">)</span> 
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Target set to: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">t_set</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">t_set</span></div>
+<span class="c1">#        return t_set</span>
               
 <div class="viewcode-block" id="XrayBox.unlock"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unlock the control from another user</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Unlocking Xray box from other users&#39;</span><span class="p">)</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;unlock&#39;</span><span class="p">])</span></div></div>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span> <span class="s1">&#39;unlock&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div></div>
 
         
 </pre></div>

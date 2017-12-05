@@ -176,7 +176,7 @@ _calibrate_vrf.py</strong></p>
 </div>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.do_scurve">
-<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>step=40</em>, <em>mask=None</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>start=0</em>, <em>stop=2001</em>, <em>step=40</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take scurve data for calibration. When not using the Xray box pass a
 dummy xray box to the function and make sure that shutter is open and
 target is correct!</p>
@@ -185,7 +185,7 @@ target is correct!</p>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.do_scurve_fit">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve_fit</code><span class="sig-paren">(</span><em>mask=None</em>, <em>fname=None</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve_fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Per pixel scurve fit from saved data and save the result in an npy file</p>
+<dd><p>Per pixel scurve fit from saved data and save the result in an npz file</p>
 </dd></dl>
 
 <dl class="function">
@@ -497,6 +497,20 @@ Settings that are applied are taken from the config file:</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="sls_detector_tools.calibration.setup_measurement">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">setup_measurement</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#setup_measurement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.setup_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contexmanger that is used in many of the tests. Sets up the detector
+and returns a receiver which can be used to get images from the receiver
+zmq stream.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Full Speed&#39;</span>
+<span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+    <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="sls_detector_tools.calibration.take_global_calibration_data">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">take_global_calibration_data</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#take_global_calibration_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.take_global_calibration_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -559,11 +573,6 @@ Settings that are applied are taken from the config file:</p>
 <dl class="attribute">
 <dt id="sls_detector_tools.config.calibration.clean_threshold">
 <code class="descname">clean_threshold</code><em class="property"> = 500</em><a class="headerlink" href="#sls_detector_tools.config.calibration.clean_threshold" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="sls_detector_tools.config.calibration.clkdivider">
-<code class="descname">clkdivider</code><em class="property"> = 2</em><a class="headerlink" href="#sls_detector_tools.config.calibration.clkdivider" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -639,6 +648,11 @@ Settings that are applied are taken from the config file:</p>
 <dl class="attribute">
 <dt id="sls_detector_tools.config.calibration.run_id_untrimmed">
 <code class="descname">run_id_untrimmed</code><em class="property"> = 0</em><a class="headerlink" href="#sls_detector_tools.config.calibration.run_id_untrimmed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.config.calibration.speed">
+<code class="descname">speed</code><em class="property"> = 'Quarter Speed'</em><a class="headerlink" href="#sls_detector_tools.config.calibration.speed" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1001,6 +1015,10 @@ json - end of acq</p>
 <dt id="sls_detector_tools.receiver.ZmqReceiver.get_frame">
 <code class="descname">get_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.receiver.ZmqReceiver.get_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read one frame from the streams</p>
+<div class="admonition-todo admonition" id="index-3">
+<p class="first admonition-title">Todo</p>
+<p class="last">4 bit mode</p>
+</div>
 </dd></dl>
 
 </dd></dl>

@@ -25,6 +25,8 @@ def get_dtype(dr):
         return np.int16
     elif dr == 8:
         return np.uint8
+    elif dr == 4:
+        return np.uint8
     else:
         raise TypeError('dtype: {:d} not supported'.format(dr))
 

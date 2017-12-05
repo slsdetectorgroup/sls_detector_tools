@@ -212,17 +212,33 @@
 <div class="viewcode-block" id="ZmqReceiver.get_frame"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.ZmqReceiver.get_frame">[docs]</a>    <span class="k">def</span> <span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read one frame from the streams</span>
+<span class="sd">        </span>
+<span class="sd">        .. todo::</span>
+<span class="sd">            </span>
+<span class="sd">            4 bit mode</span>
+<span class="sd">            </span>
+<span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">):</span>
             <span class="n">header</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span> <span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span> <span class="p">)</span>
-            <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;bitmode&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">header</span><span class="p">[</span><span class="s1">&#39;bitmode&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;4bit&#39;</span><span class="p">)</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="n">tmp2</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
+                <span class="n">tmp2</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
+                <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>
+<span class="c1">#                image[p][1::2] = np.bitwise_and(tmp &gt;&gt; 4, 0x0f)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;bitmode&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>
         
         <span class="c1">#flip bottom</span>
         <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="mi">255</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
         <span class="k">return</span> <span class="n">image</span></div></div>
+<span class="c1">#        return data</span>
             
 </pre></div>
 

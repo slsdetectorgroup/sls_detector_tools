@@ -326,7 +326,7 @@ def counter(detector, clk = 'Full Speed'):
 
     
 
-def overflow(name, d, clk = 1):
+def overflow(detector, clk = 'Half Speed'):
     """
     Overflow test using analog pulses
     
@@ -336,68 +336,66 @@ def overflow(name, d, clk = 1):
     bad_pixels = np.zeros((512,1024), dtype = np.bool)       
     
     #Output setup
-    out = cfg.path.out
-    path = os.path.join( cfg.path.test,name )
-    tmp_fname = 'test'
-    d.set_fname( tmp_fname )
-    d.set_fwrite( True )
-    d.set_clkdivider(clk)
-    d.set_dr( 16 )
-    d.set_exptime( 0.01 )       
+#    out = cfg.path.out
+#    path = os.path.join( cfg.path.test,name )
+#    tmp_fname = 'test'
+#    d.set_fname( tmp_fname )
+#    d.set_fwrite( True )
+#    d.set_clkdivider(clk)
+#    d.set_dr( 16 )
+#    d.set_exptime( 0.01 )       
     
     
-    
-    #Get dacs
-    dacs = d.dacs.get_asarray()
-    d.set_all_trimbits(63)
-    d.dacs['vtr'] = 2600
-    d.dacs['vrf'] = 2900
-    d.dacs['vcall'] = 3600
-    d.set_threshold(1500)    
+    with setup_test_and_receiver(detector, clk) as receiver:
+        detector.trimbits = 63
+        detector.dacs.vtr = 2600
+        detector.dacs.vrf = 2900
+        detector.dacs.vcall = 3600
+        detector.vthreshold = 1500
+        detector.eiger_matrix_reset = False
 
-    print( d.dacs )
+        print(detector.dacs)
     
-    # 4 bit mode 
-    t0 = time.time()  
-    d.set_index(0)
-    d.set_dr(4)
-    d.pulse_all(N = 20)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0)
-    print( '4 bit test found', (data != 15).sum() , 'bad pixels in', time.time()-t0, 's' )
-    bad_pixels[data != 15] = True
-    
-    # 8 bit mode
-    t0 = time.time()   
-    d.set_index(0)
-    d.set_dr(8)
-    d.pulse_all(N = 260)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0)
-    print( '8 bit test found', (data != 255).sum() , 'bad pixels in', time.time()-t0, 's')
-    bad_pixels[data != 255] = True
-    
-    # 12 bit mode
-    t0 = time.time()   
-    d.set_index(0)
-    d.set_dr(16)
-    d.pulse_all(N = 4100)
-    d.acq()
-    data = load_frame(os.path.join(out, tmp_fname), 0)
-    print( '16 bit test found', (data != 4095).sum() , 'bad pixels in', time.time()-t0, 's')
-    bad_pixels[data != 4095] = True
-    
+        # 4 bit mode 
+        t0 = time.time()  
+        detector.dynamic_range = 4
+        detector.pulse_all_pixels(20)
+        detector.acq()
+        data = receiver.get_frame()
+        
+        print( '4 bit test found', (data != 15).sum() , 'bad pixels in', time.time()-t0, 's' )
+        bad_pixels[data != 15] = True
+
+#        
+##        8 bit mode
+#        t0 = time.time()   
+#        detector.dynamic_range = 8
+#        detector.pulse_all_pixels(260)
+#        detector.acq()
+#        data = receiver.get_frame()
+#        print( '8 bit test found', (data != 255).sum() , 'bad pixels in', time.time()-t0, 's')
+#        bad_pixels[data != 255] = True
+#    
+#        # 12 bit mode
+#        t0 = time.time()   
+#        detector.dynamic_range = 16
+#        detector.pulse_all_pixels(4100)
+#        detector.acq()
+#        data = receiver.get_frame()
+#        print( '16 bit test found', (data != 4095).sum() , 'bad pixels in', time.time()-t0, 's')
+#        bad_pixels[data != 4095] = True
 
     #Output
+    path = os.path.join(cfg.path.test, cfg.det_id)
     tmp = np.where(bad_pixels == True)
-    fname = os.path.join(path, name+'_overflow_'+str(clk)+'.txt')
-    save_txt(fname, ['row', 'col'], tmp)
+    n = detector._speed_int[ detector.readout_clock ]
+    pathname = os.path.join(path, '{:s}_overflow_{:d}.txt'.format(cfg.det_id,n))
+    save_txt(pathname, ['row', 'col'], tmp)
     
     return bad_pixels
     
 
 def tp_scurve( name, d, clk = 1 ):
-
 
     #Output setup
     out = d.config.get('Python', 'sls_data_path')

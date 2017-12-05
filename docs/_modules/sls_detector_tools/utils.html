@@ -188,6 +188,8 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">int16</span>
     <span class="k">elif</span> <span class="n">dr</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
+    <span class="k">elif</span> <span class="n">dr</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;dtype: </span><span class="si">{:d}</span><span class="s1"> not supported&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span></div>
 

@@ -49,15 +49,31 @@ class ZmqReceiver:
     def get_frame(self):
         """
         Read one frame from the streams
+        
+        .. todo::
+            
+            4 bit mode
+            
+            
         """
         image = np.zeros((512,1024))
         for p,s in zip(self.mask.port, self.sockets):
             header = json.loads( s.recv() )
             data = s.recv()
             end = json.loads( s.recv() )
-            image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
+            if header['bitmode'] == 4:
+                print('4bit')
+                tmp = np.frombuffer(data, dtype=np.uint8)
+                tmp2 = np.zeros(tmp.size*2, dtype = tmp.dtype)
+                tmp2[0::2] = np.bitwise_and(tmp, 0x0f)
+                tmp2[1::2] = np.bitwise_and(tmp >> 4, 0x0f)
+                image[p] = tmp2.reshape(256,512)
+#                image[p][1::2] = np.bitwise_and(tmp >> 4, 0x0f)
+            else:
+                image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
         
         #flip bottom
         image[0:256,:] = image[255::-1,:]
         return image
+#        return data
             

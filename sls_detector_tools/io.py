@@ -238,7 +238,7 @@ def load_file(fname, header, N = 1):
         else:
             #Reading more than one frame from the file
             image = np.zeros((256,512, N), dtype = dt)
-            for i in xrange(N):        
+            for i in range(N):        
                 image[:,:,i] = read_frame(f, dr)
     return image
 

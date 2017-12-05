@@ -510,8 +510,6 @@ def find_mean_and_set_vcmp(detector, fit_result):
         detector.set_dac('0:vcp', vcp0)
         
     elif cfg.geometry == '500k':
-        #Module
-
         for i in range( cfg.nmod*4 ):
             m = fit_result['mu'][mask.chip[i]]
             try:
