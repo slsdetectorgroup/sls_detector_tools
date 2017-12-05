@@ -96,6 +96,7 @@
 <li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -180,12 +181,26 @@ _calibrate_vrf.py</strong></p>
 <dd><p>Take scurve data for calibration. When not using the Xray box pass a
 dummy xray box to the function and make sure that shutter is open and
 target is correct!</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/scurve.png" src="_images/scurve.png" />
 </dd></dl>
 
 <dl class="function">
 <dt id="sls_detector_tools.calibration.do_scurve_fit">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve_fit</code><span class="sig-paren">(</span><em>mask=None</em>, <em>fname=None</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve_fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Per pixel scurve fit from saved data and save the result in an npz file</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Move to scaled fits?</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve_fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/fit_scurve.png" src="_images/fit_scurve.png" />
 </dd></dl>
 
 <dl class="function">
@@ -206,7 +221,7 @@ performa a trimbit scan</p>
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_vrf_scan</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>pixelmask=None</em>, <em>start=1500</em>, <em>stop=3800</em>, <em>step=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_vrf_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_vrf_scan" title="Permalink to this definition">¶</a></dt>
 <dd><p>Does a vrf scan and fits the differential of the scurve for each halfmodule
 in the detector system.</p>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">Check the multi module system support</p>
 </div>
@@ -224,14 +239,20 @@ in the detector system.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>vrf</strong> – list of vrf values for each half module</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>vrf</strong> (<em>list</em>) – list of vrf values for each half module</li>
+<li><strong>t</strong> (<em>float</em>) – Suggested exposure time for the scurve</li>
+</ul>
+</p>
 </td>
 </tr>
 </tbody>
 </table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">vrf</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_vrf_scan</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/vrf_scan.png" src="_images/vrf_scan.png" />
 </dd></dl>
 
 <dl class="function">
@@ -275,7 +296,7 @@ with the range</li>
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_mean_and_set_vcmp</code><span class="sig-paren">(</span><em>detector</em>, <em>fit_result</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_mean_and_set_vcmp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_mean_and_set_vcmp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the mean value of the inflection point per chip and set the <strong>Vcmp</strong>
 of that chip to the right value</p>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Merge to one code for all geomtetries</p>
 </div>
@@ -1015,7 +1036,7 @@ json - end of acq</p>
 <dt id="sls_detector_tools.receiver.ZmqReceiver.get_frame">
 <code class="descname">get_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.receiver.ZmqReceiver.get_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read one frame from the streams</p>
-<div class="admonition-todo admonition" id="index-3">
+<div class="admonition-todo admonition" id="index-4">
 <p class="first admonition-title">Todo</p>
 <p class="last">4 bit mode</p>
 </div>

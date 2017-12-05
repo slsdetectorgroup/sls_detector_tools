@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -599,6 +600,19 @@
 <span class="sd">    -------</span>
 <span class="sd">    vrf: list</span>
 <span class="sd">        list of vrf values for each half module</span>
+<span class="sd">    t: float</span>
+<span class="sd">        Suggested exposure time for the scurve</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        vrf, t = calibration.do_vrf_scan(d, box)</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: _static/vrf_scan.png</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>   
@@ -618,8 +632,11 @@
     <span class="n">vrf</span> <span class="o">=</span> <span class="n">_fit_and_plot_vrf_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">hostname</span><span class="p">)</span>
     
     <span class="c1">#Save vrf?</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="o">*</span><span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">vrf_scan_exptime</span><span class="p">)</span><span class="o">/</span><span class="nb">min</span><span class="p">([</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">vrf</span><span class="p">[</span><span class="n">i</span><span class="p">]))]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Suggested exptime: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
     
-    <span class="k">return</span> <span class="n">vrf</span>  </div>
+
+    <span class="k">return</span> <span class="n">vrf</span><span class="p">,</span> <span class="n">t</span>  </div>
     
 
 <div class="viewcode-block" id="find_mean_and_set_vcmp"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_mean_and_set_vcmp">[docs]</a><span class="k">def</span> <span class="nf">find_mean_and_set_vcmp</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">fit_result</span><span class="p">):</span>
@@ -840,6 +857,19 @@
 <span class="sd">    Take scurve data for calibration. When not using the Xray box pass a </span>
 <span class="sd">    dummy xray box to the function and make sure that shutter is open and </span>
 <span class="sd">    target is correct!</span>
+<span class="sd">    </span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        data, x = calibration.do_scurve(d, box)</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: _static/scurve.png    </span>
+<span class="sd">    </span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
         
     <span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">xraybox</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">target</span><span class="p">):</span>
@@ -858,6 +888,21 @@
 <div class="viewcode-block" id="do_scurve_fit"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.do_scurve_fit">[docs]</a><span class="k">def</span> <span class="nf">do_scurve_fit</span><span class="p">(</span><span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fname</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">thrange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2000</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Per pixel scurve fit from saved data and save the result in an npz file</span>
+
+<span class="sd">    .. todo ::</span>
+<span class="sd">        </span>
+<span class="sd">        Move to scaled fits?</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        fit_result = calibration.do_scurve_fit()</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: _static/fit_scurve.png   </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Load the scurve data</span>
     <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
