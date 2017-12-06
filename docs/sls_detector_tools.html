@@ -212,8 +212,14 @@ target is correct!</p>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.do_trimbit_scan">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_trimbit_scan</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>step=2</em>, <em>data_mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_trimbit_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_trimbit_scan" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fuction to setup the detector with correct Vcmp and Vcp and then
+<dd><p>Setup the detector and then scan trough the trimbits. Normally with
+step of 2
 performa a trimbit scan</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_trimbit_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">xraybox</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tb_scan.png" src="_images/tb_scan.png" />
 </dd></dl>
 
 <dl class="function">
@@ -258,7 +264,13 @@ in the detector system.</p>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.find_and_write_trimbits">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits</code><span class="sig-paren">(</span><em>detector</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><blockquote>
+<div>Examples</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">find_and_write_trimbits</span><span class="p">(</span><span class="n">decector</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/trimbit_map.png" src="_images/trimbit_map.png" />
+</dd></dl>
 
 <dl class="function">
 <dt id="sls_detector_tools.calibration.find_and_write_trimbits_scaled">
@@ -480,10 +492,16 @@ loads trimbits for all modules based on their id.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="sls_detector_tools.calibration.load_trim">
-<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">load_trim</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#load_trim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.load_trim" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.calibration.load_trimbits">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">load_trimbits</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#load_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.load_trimbits" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load trimbits for the current calibration settings. Defined in
 config.py</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">load_trimbits</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">Settings</span> <span class="n">file</span> <span class="n">loaded</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">disk1</span><span class="o">/</span><span class="n">calibration</span><span class="o">/</span><span class="n">T63</span><span class="o">/</span><span class="n">gain5</span><span class="o">/</span><span class="n">T63_CuXRF_gain5</span><span class="o">.</span><span class="n">sn058</span>
+<span class="o">&gt;&gt;</span> <span class="n">Settings</span> <span class="n">file</span> <span class="n">loaded</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">disk1</span><span class="o">/</span><span class="n">calibration</span><span class="o">/</span><span class="n">T63</span><span class="o">/</span><span class="n">gain5</span><span class="o">/</span><span class="n">T63_CuXRF_gain5</span><span class="o">.</span><span class="n">sn059</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="function">
@@ -533,7 +551,7 @@ zmq stream.</p>
 
 <dl class="function">
 <dt id="sls_detector_tools.calibration.take_global_calibration_data">
-<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">take_global_calibration_data</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#take_global_calibration_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.take_global_calibration_data" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">take_global_calibration_data</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>start=0</em>, <em>stop=2001</em>, <em>step=40</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#take_global_calibration_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.take_global_calibration_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

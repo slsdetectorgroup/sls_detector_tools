@@ -856,12 +856,38 @@ def _trimbit_scan(detector, step = 2):
     
 
     return data, tb_array
-           
+
+def _plot_trimbit_scan(data,x):
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
+    ax1.plot(x, data.sum(axis = 0).sum(axis = 0))
+    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+        ax2.plot(x, data[p])
+        
+    ax1.set_xlabel('Trimbit [1]')
+    ax1.set_ylabel('Counts [1]')
+    ax1.set_title('Sum')
+    ax2.set_xlabel('Trimbit [1]')
+    ax2.set_ylabel('Counts [1]')
+    ax2.set_title('Sample pixels')
+    fig.suptitle('Trimbit scan')
+    fig.tight_layout()
+    return fig, ax1, ax2
     
 def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     """
-    Fuction to setup the detector with correct Vcmp and Vcp and then
+    Setup the detector and then scan trough the trimbits. Normally with 
+    step of 2
     performa a trimbit scan 
+    
+    Examples
+    ---------
+    
+    ::
+        
+        fit_result = calibration.do_trimbit_scan(detector, xraybox)
+        
+        
+    .. image:: _static/tb_scan.png  
     
     
     """
@@ -889,15 +915,30 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
              data = data, x = x)
     
+    
+    if cfg.calibration.plot is True:
+        fig, ax1, ax2 = _plot_trimbit_scan(data, x)
+        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') ) )
+    
     return data, x
 
 
  
 
-def load_trim( detector ):
+def load_trimbits(detector):
     """
     Load trimbits for the current calibration settings. Defined in 
     config.py 
+    
+    Examples
+    ----------
+    
+    ::
+    
+        calibration.load_trimbits(d)
+        >> Settings file loaded: /mnt/disk1/calibration/T63/gain5/T63_CuXRF_gain5.sn058
+        >> Settings file loaded: /mnt/disk1/calibration/T63/gain5/T63_CuXRF_gain5.sn059
+    
     """
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
@@ -945,7 +986,19 @@ def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
 
     
 def find_and_write_trimbits(detector, tau = None):
+    """
+        Examples
+    ---------
     
+    ::
+        
+        fit_result = calibration.find_and_write_trimbits(decector)
+        
+        
+    .. image:: _static/trimbit_map.png  
+    
+    
+    """
     #Get the correct filenames depending on configuration settings
     fit_fname = get_fit_fname()
     data_fname = get_tbdata_fname()

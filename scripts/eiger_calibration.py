@@ -75,20 +75,17 @@ box.HV =  True
 
 #--------------------------------------------Setup for taking calibration data
 d = Detector()
-#calibration.setup_detector(d)
+calibration.setup_detector(d)
+vrf, t = calibration.do_vrf_scan(d, box)
+d.dacs.vrf = vrf
+cfg.calibration.exptime = t
 
 
-#vrf, t = calibration.do_vrf_scan(d, box)
-#d.dacs.vrf = vrf
-cfg.calibration.exptime = 10
-
-
-#data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit()
-#fit_result = np.load(os.path.join(cfg.path.data, calibration.get_fit_fname()))
-#out = calibration.find_mean_and_set_vcmp(d, fit_result)
+data, x = calibration.do_scurve(d, box)
+fit_result = calibration.do_scurve_fit()
+out = calibration.find_mean_and_set_vcmp(d, fit_result)
 data, x = calibration.do_trimbit_scan(d, box)
-#calibration.find_and_write_trimbits(d, tau = 200)
+calibration.find_and_write_trimbits(d, tau = 200)
 #calibration.load_trim(d)
 #cfg.calibration.run_id = 1
 #data, x = calibration.do_scurve(d, box)
@@ -99,3 +96,10 @@ data, x = calibration.do_trimbit_scan(d, box)
 #cfg.top = d.hostname[0]
 #cfg.bottom = d.hostname[1]
 #calibration.generate_calibration_report()
+
+#with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
+#    data = f['data']
+#    x = f['x']
+#    
+#    
+#calibration._plot_trimbit_scan(data,x)
