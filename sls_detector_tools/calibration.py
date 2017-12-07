@@ -436,6 +436,19 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     -------
     vrf: list
         list of vrf values for each half module
+    t: float
+        Suggested exposure time for the scurve
+        
+        
+    Examples
+    ---------
+    
+    ::
+        
+        vrf, t = calibration.do_vrf_scan(d, box)
+        
+        
+    .. image:: _static/vrf_scan.png
         
         
     """   
@@ -455,8 +468,11 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
+    t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(2)])
+    print('Suggested exptime: {:.2f}'.format(t))
     
-    return vrf  
+
+    return vrf, t  
     
 
 def find_mean_and_set_vcmp(detector, fit_result):
@@ -495,7 +511,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
     
     """
     #Mean value for each chip to be used as threshold during scan    
-    mean = np.zeros( cfg.nmod*4 )
+    mean = np.zeros( cfg.nmod*4, dtype = np.int )
     
     #Find the mean values for both module and half module
     if cfg.geometry == 'quad':
@@ -510,21 +526,20 @@ def find_mean_and_set_vcmp(detector, fit_result):
         detector.set_dac('0:vcp', vcp0)
         
     elif cfg.geometry == '500k':
-        #Module
-
+        #OK for Python API
         for i in range( cfg.nmod*4 ):
             m = fit_result['mu'][mask.chip[i]]
             try:
                 th = int( m[(m>100) & (m<1900)].mean() )
             except:
                 th = 0
-            detector.set_dac(mask.vcmp[i], th)
             mean[i] = th
-    
+        
         vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
         vcp1 = int( mean[4:][mean[4:]>0].mean() )
-        detector.set_dac('0:vcp', vcp0)
-        detector.set_dac('1:vcp', vcp1)
+        detector.vcmp = mean
+        detector.dacs.vcp = [vcp0, vcp1]
+
         
     elif cfg.geometry == '2M':
         #Module stuff
@@ -679,6 +694,19 @@ def do_scurve(detector, xraybox,
     Take scurve data for calibration. When not using the Xray box pass a 
     dummy xray box to the function and make sure that shutter is open and 
     target is correct!
+    
+        
+    Examples
+    ---------
+    
+    ::
+        
+        data, x = calibration.do_scurve(d, box)
+        
+        
+    .. image:: _static/scurve.png    
+    
+    
     """
         
     with xrf_shutter_open(xraybox, cfg.calibration.target):
@@ -697,6 +725,21 @@ def do_scurve(detector, xraybox,
 def do_scurve_fit(mask = None, fname = None, thrange = (0,2000)):
     """
     Per pixel scurve fit from saved data and save the result in an npz file
+
+    .. todo ::
+        
+        Move to scaled fits?
+        
+    Examples
+    ---------
+    
+    ::
+        
+        fit_result = calibration.do_scurve_fit()
+        
+        
+    .. image:: _static/fit_scurve.png   
+
     """
     #Load the scurve data
     if type(fname) == type(None):
@@ -788,38 +831,63 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
     return fit_result
 
 
-def _take_trimbit_data(detector, xraybox, step = 2, data_mask = None):
+def _trimbit_scan(detector, step = 2):
     """
     Internal function to scan the trimbits and save the data
     can also be used when the detector is not directly controlled
     from the machine processing the data as in the case with the 9M
     """
 
-           
-    xraybox.target( cfg.calibration.target )
-    xraybox.shutter(True)
+
+    detector.exposure_time = cfg.calibration.exptime
+
+    tb_array = np.arange(0, 64, step)
+    print(tb_array)
     
-    fname = get_tbdata_fname().strip('_{:d}.npz'.format(cfg.calibration.run_id))
-    data = detector.trimbit_scan(
-                   fname = fname,
-                   exptime = cfg.calibration.exptime,
-                   plot = cfg.calibration.plot,
-                   npz = True,
-                   step = step,
-                   run_id = cfg.calibration.run_id, 
-                   data_mask = data_mask)
-                   
-    xraybox.shutter(False)
+    _s = detector.image_size
+    data = np.zeros((_s.rows, _s.cols, tb_array.size))
     
-    if cfg.calibration.plot:
-        pathname = os.path.join( cfg.path.data, 
-                                 get_tbdata_fname().strip('.npz') ) 
-        plt.savefig( pathname )    
+    with setup_measurement(detector) as receiver:
+        for i,v in enumerate(tb_array):
+            detector.trimbits = v
+            print(detector.trimbits)
+            detector.acq()
+            data[:,:,i] = receiver.get_frame()
+    
+
+    return data, tb_array
+
+def _plot_trimbit_scan(data,x):
+    fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
+    ax1.plot(x, data.sum(axis = 0).sum(axis = 0))
+    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+        ax2.plot(x, data[p])
+        
+    ax1.set_xlabel('Trimbit [1]')
+    ax1.set_ylabel('Counts [1]')
+    ax1.set_title('Sum')
+    ax2.set_xlabel('Trimbit [1]')
+    ax2.set_ylabel('Counts [1]')
+    ax2.set_title('Sample pixels')
+    fig.suptitle('Trimbit scan')
+    fig.tight_layout()
+    return fig, ax1, ax2
     
 def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     """
-    Fuction to setup the detector with correct Vcmp and Vcp and then
+    Setup the detector and then scan trough the trimbits. Normally with 
+    step of 2
     performa a trimbit scan 
+    
+    Examples
+    ---------
+    
+    ::
+        
+        fit_result = calibration.do_trimbit_scan(detector, xraybox)
+        
+        
+    .. image:: _static/tb_scan.png  
     
     
     """
@@ -839,39 +907,44 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     #Find the mean values for both module and half module
     find_mean_and_set_vcmp(detector, fit_result)
            
-    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)
+#    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)
+    with xrf_shutter_open(xraybox, cfg.calibration.target):
+        data, x = _trimbit_scan(detector)
     
     
-#    xraybox.target( cfg.calibration.target )
-#    xraybox.shutter(True)
-#    
-#    fname = get_tbdata_fname().strip('_{:d}.npz'.format(cfg.calibration.run_id))
-#    data = detector.trimbit_scan(
-#                   fname = fname,
-#                   exptime = cfg.calibration.exptime,
-#                   plot = True,
-#                   npz = True,
-#                   step = step,
-#                   run_id = cfg.calibration.run_id, 
-#                   data_mask = data_mask)
-#                   
-#    xraybox.shutter(False)
+    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
+             data = data, x = x)
+    
+    
+    if cfg.calibration.plot is True:
+        fig, ax1, ax2 = _plot_trimbit_scan(data, x)
+        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') ) )
+    
+    return data, x
+
 
  
 
-def load_trim( detector ):
+def load_trimbits(detector):
     """
     Load trimbits for the current calibration settings. Defined in 
     config.py 
+    
+    Examples
+    ----------
+    
+    ::
+    
+        calibration.load_trimbits(d)
+        >> Settings file loaded: /mnt/disk1/calibration/T63/gain5/T63_CuXRF_gain5.sn058
+        >> Settings file loaded: /mnt/disk1/calibration/T63/gain5/T63_CuXRF_gain5.sn059
+    
     """
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
-    detector.load_trim(pathname)
+    detector.load_trimbits(pathname)
 
 def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
-    
-
-    
     
     #Load trimbit scan    
     with np.load( tb_fname ) as f:
@@ -910,33 +983,22 @@ def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
     
     return tb, target, data,x, result
     
-#    #Save trimbits in np file
-#    
-#    dacs = detector.dacs.get_asarray()
-#
-#    #Add tau for the new style trimbit files, to be default
-#    if type(tau) != type(None):
-#        tmp = np.zeros((dacs.shape[0], 1))
-#        tmp[:] = tau
-#        dacs = np.hstack( ( dacs, tmp) )
-#        
-#    fname = get_trimbit_fname()
-#    pathname = os.path.join(cfg.path.data, fname)
-#    
-#
-#    np.savez( pathname, trimbits = tb, fit = result)
-#    
-#    hostname = detector.get_hostname()
-#    halfmodule = get_halfmodule_mask()
-#
-#        
-#    for i in range( len(halfmodule) ):
-#        fname = pathname + '.sn' + hostname[i][3:]
-#        print(fname)
-#        io.write_trimbit_file(fname, tb[halfmodule[i]], dacs[i]) 
+
     
 def find_and_write_trimbits(detector, tau = None):
+    """
+        Examples
+    ---------
     
+    ::
+        
+        fit_result = calibration.find_and_write_trimbits(decector)
+        
+        
+    .. image:: _static/trimbit_map.png  
+    
+    
+    """
     #Get the correct filenames depending on configuration settings
     fit_fname = get_fit_fname()
     data_fname = get_tbdata_fname()
@@ -975,6 +1037,7 @@ def find_and_write_trimbits(detector, tau = None):
     tb[tb<0] = 0
     tb = tb.round()
     c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
+    c.Draw()
     tb = tb.astype(np.int32)
     ax, im = plot.imshow(tb)
     plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
@@ -986,9 +1049,9 @@ def find_and_write_trimbits(detector, tau = None):
 
     #Add tau for the new style trimbit files, to be default
     if type(tau) != type(None):
-        tmp = np.zeros((dacs.shape[0], 1))
+        tmp = np.zeros((1, dacs.shape[1]))
         tmp[:] = tau
-        dacs = np.hstack( ( dacs, tmp) )
+        dacs = np.vstack( ( dacs, tmp) )
         
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
@@ -996,14 +1059,14 @@ def find_and_write_trimbits(detector, tau = None):
 
     np.savez( pathname, trimbits = tb, fit = result)
     
-    hostname = detector.get_hostname()
+    hostname = detector.hostname
     halfmodule = get_halfmodule_mask()
 
         
     for i in range( len(halfmodule) ):
         fname = pathname + '.sn' + hostname[i][3:]
         print(fname)
-        io.write_trimbit_file(fname, tb[halfmodule[i]], dacs[i])
+        io.write_trimbit_file(fname, tb[halfmodule[i]], dacs[:, i])
 
 
 
@@ -1125,23 +1188,33 @@ def generate_mask():
     return bad_pixels
 
     
-def take_global_calibration_data(detector, xraybox, thrange = (0,2000)):
-    base = cfg.det_id + '_vcmp_'
+def take_global_calibration_data(detector, xraybox, start = 0, stop = 2001, step = 40):
+    
+    
+    vcmp_array = np.arange(start, stop, step)
+    print(vcmp_array)
+    
+    _s = detector.image_size
+    data = np.zeros((_s.rows, _s.cols, vcmp_array.size))
+    detector.exposure_time = cfg.calibration.vrf_scan_exptime
+
     for t in cfg.calibration.global_targets[ cfg.calibration.target ]:
         print( t )
+        with xrf_shutter_open(xraybox, t):
+            
+            with setup_measurement(detector) as receiver:
+                for i,v in enumerate(vcmp_array):
+                    detector.vthreshold = v
+                    detector.acq()
+                    data[:,:,i] = receiver.get_frame()
+
+        fname = '{:s}_vcmp_{:s}XRF_{:d}'.format( cfg.det_id, t, cfg.calibration.run_id)
+        pathname = os.path.join(cfg.path.data, fname)
+        np.savez(pathname, data = data, x = vcmp_array)
         
-        xraybox.target( t ) 
-        xraybox.shutter(True)
-        detector.scan_dac(thrange[0],thrange[1],20,
-                   dac = 'vthreshold',
-                   fname = base + t + 'XRF',
-                   run_id = cfg.calibration.run_id,
-                   exptime = cfg.calibration.vrf_scan_exptime,
-                   vcp = True,
-                   npz = True,
-                   plot = False)
-         
-        xraybox.shutter( False )
+    #Normally only one point    
+    return data, vcmp_array    
+
         
 def per_chip_global_calibration( swap_axes = False ):
     #Find which calibration points we have
@@ -1219,7 +1292,7 @@ def per_chip_global_calibration( swap_axes = False ):
             
             print( "[dbg] 1" )
             #Linear backgroud
-            g = r.t_graph(x[x<100], y[x<100]) 
+            c,g = r.plot(x[x<100], y[x<100], draw=False) 
             fit = g.Fit('pol1', 'NQS')
             p0_estimate = fit.Get().Parameter(0)
             p1_estimate = fit.Get().Parameter(1)

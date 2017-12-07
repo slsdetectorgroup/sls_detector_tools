@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -489,7 +490,7 @@
 
     
 
-<div class="viewcode-block" id="overflow"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.overflow">[docs]</a><span class="k">def</span> <span class="nf">overflow</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="overflow"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.overflow">[docs]</a><span class="k">def</span> <span class="nf">overflow</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="s1">&#39;Half Speed&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Overflow test using analog pulses</span>
 <span class="sd">    </span>
@@ -499,68 +500,66 @@
     <span class="n">bad_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>       
     
     <span class="c1">#Output setup</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">out</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span><span class="n">name</span> <span class="p">)</span>
-    <span class="n">tmp_fname</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fname</span><span class="p">(</span> <span class="n">tmp_fname</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_fwrite</span><span class="p">(</span> <span class="kc">True</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_clkdivider</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span> <span class="mi">16</span> <span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_exptime</span><span class="p">(</span> <span class="mf">0.01</span> <span class="p">)</span>       
+<span class="c1">#    out = cfg.path.out</span>
+<span class="c1">#    path = os.path.join( cfg.path.test,name )</span>
+<span class="c1">#    tmp_fname = &#39;test&#39;</span>
+<span class="c1">#    d.set_fname( tmp_fname )</span>
+<span class="c1">#    d.set_fwrite( True )</span>
+<span class="c1">#    d.set_clkdivider(clk)</span>
+<span class="c1">#    d.set_dr( 16 )</span>
+<span class="c1">#    d.set_exptime( 0.01 )       </span>
     
     
-    
-    <span class="c1">#Get dacs</span>
-    <span class="n">dacs</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_all_trimbits</span><span class="p">(</span><span class="mi">63</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vtr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2600</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vrf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2900</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="p">[</span><span class="s1">&#39;vcall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3600</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="mi">1500</span><span class="p">)</span>    
+    <span class="k">with</span> <span class="n">setup_test_and_receiver</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">clk</span><span class="p">)</span> <span class="k">as</span> <span class="n">receiver</span><span class="p">:</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">trimbits</span> <span class="o">=</span> <span class="mi">63</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vtr</span> <span class="o">=</span> <span class="mi">2600</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vrf</span> <span class="o">=</span> <span class="mi">2900</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vcall</span> <span class="o">=</span> <span class="mi">3600</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vthreshold</span> <span class="o">=</span> <span class="mi">1500</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">eiger_matrix_reset</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="nb">print</span><span class="p">(</span> <span class="n">d</span><span class="o">.</span><span class="n">dacs</span> <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="p">)</span>
     
-    <span class="c1"># 4 bit mode </span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>  
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;4 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span> <span class="p">)</span>
-    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    
-    <span class="c1"># 8 bit mode</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>   
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">260</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;8 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
-    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    
-    <span class="c1"># 12 bit mode</span>
-    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>   
-    <span class="n">d</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">set_dr</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">pulse_all</span><span class="p">(</span><span class="n">N</span> <span class="o">=</span> <span class="mi">4100</span><span class="p">)</span>
-    <span class="n">d</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">load_frame</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;16 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">4095</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span><span class="p">)</span>
-    <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">4095</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-    
+        <span class="c1"># 4 bit mode </span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>  
+        <span class="n">detector</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">pulse_all_pixels</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">acq</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+        
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;4 bit test found&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="p">,</span> <span class="s1">&#39;bad pixels in&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">t0</span><span class="p">,</span> <span class="s1">&#39;s&#39;</span> <span class="p">)</span>
+        <span class="n">bad_pixels</span><span class="p">[</span><span class="n">data</span> <span class="o">!=</span> <span class="mi">15</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1">#        </span>
+<span class="c1">##        8 bit mode</span>
+<span class="c1">#        t0 = time.time()   </span>
+<span class="c1">#        detector.dynamic_range = 8</span>
+<span class="c1">#        detector.pulse_all_pixels(260)</span>
+<span class="c1">#        detector.acq()</span>
+<span class="c1">#        data = receiver.get_frame()</span>
+<span class="c1">#        print( &#39;8 bit test found&#39;, (data != 255).sum() , &#39;bad pixels in&#39;, time.time()-t0, &#39;s&#39;)</span>
+<span class="c1">#        bad_pixels[data != 255] = True</span>
+<span class="c1">#    </span>
+<span class="c1">#        # 12 bit mode</span>
+<span class="c1">#        t0 = time.time()   </span>
+<span class="c1">#        detector.dynamic_range = 16</span>
+<span class="c1">#        detector.pulse_all_pixels(4100)</span>
+<span class="c1">#        detector.acq()</span>
+<span class="c1">#        data = receiver.get_frame()</span>
+<span class="c1">#        print( &#39;16 bit test found&#39;, (data != 4095).sum() , &#39;bad pixels in&#39;, time.time()-t0, &#39;s&#39;)</span>
+<span class="c1">#        bad_pixels[data != 4095] = True</span>
 
     <span class="c1">#Output</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">bad_pixels</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="s1">&#39;_overflow_&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">clk</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
-    <span class="n">save_txt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">_speed_int</span><span class="p">[</span> <span class="n">detector</span><span class="o">.</span><span class="n">readout_clock</span> <span class="p">]</span>
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{:s}</span><span class="s1">_overflow_</span><span class="si">{:d}</span><span class="s1">.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    <span class="n">save_txt</span><span class="p">(</span><span class="n">pathname</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="s1">&#39;col&#39;</span><span class="p">],</span> <span class="n">tmp</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">bad_pixels</span></div>
     
 
 <div class="viewcode-block" id="tp_scurve"><a class="viewcode-back" href="../../eiger_tests.html#sls_detector_tools.eiger_tests.tp_scurve">[docs]</a><span class="k">def</span> <span class="nf">tp_scurve</span><span class="p">(</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">clk</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">):</span>
-
 
     <span class="c1">#Output setup</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Python&#39;</span><span class="p">,</span> <span class="s1">&#39;sls_data_path&#39;</span><span class="p">)</span>

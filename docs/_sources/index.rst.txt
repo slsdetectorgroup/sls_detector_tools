@@ -16,6 +16,7 @@ Welcome to sls_detector_tools's documentation!
    root_helper
    receiver
    eiger_tests
+   eiger_calibration
    
 
 Indices and tables

@@ -1,0 +1,459 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>EIGER Calibration &mdash; sls_detector_tools pre-alpha documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="sls_detector_tools pre-alpha documentation" href="index.html"/>
+        <link rel="prev" title="EIGER Tests" href="eiger_tests.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> sls_detector_tools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                pre-alpha
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="instruments.html">Instruments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plotting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
+<li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">EIGER Calibration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#calibration-in-the-big-x-ray-box">Calibration in the big X-ray box</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#vrf-scan">Vrf scan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scurve-and-fiting">Scurve and fiting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trimbit-scan">Trimbit scan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#verification-scan">Verification scan</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#optional-vcmp-calibration">(optional) Vcmp calibration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#functions-used-for-calibrating">Functions used for calibrating</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">sls_detector_tools</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>EIGER Calibration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/eiger_calibration.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="eiger-calibration">
+<h1>EIGER Calibration<a class="headerlink" href="#eiger-calibration" title="Permalink to this headline">¶</a></h1>
+<p>This document describes the calibration procedure for an EIGER detector. Functions
+are documented in the order they are normally run.</p>
+<div class="section" id="calibration-in-the-big-x-ray-box">
+<h2>Calibration in the big X-ray box<a class="headerlink" href="#calibration-in-the-big-x-ray-box" title="Permalink to this headline">¶</a></h2>
+<p>A working calibration script is found in: scripts/eiger_calibration.py but the
+procedure is also outlined here. Calibrating in the X-ray box at PSI we can use
+automated control of targets and shutter.</p>
+<p>We start with a general setup of the calibration. Specifying which detector
+we have and the type of calibration. Both cfg.nmod and cfg.geometry are explicitly
+mentioned. This helps with compatibility if the functions are used to analyze data
+without the detector connected.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#General</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">nmod</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">=</span> <span class="s1">&#39;500k&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s1">&#39;XRF&#39;</span>
+
+<span class="c1">#Configuration for the calibration script</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span> <span class="o">=</span> <span class="s1">&#39;T63&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">gain</span> <span class="o">=</span> <span class="s1">&#39;gain5&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Cu&#39;</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;/mnt/disk1/calibration/&#39;</span><span class="p">,</span>
+                             <span class="n">cfg</span><span class="o">.</span><span class="n">det_id</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">gain</span><span class="p">)</span>
+
+<span class="c1">#Record the measurement in a log file</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">set_log</span><span class="p">(</span><span class="s1">&#39;default_file.log&#39;</span><span class="p">,</span> <span class="n">stream</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Take control of the X-ray box and make sure that the high voltage is switched
+on. Then perform the basic setup of the detector before starting calibration.
+This includes setting dynamic range, vthreshold etc. All settings are located
+in config.py</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span> <span class="o">=</span> <span class="n">XrayBox</span><span class="p">()</span>
+<span class="n">box</span><span class="o">.</span><span class="n">unlock</span><span class="p">()</span>
+<span class="n">box</span><span class="o">.</span><span class="n">HV</span> <span class="o">=</span>  <span class="kc">True</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Detector</span><span class="p">()</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">setup_detector</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="vrf-scan">
+<h3>Vrf scan<a class="headerlink" href="#vrf-scan" title="Permalink to this headline">¶</a></h3>
+<p>The first step of the calibration is a scan of Vrf to find the correct gain
+for the energy used. The aim in this step is to have the inflection point at
+vthreshold=1200 (can be changed in config). The exposure time required to have
+1000 counts at the inflection point is also calculated. While there has been no
+systematic study this seems to be a good trade off between speed and accuracy.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">vrf</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_vrf_scan</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+<span class="n">d</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vrf</span> <span class="o">=</span> <span class="n">vrf</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">exptime</span> <span class="o">=</span> <span class="n">t</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="scurve-and-fiting">
+<h3>Scurve and fiting<a class="headerlink" href="#scurve-and-fiting" title="Permalink to this headline">¶</a></h3>
+<p>Next the trimming is performed by first taking an scurve then fitting each
+pixel to find the inflection point. The vcmp of each chip is set to the
+mean of the inflection point.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve_fit</span><span class="p">()</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">find_mean_and_set_vcmp</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">fit_result</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="trimbit-scan">
+<h3>Trimbit scan<a class="headerlink" href="#trimbit-scan" title="Permalink to this headline">¶</a></h3>
+<p>Next the trimbits are scanned to check with trimbit gives the same counts as
+the inflection point. Finally trimbits are
+written to disk.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">do_trimbit_scan</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">find_and_write_trimbits</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="verification-scan">
+<h3>Verification scan<a class="headerlink" href="#verification-scan" title="Permalink to this headline">¶</a></h3>
+<p>After timming we verify with another scurve. Again fitting each pixel.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">load_trim</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve_fit</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optional-vcmp-calibration">
+<h3>(optional) Vcmp calibration<a class="headerlink" href="#optional-vcmp-calibration" title="Permalink to this headline">¶</a></h3>
+<p>The setting of the energy threshold for a module will be done by inerpolating
+between different trim points, but optionally, to quantify the threshold
+dispersion at the trim point and to provide a way to make small adjustments the
+vcmp can also be calibrated taking one additional point.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">take_global_calibration_data</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">per_chip_global_calibration</span><span class="p">()</span>
+
+<span class="n">cfg</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">hostname</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">cfg</span><span class="o">.</span><span class="n">bottom</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">hostname</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">calibration</span><span class="o">.</span><span class="n">generate_calibration_report</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="functions-used-for-calibrating">
+<h2>Functions used for calibrating<a class="headerlink" href="#functions-used-for-calibrating" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="sls_detector_tools.calibration.do_vrf_scan">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_vrf_scan</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>pixelmask=None</em>, <em>start=1500</em>, <em>stop=3800</em>, <em>step=30</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_vrf_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_vrf_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a vrf scan and fits the differential of the scurve for each halfmodule
+in the detector system.</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Check the multi module system support</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>detector</strong> (<em>SlsDetector</em>) – The detector that should be scanned</li>
+<li><strong>xraybox</strong> (<a class="reference internal" href="instruments.html#sls_detector_tools.XrayBox" title="sls_detector_tools.XrayBox"><em>XrayBox</em></a><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
+<li><strong>pixelmask</strong> (<em>np_array</em><em>(</em><em>bool</em><em>)</em><em>, </em><em>optional</em>) – Numpy array of bools of the same size and one frame or None to disable</li>
+<li><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – start value of the scan</li>
+<li><strong>stop</strong> (<em>int</em><em>, </em><em>optional</em>) – end value of the scan</li>
+<li><strong>step</strong> (<em>int</em><em>, </em><em>optional</em>) – stepsize</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>vrf</strong> (<em>list</em>) – list of vrf values for each half module</li>
+<li><strong>t</strong> (<em>float</em>) – Suggested exposure time for the scurve</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">vrf</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_vrf_scan</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/vrf_scan.png" src="_images/vrf_scan.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.calibration.do_scurve">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>start=0</em>, <em>stop=2001</em>, <em>step=40</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take scurve data for calibration. When not using the Xray box pass a
+dummy xray box to the function and make sure that shutter is open and
+target is correct!</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/scurve.png" src="_images/scurve.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.calibration.do_scurve_fit">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_scurve_fit</code><span class="sig-paren">(</span><em>mask=None</em>, <em>fname=None</em>, <em>thrange=(0</em>, <em>2000)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_scurve_fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_scurve_fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Per pixel scurve fit from saved data and save the result in an npz file</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Move to scaled fits?</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_scurve_fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="_images/fit_scurve.png" src="_images/fit_scurve.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.calibration.do_trimbit_scan">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">do_trimbit_scan</code><span class="sig-paren">(</span><em>detector</em>, <em>xraybox</em>, <em>step=2</em>, <em>data_mask=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#do_trimbit_scan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.do_trimbit_scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the detector and then scan trough the trimbits. Normally with
+step of 2
+performa a trimbit scan</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">do_trimbit_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">xraybox</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/tb_scan.png" src="_images/tb_scan.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.calibration.find_and_write_trimbits">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits</code><span class="sig-paren">(</span><em>detector</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Examples</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">find_and_write_trimbits</span><span class="p">(</span><span class="n">decector</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/trimbit_map.png" src="_images/trimbit_map.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.calibration.load_trimbits">
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">load_trimbits</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#load_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.load_trimbits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load trimbits for the current calibration settings. Defined in
+config.py</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">calibration</span><span class="o">.</span><span class="n">load_trimbits</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="o">&gt;&gt;</span> <span class="n">Settings</span> <span class="n">file</span> <span class="n">loaded</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">disk1</span><span class="o">/</span><span class="n">calibration</span><span class="o">/</span><span class="n">T63</span><span class="o">/</span><span class="n">gain5</span><span class="o">/</span><span class="n">T63_CuXRF_gain5</span><span class="o">.</span><span class="n">sn058</span>
+<span class="o">&gt;&gt;</span> <span class="n">Settings</span> <span class="n">file</span> <span class="n">loaded</span><span class="p">:</span> <span class="o">/</span><span class="n">mnt</span><span class="o">/</span><span class="n">disk1</span><span class="o">/</span><span class="n">calibration</span><span class="o">/</span><span class="n">T63</span><span class="o">/</span><span class="n">gain5</span><span class="o">/</span><span class="n">T63_CuXRF_gain5</span><span class="o">.</span><span class="n">sn059</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="eiger_tests.html" class="btn btn-neutral" title="EIGER Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, SLS Detector Group.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'pre-alpha',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

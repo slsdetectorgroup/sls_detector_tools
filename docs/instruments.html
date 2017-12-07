@@ -103,6 +103,7 @@
 <li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -279,106 +280,157 @@ panel</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Wrapper around the xrayClient64, uses the executable from afs, make sure
 that you have access. Supports logging of commands using the python logger.</p>
-<p>TODO! Inspect return values to look for errors</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sls_detector_tools</span> <span class="k">import</span> <span class="n">XrayBox</span>
+<span class="n">box</span> <span class="o">=</span> <span class="n">XrayBox</span><span class="p">()</span>
+<span class="n">box</span><span class="o">.</span><span class="n">unlock</span><span class="p">()</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">box</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Cu&#39;</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">voltage</span>
+<span class="o">&gt;&gt;</span> <span class="mf">30.0</span>
+<span class="n">box</span><span class="o">.</span><span class="n">current</span>
+<span class="o">&gt;&gt;</span> <span class="mf">40.0</span>
+
+<span class="c1">#For setting target open and close shutter we have a context manager</span>
+<span class="kn">from</span> <span class="nn">sls_detector_tools</span> <span class="k">import</span> <span class="n">xrf_shutter_open</span>
+
+<span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;Cu&#39;</span><span class="p">):</span>
+    <span class="c1">#do your measurement</span>
+    <span class="c1">#shutter is closed when exiting</span>
+    <span class="c1">#this block</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Requires access to afs</p>
+<p class="last">Requires access to afs, make sure that you klog or (kinit+aklog)
+before starting measurement</p>
 </div>
-<dl class="method">
+<dl class="attribute">
 <dt id="sls_detector_tools.XrayBox.HV">
-<code class="descname">HV</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.HV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.HV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Switch on the high voltage is True otherwise switch off</p>
+<code class="descname">HV</code><a class="headerlink" href="#sls_detector_tools.XrayBox.HV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check or switch on/off the high voltage of the xray tube.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">HV</span>
+<span class="o">&gt;&gt;</span> <span class="kc">True</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">HV</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.XrayBox.close_shutter">
+<code class="descname">close_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.close_shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.close_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close shutter</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>bool</em>) – True for on, False for off</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">int</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Shutter to close</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">close_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.XrayBox.current">
+<code class="descname">current</code><a class="headerlink" href="#sls_detector_tools.XrayBox.current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tube current in mA</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">40</span>
+
+<span class="n">xray_box</span><span class="o">.</span><span class="n">current</span>
+<span class="o">&gt;&gt;</span> <span class="mf">40.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.XrayBox.open_shutter">
+<code class="descname">open_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.open_shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.open_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open shutter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">int</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Shutter to open</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.XrayBox.safe">
+<code class="descname">safe</code><a class="headerlink" href="#sls_detector_tools.XrayBox.safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if it is safe to open the door.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>value</strong> – <code class="xref py py-obj docutils literal"><span class="pre">True</span></code> if it is safe and otherwise <code class="xref py py-obj docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
-<dl class="method">
-<dt id="sls_detector_tools.XrayBox.get_kV">
-<code class="descname">get_kV</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.get_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.get_kV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read the tube voltage</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>kV</strong> – Voltage of the tube in kV</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
-</tr>
-</tbody>
-</table>
+<dl class="attribute">
+<dt id="sls_detector_tools.XrayBox.shutter_status">
+<code class="descname">shutter_status</code><a class="headerlink" href="#sls_detector_tools.XrayBox.shutter_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check status of shutters and return dictionary</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">shutter_status</span>
+<span class="o">&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;Direct beam&#39;</span><span class="p">:</span> <span class="s1">&#39;OFF&#39;</span><span class="p">,</span> <span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="s1">&#39;OFF&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
-<dl class="method">
-<dt id="sls_detector_tools.XrayBox.get_mA">
-<code class="descname">get_mA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.get_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.get_mA" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.XrayBox.set_kV">
-<code class="descname">set_kV</code><span class="sig-paren">(</span><em>kV</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.set_kV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.set_kV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the kV of the tube</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>kV</strong> (<em>int</em>) – Voltage of the tube in kV</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.XrayBox.set_mA">
-<code class="descname">set_mA</code><span class="sig-paren">(</span><em>mA</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.set_mA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.set_mA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the tube current in mA</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="sls_detector_tools.XrayBox.shutter">
-<code class="descname">shutter</code><span class="sig-paren">(</span><em>value</em>, <em>sh=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.shutter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open the shutter th if value is True otherwise close shutter sh</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>value</strong> (<em>bool</em>) – True for on, False for off</li>
-<li><strong>sh</strong> (<em>int</em><em>, </em><em>optional</em>) – 1 for XRF, 3 for direct beam</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
+<dl class="attribute">
 <dt id="sls_detector_tools.XrayBox.target">
-<code class="descname">target</code><span class="sig-paren">(</span><em>target_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.target" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the target of the xray box</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>target_name</em><em>, </em><em>str</em>) – Two letter name of the target: Ti, Sc, Fe etc.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>t_set</strong> – The name of the set target</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
-</tr>
-</tbody>
-</table>
+<code class="descname">target</code><a class="headerlink" href="#sls_detector_tools.XrayBox.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fluorescence target</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Fe&#39;</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">target</span>
+<span class="o">&gt;&gt;</span> <span class="s1">&#39;Fe&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="sls_detector_tools.XrayBox.unlock">
 <code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.unlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.unlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unlock the control from another user</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.XrayBox.voltage">
+<code class="descname">voltage</code><a class="headerlink" href="#sls_detector_tools.XrayBox.voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>High voltage of the X-ray tube in kV</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">voltge</span> <span class="o">=</span> <span class="mi">60</span>
+
+<span class="n">xray_box</span><span class="o">.</span><span class="n">voltage</span>
+<span class="o">&gt;&gt;</span> <span class="mf">60.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.XrayBox.warmup_time">
+<code class="descname">warmup_time</code><a class="headerlink" href="#sls_detector_tools.XrayBox.warmup_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the warmuptime left, returns 0 if warmup not in progress</p>
 </dd></dl>
 
 </dd></dl>

@@ -36,6 +36,7 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="sls_detector_tools pre-alpha documentation" href="index.html"/>
+        <link rel="next" title="EIGER Calibration" href="eiger_calibration.html"/>
         <link rel="prev" title="ZmqReceiver" href="receiver.html"/> 
 
   
@@ -97,6 +98,7 @@
 <li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -206,7 +208,7 @@ the standard tests.</p>
 
 <dl class="function">
 <dt id="sls_detector_tools.eiger_tests.overflow">
-<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">overflow</code><span class="sig-paren">(</span><em>name</em>, <em>d</em>, <em>clk=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#overflow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.overflow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">sls_detector_tools.eiger_tests.</code><code class="descname">overflow</code><span class="sig-paren">(</span><em>detector</em>, <em>clk='Half Speed'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/eiger_tests.html#overflow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.eiger_tests.overflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overflow test using analog pulses</p>
 <p>Unfortunatley the enable toggling cannot be used to check this because
 of problems when going to overflow</p>
@@ -262,6 +264,8 @@ zmq stream.</p>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="eiger_calibration.html" class="btn btn-neutral float-right" title="EIGER Calibration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="receiver.html" class="btn btn-neutral" title="ZmqReceiver" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

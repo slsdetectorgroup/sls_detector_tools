@@ -55,7 +55,7 @@ cfg.geometry = '500k'
 cfg.calibration.type = 'XRF'
 
 #Configuration for the calibration script
-cfg.det_id = 'T45-API'
+cfg.det_id = 'T63'
 cfg.calibration.gain = 'gain5'
 cfg.calibration.target = 'Cu'
 cfg.path.data = os.path.join( '/mnt/disk1/calibration/', 
@@ -69,75 +69,37 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
 #-------------------------------------------------------------Xray box control
-#box = DummyBox()
 box = XrayBox()
 box.unlock()
-box.HV( True )
+box.HV =  True
 
 #--------------------------------------------Setup for taking calibration data
 d = Detector()
-#calibration.setup_detector(d)
-##
-#with xrf_shutter_open(box, cfg.calibration.target):
-#    data, x = calibration._vrf_scan(d)
+calibration.setup_detector(d)
+vrf, t = calibration.do_vrf_scan(d, box)
+d.dacs.vrf = vrf
+cfg.calibration.exptime = t
 
-#np.savez('/home/l_frojdh/data/sample_th_scan.npz', data = data, x = x)
 
-#with np.load('/home/l_frojdh/data/sample_vrf_scan.npz') as f:
-#    data = f['data']
-#    x = f['x']
-#data = calibration._clean_vrf_data(data)
-#vrf = calibration._fit_and_plot_vrf_data(data, x, d.hostname)
-
-#vrf = calibration.do_vrf_scan(d, box)
-cfg.calibration.exptime = 1
-#with xrf_shutter_open(box, cfg.calibration.target):
-#    data, x = calibration._threshold_scan(d)
-
-#with np.load('/home/l_frojdh/data/sample_th_scan.npz') as f:
-#    data = f['data']
-#    x = f['x']
-
-#data, x = calibration.do_scurve(d, box)
+data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit()
-#Two pass algorithm find bad pixels and masks them
-
-
-
-
-#for i in range(data.shape[2]):
-#    data[:,:,i][data[:,:,i]>500] = 0
-#plt.plot(x, data.sum(axis = 0).sum(axis = 0))
-#cfg.calibration.threshold = 1200
-#vrf = calibration.do_vrf_scan(d, box, start = 2500, stop = 3950, step = 30)
-#d.set_dac('0:vrf', vrf[0]) 
-#d.set_dac('1:vrf', vrf[1])
-#
-#
-##---------------------------------Initial threshold disperion and trimbit scan
-#thrange = (0,2000)
-#cfg.calibration.exptime = 10
-#data, x = calibration.do_scurve(d, box, step = 40, thrange = thrange)
-##cfg.calibration.plot = False
-#fit_result = calibration.do_scurve_fit( thrange = thrange )
-#calibration.do_trimbit_scan(d, box, step = 2)
-#calibration.find_and_write_trimbits( None, tau = 200 )
-##
-##
-###---------------------------------------------Load trimbits and verify trimming
+out = calibration.find_mean_and_set_vcmp(d, fit_result)
+data, x = calibration.do_trimbit_scan(d, box)
+calibration.find_and_write_trimbits(d, tau = 200)
 #calibration.load_trim(d)
 #cfg.calibration.run_id = 1
-#data, x = calibration.do_scurve(d, box, step = 40,thrange = thrange)
-#fit_result = calibration.do_scurve_fit( thrange = thrange)
-#calibration.rewrite_calibration_files(d, tau = 200)
-###
-####Generate a mask with pixels too far from center
-###a = calibration.generate_mask()
-###np.save( os.path.join(cfg.path.data, 'mask'), a )
-#
-#
-##--------------------------------------------Global scurve for vcmp calibration
-##calibration.take_global_calibration_data(d, box, thrange = thrange)
+#data, x = calibration.do_scurve(d, box)
+#fit_result = calibration.do_scurve_fit()
+#data, x = calibration.take_global_calibration_data(d, box)
 #calibration.per_chip_global_calibration()
-#cfg.top, cfg.bottom = d.get_hostname()
-#data = calibration.generate_calibration_report(thrange = thrange)
+
+#cfg.top = d.hostname[0]
+#cfg.bottom = d.hostname[1]
+#calibration.generate_calibration_report()
+
+#with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
+#    data = f['data']
+#    x = f['x']
+#    
+#    
+#calibration._plot_trimbit_scan(data,x)

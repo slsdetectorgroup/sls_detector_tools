@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -401,7 +402,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1">#Reading more than one frame from the file</span>
             <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dt</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>        
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>        
                 <span class="n">image</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_frame</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">image</span></div>
 

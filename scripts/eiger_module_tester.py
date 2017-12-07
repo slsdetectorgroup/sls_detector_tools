@@ -28,7 +28,7 @@ d = Detector()
 
 
 ##Setup
-cfg.det_id = 'T06-retest'
+cfg.det_id = 'T63'
 path = os.path.join( cfg.path.test, cfg.det_id )
 
 
@@ -51,23 +51,24 @@ d.dacs.rxb_lb = 1100
 d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
-out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
+#out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
 #out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
-#
-###################
-#out = eiger_tests.io_delay(d, clk = 'Full Speed', plot = True)
-#out = eiger_tests.io_delay(d, clk = 'Half Speed', plot = True)
-#####################
 ##
+####################
+#out = eiger_tests.io_delay(d, clk = 'Full Speed')
+#out = eiger_tests.io_delay(d, clk = 'Half Speed')
+######################
+###
 #a = eiger_tests.analog_pulses(d)
 #
 ######################
 #a = eiger_tests.counter(d, clk = 'Half Speed')
+a = eiger_tests.counter(d, clk = 'Full Speed')
 #tests.counter(name, d, clk = 1)
 #####################
-#data = tests.overflow(name, d)
+data = eiger_tests.overflow(d)
 ########
-#tests.generate_report(path)
+eiger_tests.generate_report(path)
 
 #plt.ioff()
 #

@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="root_helper.html">PyROOT Helper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="receiver.html">ZmqReceiver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eiger_tests.html">EIGER Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eiger_calibration.html">EIGER Calibration</a></li>
 </ul>
 
             
@@ -225,15 +226,17 @@
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.clean_threshold">clean_threshold (sls_detector_tools.config.calibration attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="instruments.html#sls_detector_tools.AgilentMultiMeter.clearVals">clearVals() (sls_detector_tools.AgilentMultiMeter method)</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.clkdivider">clkdivider (sls_detector_tools.config.calibration attribute)</a>
-</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="instruments.html#sls_detector_tools.SourceMeter.close_port">close_port() (sls_detector_tools.SourceMeter method)</a>
 </li>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.close_shutter">close_shutter() (sls_detector_tools.XrayBox method)</a>
+</li>
       <li><a href="eiger_tests.html#sls_detector_tools.eiger_tests.counter">counter() (in module sls_detector_tools.eiger_tests)</a>
+</li>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.current">current (sls_detector_tools.XrayBox attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -245,17 +248,17 @@
 </li>
       <li><a href="instruments.html#sls_detector_tools.SourceMeter.data_elements">data_elements() (sls_detector_tools.SourceMeter method)</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.do_scurve">do_scurve() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.do_scurve">do_scurve() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.do_scurve">[1]</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.do_scurve_fit">do_scurve_fit() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.do_scurve_fit">do_scurve_fit() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.do_scurve_fit">[1]</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.do_scurve_fit_scaled">do_scurve_fit_scaled() (in module sls_detector_tools.calibration)</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.do_trimbit_scan">do_trimbit_scan() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.do_trimbit_scan">do_trimbit_scan() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.do_trimbit_scan">[1]</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.do_vrf_scan">do_vrf_scan() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.do_vrf_scan">do_vrf_scan() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.do_vrf_scan">[1]</a>
 </li>
       <li><a href="functions.html#sls_detector_tools.function.root.double_gaus_edge">double_gaus_edge (sls_detector_tools.function.root attribute)</a>
 </li>
@@ -299,7 +302,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits">find_and_write_trimbits() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.find_and_write_trimbits">find_and_write_trimbits() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits">[1]</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits_scaled">find_and_write_trimbits_scaled() (in module sls_detector_tools.calibration)</a>
 </li>
@@ -343,10 +346,10 @@
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.utils.get_dtype">get_dtype() (in module sls_detector_tools.utils)</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.get_fit_fname">get_fit_fname() (in module sls_detector_tools.calibration)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.get_fit_fname">get_fit_fname() (in module sls_detector_tools.calibration)</a>
+</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.receiver.ZmqReceiver.get_frame">get_frame() (sls_detector_tools.receiver.ZmqReceiver method)</a>
 
       <ul>
@@ -354,10 +357,6 @@
 </li>
       </ul></li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.get_halfmodule_mask">get_halfmodule_mask() (in module sls_detector_tools.calibration)</a>
-</li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.get_kV">get_kV() (sls_detector_tools.XrayBox method)</a>
-</li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.get_mA">get_mA() (sls_detector_tools.XrayBox method)</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.get_tbdata_fname">get_tbdata_fname() (in module sls_detector_tools.calibration)</a>
 </li>
@@ -393,7 +392,7 @@
         <li><a href="sls_detector_tools.html#sls_detector_tools.config.Eiger9M.hostname">(sls_detector_tools.config.Eiger9M attribute)</a>
 </li>
       </ul></li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.HV">HV() (sls_detector_tools.XrayBox method)</a>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.HV">HV (sls_detector_tools.XrayBox attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -433,7 +432,7 @@
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.load_tiff.load_tiff">load_tiff() (in module sls_detector_tools.load_tiff)</a>
 </li>
-      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.load_trim">load_trim() (in module sls_detector_tools.calibration)</a>
+      <li><a href="eiger_calibration.html#sls_detector_tools.calibration.load_trimbits">load_trimbits() (in module sls_detector_tools.calibration)</a>, <a href="sls_detector_tools.html#sls_detector_tools.calibration.load_trimbits">[1]</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.io.load_txt">load_txt() (in module sls_detector_tools.io)</a>
 </li>
@@ -479,9 +478,11 @@
 </li>
       <li><a href="instruments.html#sls_detector_tools.SourceMeter.on">on() (sls_detector_tools.SourceMeter method)</a>
 </li>
+      <li><a href="instruments.html#sls_detector_tools.SourceMeter.open_port">open_port() (sls_detector_tools.SourceMeter method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="instruments.html#sls_detector_tools.SourceMeter.open_port">open_port() (sls_detector_tools.SourceMeter method)</a>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.open_shutter">open_shutter() (sls_detector_tools.XrayBox method)</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.path.out">out (sls_detector_tools.config.path attribute)</a>
 </li>
@@ -569,6 +570,8 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.safe">safe (sls_detector_tools.XrayBox attribute)</a>
+</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.io.save_txt">save_txt() (in module sls_detector_tools.io)</a>
 </li>
       <li><a href="functions.html#sls_detector_tools.function.root.scurve">scurve (sls_detector_tools.function.root attribute)</a>
@@ -585,26 +588,24 @@
 </li>
       <li><a href="instruments.html#sls_detector_tools.SourceMeter.set_digits">set_digits() (sls_detector_tools.SourceMeter method)</a>
 </li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.set_kV">set_kV() (sls_detector_tools.XrayBox method)</a>
-</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.set_log">set_log() (in module sls_detector_tools.config)</a>
-</li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.set_mA">set_mA() (sls_detector_tools.XrayBox method)</a>
 </li>
       <li><a href="instruments.html#sls_detector_tools.SourceMeter.set_voltage">set_voltage() (sls_detector_tools.SourceMeter method)</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.setup_detector">setup_detector() (in module sls_detector_tools.calibration)</a>
 </li>
+      <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.setup_measurement">setup_measurement() (in module sls_detector_tools.calibration)</a>
+</li>
       <li><a href="plot.html#sls_detector_tools.plot.setup_plot">setup_plot() (in module sls_detector_tools.plot)</a>
 </li>
       <li><a href="eiger_tests.html#sls_detector_tools.eiger_tests.setup_test_and_receiver">setup_test_and_receiver() (in module sls_detector_tools.eiger_tests)</a>
 </li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.shutter">shutter() (sls_detector_tools.XrayBox method)</a>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.shutter_status">shutter_status (sls_detector_tools.XrayBox attribute)</a>
+</li>
+      <li><a href="sls_detector_tools.html#module-sls_detector_tools">sls_detector_tools (module)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="sls_detector_tools.html#module-sls_detector_tools">sls_detector_tools (module)</a>
-</li>
       <li><a href="sls_detector_tools.html#module-sls_detector_tools.calibration">sls_detector_tools.calibration (module)</a>
 </li>
       <li><a href="sls_detector_tools.html#module-sls_detector_tools.config">sls_detector_tools.config (module)</a>
@@ -631,6 +632,8 @@
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.io.geant4.sparse_dt">sparse_dt (sls_detector_tools.io.geant4 attribute)</a>
 </li>
+      <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.speed">speed (sls_detector_tools.config.calibration attribute)</a>
+</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.std">std (sls_detector_tools.config.calibration attribute)</a>
 </li>
       <li><a href="root_helper.html#sls_detector_tools.root_helper.style">style (class in sls_detector_tools.root_helper)</a>
@@ -648,9 +651,11 @@
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.take_global_calibration_data">take_global_calibration_data() (in module sls_detector_tools.calibration)</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.target">target (sls_detector_tools.config.calibration attribute)</a>
+
+      <ul>
+        <li><a href="instruments.html#sls_detector_tools.XrayBox.target">(sls_detector_tools.XrayBox attribute)</a>
 </li>
-      <li><a href="instruments.html#sls_detector_tools.XrayBox.target">target() (sls_detector_tools.XrayBox method)</a>
-</li>
+      </ul></li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.path.test">test (sls_detector_tools.config.path attribute)</a>
 </li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.tests">tests (class in sls_detector_tools.config)</a>
@@ -685,6 +690,8 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.voltage">voltage (sls_detector_tools.XrayBox attribute)</a>
+</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.config.calibration.vrf_scan_exptime">vrf_scan_exptime (sls_detector_tools.config.calibration attribute)</a>
 </li>
   </ul></td>
@@ -699,6 +706,8 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="instruments.html#sls_detector_tools.XrayBox.warmup_time">warmup_time (sls_detector_tools.XrayBox attribute)</a>
+</li>
       <li><a href="sls_detector_tools.html#sls_detector_tools.calibration.write_calibration_files">write_calibration_files() (in module sls_detector_tools.calibration)</a>
 </li>
   </ul></td>
