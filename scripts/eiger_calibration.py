@@ -29,7 +29,7 @@ sns.set_context('talk', font_scale = 1.2)
 #sls_detector
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
-from sls_detector import Detector
+from sls_detector import Detector, Eiger
 from sls_detector_tools import XrayBox, xrf_shutter_open
 from sls_detector_tools.plot import imshow
 
@@ -56,8 +56,8 @@ cfg.calibration.type = 'XRF'
 
 #Configuration for the calibration script
 cfg.det_id = 'T63'
-cfg.calibration.gain = 'gain5'
-cfg.calibration.target = 'Cu'
+cfg.calibration.gain = 'gain3'
+cfg.calibration.target = 'Cr'
 cfg.path.data = os.path.join( '/mnt/disk1/calibration/', 
                              cfg.det_id, cfg.calibration.gain)
 
@@ -66,7 +66,7 @@ cfg.path.data = os.path.join( '/mnt/disk1/calibration/',
 logger = logging.getLogger()
 cfg.path.log = cfg.path.data
 cfg.set_log('default_file.log', stream = False, level = logging.INFO)
-
+cfg.calibration.run_id = 0
 
 #-------------------------------------------------------------Xray box control
 box = XrayBox()
@@ -74,7 +74,7 @@ box.unlock()
 box.HV =  True
 
 #--------------------------------------------Setup for taking calibration data
-d = Detector()
+d = Eiger()
 calibration.setup_detector(d)
 vrf, t = calibration.do_vrf_scan(d, box)
 d.dacs.vrf = vrf
@@ -86,16 +86,17 @@ fit_result = calibration.do_scurve_fit()
 out = calibration.find_mean_and_set_vcmp(d, fit_result)
 data, x = calibration.do_trimbit_scan(d, box)
 calibration.find_and_write_trimbits(d, tau = 200)
-#calibration.load_trim(d)
-#cfg.calibration.run_id = 1
-#data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit()
-#data, x = calibration.take_global_calibration_data(d, box)
-#calibration.per_chip_global_calibration()
 
-#cfg.top = d.hostname[0]
-#cfg.bottom = d.hostname[1]
-#calibration.generate_calibration_report()
+calibration.load_trimbits(d)
+cfg.calibration.run_id = 1
+data, x = calibration.do_scurve(d, box)
+calibration.do_scurve_fit()
+data, x = calibration.take_global_calibration_data(d, box)
+calibration.per_chip_global_calibration()
+
+cfg.top = d.hostname[0]
+cfg.bottom = d.hostname[1]
+calibration.generate_calibration_report()
 
 #with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
 #    data = f['data']
