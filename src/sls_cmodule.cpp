@@ -62,11 +62,13 @@ PyDoc_STRVAR(
 /* Available functions */
 static PyObject *fit(PyObject *self, PyObject *args);
 static PyObject *find_trimbits(PyObject *self, PyObject *args);
+static PyObject *vrf_fit(PyObject *self, PyObject *args);
 
 /* Module specification */
 static PyMethodDef module_methods[] = {
     {"fit", (PyCFunction)fit, METH_VARARGS, fit_doc},
     {"find_trimbits", find_trimbits, METH_VARARGS, find_trimbits_doc},
+    {"vrf_fit", vrf_fit, METH_VARARGS, find_trimbits_doc},
     {NULL, NULL, 0, NULL}
 };
 
@@ -245,6 +247,74 @@ static PyObject *fit(PyObject *self, PyObject *args)
     //Clean up
     Py_DECREF(x_array);
     Py_DECREF(data_array);
+    Py_DECREF(par_array);
+
+    return result_array;
+}
+
+static PyObject *vrf_fit(PyObject *self, PyObject *args)
+{
+    //PyObject to be extracted from *args
+    PyObject *x_obj;
+    PyObject *y_obj;
+    PyObject *par_obj;
+
+    //Check and parse..
+    if (!PyArg_ParseTuple(args, "OOO", &x_obj, &y_obj, &par_obj)){
+        return NULL;
+    }
+
+    //Numpy array from the parsed objects 
+    PyObject *x_array = PyArray_FROM_OTF(x_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+    PyObject *y_array = PyArray_FROM_OTF(y_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+    PyObject *par_array = PyArray_FROM_OTF(par_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+
+    //Exception if it fails
+    if (x_array == NULL || y_array == NULL || par_array == NULL ){
+        std::cout << "Something went wrong, possibly crappy arguments?" << std::endl; 
+        return NULL;
+    }
+
+
+
+    //!TODO Find this automatically 
+    const int npar = 3;
+
+    //Check that we have the righ number of parameters
+    if ( (int)PyArray_NDIM( (PyArrayObject*)par_array) != 1 ){
+        std::cout << "ndimpar!" << std::endl;
+        return NULL;
+    }
+    
+    const int n = (int)PyArray_DIM((PyArrayObject*)x_array, 0);
+    std::cout <<"size: "<< n <<std::endl;
+    
+    
+
+
+
+    /* Get a pointer to the data as C-types. */
+    double *x = (double*)PyArray_DATA((PyArrayObject*)x_array);
+    double *y = (double*)PyArray_DATA((PyArrayObject*)y_array);
+    double *lim = (double*)PyArray_DATA((PyArrayObject*)par_array);
+    double xmin = lim[0];
+    double xmax = lim[1];
+    
+    /* Create a numpy array to return to Python */
+    npy_intp dims[1] = { npar };
+    PyObject *result_array = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+
+    /* Get a pointer to the data as C-types. */
+    double *result = (double*)PyArray_DATA((PyArrayObject*)result_array);
+
+    //Fit the data
+   //fit_using_tgraph(data, x, shape, initpar, result);
+    gaus_fit(n, x, y, xmin, xmax, result);
+
+    //Clean up
+    Py_DECREF(x_array);
+    Py_DECREF(y_array);
     Py_DECREF(par_array);
 
     return result_array;
