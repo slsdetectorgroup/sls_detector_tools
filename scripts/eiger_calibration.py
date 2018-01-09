@@ -7,7 +7,7 @@ Script to calibrate an EIGER module using the big X-ray box
 Erik Frojdh
 """
 
-import ROOT
+#import ROOT
 
 import sys
 
@@ -51,14 +51,14 @@ gain10               Sn
 
 cfg.verbose = True
 cfg.nmod = 2
-cfg.geometry = '500k'
+cfg.geometry = '9M'
 cfg.calibration.type = 'XRF'
 
 #Configuration for the calibration script
-cfg.det_id = 'T63'
-cfg.calibration.gain = 'gain3'
-cfg.calibration.target = 'Cr'
-cfg.path.data = os.path.join( '/mnt/disk1/calibration/', 
+cfg.det_id = 'Eiger9M'
+cfg.calibration.gain = 'gain5'
+cfg.calibration.target = 'Cu'
+cfg.path.data = os.path.join( '/external_pool/eiger_data/2018/calibration', 
                              cfg.det_id, cfg.calibration.gain)
 
 
@@ -76,27 +76,29 @@ box.HV =  True
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
-vrf, t = calibration.do_vrf_scan(d, box)
-d.dacs.vrf = vrf
-cfg.calibration.exptime = t
-
-
-data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit()
-out = calibration.find_mean_and_set_vcmp(d, fit_result)
-data, x = calibration.do_trimbit_scan(d, box)
-calibration.find_and_write_trimbits(d, tau = 200)
-
-calibration.load_trimbits(d)
-cfg.calibration.run_id = 1
-data, x = calibration.do_scurve(d, box)
-calibration.do_scurve_fit()
-data, x = calibration.take_global_calibration_data(d, box)
-calibration.per_chip_global_calibration()
-
-cfg.top = d.hostname[0]
-cfg.bottom = d.hostname[1]
-calibration.generate_calibration_report()
+data, vrf_array = calibration._vrf_scan(d)
+np.savez( os.path.join( cfg.path.data, calibration.get_vrf_fname()), data = data, x = vrf_array )
+#vrf, t = calibration.do_vrf_scan(d, box)
+#d.dacs.vrf = vrf
+#cfg.calibration.exptime = t
+#
+#
+#data, x = calibration.do_scurve(d, box)
+#fit_result = calibration.do_scurve_fit()
+#out = calibration.find_mean_and_set_vcmp(d, fit_result)
+#data, x = calibration.do_trimbit_scan(d, box)
+#calibration.find_and_write_trimbits(d, tau = 200)
+#
+#calibration.load_trimbits(d)
+#cfg.calibration.run_id = 1
+#data, x = calibration.do_scurve(d, box)
+#calibration.do_scurve_fit()
+#data, x = calibration.take_global_calibration_data(d, box)
+#calibration.per_chip_global_calibration()
+#
+#cfg.top = d.hostname[0]
+#cfg.bottom = d.hostname[1]
+#calibration.generate_calibration_report()
 
 #with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
 #    data = f['data']

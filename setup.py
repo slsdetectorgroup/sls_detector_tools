@@ -16,9 +16,9 @@ __version__ = '0.0.1'
 c_ext = Extension("_sls_cmodule",
                   sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"], 
                   libraries = ['stdc++', 'Core', 'MathCore', 'Hist'],
-                  library_dirs = ['/opt/root/lib'])
+                  library_dirs = ['/opt/root/5.XX/root/lib/'])
                   
-c_ext.extra_compile_args = ['`root-config --cflags --glibs`']
+c_ext.extra_compile_args = ['-std=c++11 `root-config --cflags --glibs`']
 
 c_ext.language = 'c++'
 

@@ -11,8 +11,8 @@ The fitting relies on the routines in sls_cmodule
 
 """
 #ROOT
-import ROOT
-from ROOT import TF1
+#import ROOT
+#from ROOT import TF1
     
 
 
@@ -31,7 +31,7 @@ import time
 import shutil
 
 #sls_detector imports
-from . import root_helper as r
+#from . import root_helper as r
 from . import plot as plot
 from . import utils as u
 from . import config as cfg
@@ -70,7 +70,7 @@ def setup_measurement(detector):
 #    detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
-    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+    yield ZmqReceiver('10.1.1.100', detector.rx_zmqport)
     
     #Teardown after test
     detector.dacs.set_from_array( dacs )
@@ -575,10 +575,11 @@ def find_mean_and_set_vcmp(detector, fit_result):
         lines = []
         
         #Module stuff
-        vcmp = np.zeros( (len(mask.eiger9M.module), 8) )
-        vcp  = np.zeros( (len(mask.eiger9M.module), 2) )
+        dm = mask.detector[cfg.geometry]
+        vcmp = np.zeros( (len(dm.module), 8) )
+        vcp  = np.zeros( (len(dm.module), 2) )
         
-        for j,mod in enumerate( mask.eiger9M.module ):
+        for j,mod in enumerate( dm.module ):
             for i in range( 8 ):
                 m = fit_result['mu'][mod][mask.chip[i]]
                 try:
@@ -588,11 +589,11 @@ def find_mean_and_set_vcmp(detector, fit_result):
 
                 vcmp[j,i] = th
                 
-                if type(detector) != type( None ):
-                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
+#                if type(detector) != type( None ):
+##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
   
                 #Integer division!
-                lines.append('./sls_detector_put {:s} {:d}'.format( mask.eiger9M.vcmp[j*8+i], th) )
+                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
                     
                 mean[i] = th
         
@@ -601,13 +602,20 @@ def find_mean_and_set_vcmp(detector, fit_result):
             vcp[j,0] = vcp0
             vcp[j,1] = vcp1
             
-            if type( detector ) != type(None):
-                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+#            if type( detector ) != type(None):
+                
+#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
-                
+        
+        if detector is not None:
+            print('Setting vcmp')
+            for i, v in enumerate(vcmp.flat):
+                detector.vcmp[i] = int(v)
+            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+        
         return vcmp, vcp, lines
 
 
@@ -944,20 +952,37 @@ def load_trimbits(detector):
     pathname = os.path.join(cfg.path.data, fname)
     detector.load_trimbits(pathname)
 
-def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
+def find_and_write_trimbits_scaled(fname = None, tb_fname = None, tau = None):
+    
+    #Filename for scurve
+    if fname is None:
+        fname = get_data_fname()
+        
+    #filename for tb data
+    if tb_fname is None:
+        tb_fname = get_tbdata_fname()
+        
+    #Load scurve data and calculate scale
+    pathname = os.path.join( cfg.path.data, fname)
+    tb_pathname = os.path.join( cfg.path.data, tb_fname)
+    with np.load( pathname ) as f:
+        scale =f['data'][:,:,-1]
+        scale = scale / 1000.
+    
+
     
     #Load trimbit scan    
-    with np.load( tb_fname ) as f:
+    with np.load( tb_pathname ) as f:
         data = f['data']
         x = f['x']
-    x = np.arange(0,64,2)    
+
     #Scale data
     data = data.astype( np.double )
     for i in range(data.shape[2]):
         data[:,:,i] /= scale
     
     #Load the fit result from the vcmp scan 
-    fit_result = np.load( fr_fname )
+    fit_result = np.load( os.path.join(cfg.path.data, get_fit_fname()) )
     
     #Find the number of counts at the inflection point
     target = function.scurve( fit_result['mu'], 
@@ -976,7 +1001,7 @@ def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
     tb[tb>63] = 63
     tb[tb<0] = 0
     tb = tb.round()
-    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
+#    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
     tb = tb.astype(np.int32)
     ax, im = plot.imshow(tb)
 #    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )

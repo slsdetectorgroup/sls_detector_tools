@@ -14,6 +14,8 @@ debug = False
 
 #Detector
 det_id = 'Unconfigured'
+geometry = '500k'
+
 
 class path: 
     """

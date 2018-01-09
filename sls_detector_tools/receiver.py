@@ -13,9 +13,9 @@ import warnings
 
 #import sys
 #sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
-from .mask import eiger500k
+from . import mask as mask
 from .utils import get_dtype
-
+from . import config as cfg
 
 
 class ZmqReceiver:
@@ -39,7 +39,8 @@ class ZmqReceiver:
         self.ip = ip
         self.context = zmq.Context()
         self.sockets = [ self.context.socket(zmq.SUB) for p in self.ports ]
-        self.mask = eiger500k()
+        
+        self.mask = mask.detector[cfg.geometry]
         #connect sockets
         for p,s in zip(self.ports, self.sockets):
             print('Initializing: {:d}'.format(p))
@@ -56,7 +57,10 @@ class ZmqReceiver:
             
             
         """
-        image = np.zeros((512,1024))
+        if cfg.geometry == '500k':
+            image = np.zeros((512,1024))
+        elif cfg.geometry == '9M':
+            image = np.zeros((3072,3072))
         for p,s in zip(self.mask.port, self.sockets):
             header = json.loads( s.recv() )
             data = s.recv()
@@ -73,7 +77,9 @@ class ZmqReceiver:
                 image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
         
         #flip bottom
-        image[0:256,:] = image[255::-1,:]
+        for hm in self.mask.halfmodule[1::2]:
+            image[hm] = image[hm][::-1,:]
+#        image[0:256,:] = image[255::-1,:]
         return image
 #        return data
             
