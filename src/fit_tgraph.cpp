@@ -14,6 +14,21 @@ double scurve_model(double *x, double *par)
    return f;
 }
 
+
+void gaus_fit(int n, double *x, double *y, double xmin, double xmax, double *result){
+
+
+    auto f = new TF1( "func", "gaus", xmin, xmax);
+    auto g = new TGraph(n, x, y);
+    g->Fit( "func",  "NSQR");
+    for (int i = 0; i<f->GetNpar(); ++i){
+        result[i] = f->GetParameter(i);
+    }
+    delete f;
+    delete g;
+    
+}
+
 void fit_using_tgraph(double *data, double *x, int shape[3], double *initpar, double *result){
     //Number of parameters for the fit
     int npar = 6;
