@@ -42,6 +42,8 @@ from . import ZmqReceiver
 from . import xrf_shutter_open
 from . import mpfit
 
+#compiled
+from _sls_cmodule import vrf_fit
 
 from contextlib import contextmanager
 @contextmanager
@@ -358,7 +360,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
     vrf = []
     
     if cfg.calibration.plot:
-        colors = sns.color_palette(  n_colors = cfg.nmod )
+        colors = sns.color_palette(  n_colors = len(hostnames) )
         fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
         xx = np.linspace(x.min(), x.max(), 300)
     
@@ -379,18 +381,21 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
             print( xmin, xmax )
         
         #Graph and fit function
-        c,h = r.plot(x,yd)
-        func = TF1('func', 'gaus', xmin, xmax)
-        fit = h.Fit('func', 'SQR') 
+#        c,h = r.plot(x,yd)
+#        func = TF1('func', 'gaus', xmin, xmax)
+#        fit = h.Fit('func', 'SQR') 
+#        
+#        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
         
-        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
-        
+        par = vrf_fit(x, yd, np.array((xmin, xmax)))
+        print(len(hostnames), hostnames)
         if cfg.calibration.plot:
             ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
             ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
             ax2.plot(xx, function.gaus(xx, *par), color = colors[i])
         
-        vrf.append( int( np.round( fit.Get().Parameter(1))) )
+#        vrf.append( int( np.round( fit.Get().Parameter(1))) )
+        vrf.append( int( np.round(par[1])) )
     
     if cfg.calibration.plot:
         ax1.legend(loc = 'upper left')
@@ -468,11 +473,12 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
-    t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(2)])
+    cts = [data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)]
+    t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)])
     print('Suggested exptime: {:.2f}'.format(t))
     
 
-    return vrf, t  
+    return vrf, t  , cts
     
 
 def find_mean_and_set_vcmp(detector, fit_result):
@@ -719,13 +725,14 @@ def do_scurve(detector, xraybox,
         
     with xrf_shutter_open(xraybox, cfg.calibration.target):
         data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
+        np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
 
     #plotting the result of the scurve scan
     if cfg.calibration.plot:
         _plot_scurve(data, x)
    
     #Save data
-    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
+#    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
     
     #if data should be used interactivly
     return data, x
@@ -918,10 +925,8 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
 #    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)
     with xrf_shutter_open(xraybox, cfg.calibration.target):
         data, x = _trimbit_scan(detector)
-    
-    
-    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
-             data = data, x = x)
+        np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
+                 data = data, x = x)
     
     
     if cfg.calibration.plot is True:
