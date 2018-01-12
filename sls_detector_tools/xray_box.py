@@ -37,50 +37,64 @@ class DummyBox:
         self.kV = 0
         self.mA = 0
         logger.info('Xray box initialized')
+
+    def open_shutter(self, sh):
+        pass
+
+    def close_shutter(self, sh):
+        pass
+
+    @property
+    def target(self):
+        pass
+    
+    @target.setter
+    def target(self, t):
+        pass
         
     
-    def target(self, t):
-        """
-        Write target name to logfile
-        """
-        logger.info('Switching to %s target', t)
-
-    def shutter(self, s):
-        """
-        Write opening shutter to logfile
-        """
-        logger.info('Opening shutter')
-
-    def unlock(self):
-        """
-        Write unlock to the logfile
-        """
-        logger.info('Unlocking the dummy Xraybox from other users')
-        
-    def HV(self, value):
-        """
-        Emulating High Voltage on and off
-        """
-        if value is True:
-            logger.info('Switching on HV')
-
-        else:
-            logger.info('Switching off HV')
-
-    def set_kV(self, kV):
-        self.kV = kV
-        logger.info('Setting HV to {:.2f} kV'.format(kV))
-        
-    def get_kV(self):
-        logger.info('Voltage is {:.2f} kV'.format(self.kV))
-        return self.kV
-        
-    def set_mA(self, mA):
-        self.mA = mA
-        logger.info('Setting HV to {:.2f} mA'.format(mA))
-    def get_mA(self):
-        logger.info('Tube current is {:.2f} mA'.format(mA))
-        return self.mA
+#    def target(self, t):
+#        """
+#        Write target name to logfile
+#        """
+#        logger.info('Switching to %s target', t)
+#
+#    def shutter(self, s):
+#        """
+#        Write opening shutter to logfile
+#        """
+#        logger.info('Opening shutter')
+#
+#    def unlock(self):
+#        """
+#        Write unlock to the logfile
+#        """
+#        logger.info('Unlocking the dummy Xraybox from other users')
+#        
+#    def HV(self, value):
+#        """
+#        Emulating High Voltage on and off
+#        """
+#        if value is True:
+#            logger.info('Switching on HV')
+#
+#        else:
+#            logger.info('Switching off HV')
+#
+#    def set_kV(self, kV):
+#        self.kV = kV
+#        logger.info('Setting HV to {:.2f} kV'.format(kV))
+#        
+#    def get_kV(self):
+#        logger.info('Voltage is {:.2f} kV'.format(self.kV))
+#        return self.kV
+#        
+#    def set_mA(self, mA):
+#        self.mA = mA
+#        logger.info('Setting HV to {:.2f} mA'.format(mA))
+#    def get_mA(self):
+#        logger.info('Tube current is {:.2f} mA'.format(mA))
+#        return self.mA
         
 class XrayBox():
     """

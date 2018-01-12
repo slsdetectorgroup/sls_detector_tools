@@ -477,6 +477,7 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)])
     print('Suggested exptime: {:.2f}'.format(t))
     
+    np.savez( os.path.join(cfg.path.data, get_vrf_fname()), data = data, x = x, vrf = vrf )
 
     return vrf, t  , cts
     
@@ -1011,6 +1012,10 @@ def find_and_write_trimbits_scaled(fname = None, tb_fname = None, tau = None):
     ax, im = plot.imshow(tb)
 #    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
     
+    fname = get_trimbit_fname()
+    pathname = os.path.join(cfg.path.data, fname)
+    np.savez( pathname, trimbits = tb, fit = result)
+    
     return tb, target, data,x, result
     
 
@@ -1085,8 +1090,6 @@ def find_and_write_trimbits(detector, tau = None):
         
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
-    
-
     np.savez( pathname, trimbits = tb, fit = result)
     
     hostname = detector.hostname
