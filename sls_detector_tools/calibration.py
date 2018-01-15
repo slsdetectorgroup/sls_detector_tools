@@ -319,8 +319,6 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     return data, vrf_array
 
 def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
-     #Switch to 16bit since we always scan this fast
-
     detector.dynamic_range = cfg.calibration.dynamic_range 
     detector.exposure_time = cfg.calibration.exptime
 
