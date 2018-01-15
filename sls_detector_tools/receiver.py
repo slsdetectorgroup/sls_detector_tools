@@ -61,6 +61,7 @@ class ZmqReceiver:
             image = np.zeros((512,1024))
         elif cfg.geometry == '9M':
             image = np.zeros((3072,3072))
+            
         for p,s in zip(self.mask.port, self.sockets):
             header = json.loads( s.recv() )
             data = s.recv()
