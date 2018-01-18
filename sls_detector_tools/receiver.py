@@ -25,16 +25,22 @@ class ZmqReceiver:
     
     .. warning ::
         
-        Currently only Eiger500k
+        Currently only Eiger500k or 9M supports limited number of images!
     
     expects:
     json - header
     data - as specified in header
     json - end of acq
     """
-    def __init__(self, ip, ports):
+    def __init__(self, detector):
         warnings.warn('ZmqReceiver currently only supports Eiger500k')
-        
+
+        ip = detector.rx_udpip #Workaround until we get zmqip
+        ports = detector.rx_zmqport
+
+        #ip and ports
+        self.image_size = detector.image_size
+        print()
         self.ports = ports
         self.ip = ip
         self.context = zmq.Context()
@@ -50,17 +56,15 @@ class ZmqReceiver:
     def get_frame(self):
         """
         Read one frame from the streams
-        
-        .. todo::
-            
-            4 bit mode
-            
+
             
         """
-        if cfg.geometry == '500k':
-            image = np.zeros((512,1024))
-        elif cfg.geometry == '9M':
-            image = np.zeros((3072,3072))
+        # if cfg.geometry == '500k':
+        #     image = np.zeros((512,1024))
+        # elif cfg.geometry == '9M':
+        #     image = np.zeros((3072,3072))
+
+        image = np.zeros(self.image_size)
             
         for p,s in zip(self.mask.port, self.sockets):
             header = json.loads( s.recv() )

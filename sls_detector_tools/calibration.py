@@ -72,7 +72,7 @@ def setup_measurement(detector):
 #    detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
-    yield ZmqReceiver('10.1.1.100', detector.rx_zmqport)
+    yield ZmqReceiver(detector)
     
     #Teardown after test
     detector.dacs.set_from_array( dacs )
@@ -237,6 +237,9 @@ def get_halfmodule_mask():
         return a.halfmodule
     elif cfg.geometry == '9M':
         a = mask.eiger9M()
+        return a.halfmodule
+    elif cfg.geometry == '250k':
+        a = mask.eiger250k()
         return a.halfmodule
     else:
         raise NotImplementedError('Half module mask doses not exist for the'\
@@ -519,17 +522,18 @@ def find_mean_and_set_vcmp(detector, fit_result):
     mean = np.zeros( detector.n_modules*4, dtype = np.int )
     
     #Find the mean values for both module and half module
-    if cfg.geometry == 'quad':
-        raise NotImplementedError('Need to do some work')
-        # #Half module
-        # for i in range( 4, 8, 1):
-        #     m = fit_result['mu'][mask.chip[i]]
-        #     th = int( m[(m>10) & (m<1990)].mean() )
-        #     detector.set_dac(mask.vcmp[i-4], th)
-        #     mean[i - 4] = th
-        #
-        # vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        # detector.set_dac('0:vcp', vcp0)
+    if cfg.geometry == '250k':
+        for i in range(mean.size):
+            m = fit_result['mu'][mask.chip[i+4]]
+            try:
+                th = int( m[(m>100) & (m<1900)].mean() )
+            except:
+                th = 0
+            mean[i] = th
+        
+        vcp = int(mean[0:4][mean[0:4]>0].mean())
+        detector.vcmp = mean
+        detector.dacs.vcp = vcp
         
     elif cfg.geometry == '500k':
         for i in range(mean.size):
@@ -622,6 +626,8 @@ def find_mean_and_set_vcmp(detector, fit_result):
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
         return vcmp, vcp, lines
+    else:
+        raise NotImplementedError('Check detector geometry')
 
 
 def find_initial_parameters(x,y, thrange = (0,2200)):
@@ -838,9 +844,9 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
 #    
 #    
 #    #Save the fit result
-#    fname = get_fit_fname().strip('.npy')
-#    pathname = os.path.join(cfg.path.data, fname)
-#    np.save(pathname, fit_result)
+    fname = get_fit_fname().strip('.npy')
+    pathname = os.path.join(cfg.path.data, fname)
+    np.save(pathname, fit_result)
     
     return fit_result
 
@@ -956,7 +962,7 @@ def load_trimbits(detector):
     pathname = os.path.join(cfg.path.data, fname)
     detector.load_trimbits(pathname)
 
-def find_and_write_trimbits_scaled(fname = None, tb_fname = None, tau = None):
+def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None):
     
     #Filename for scurve
     if fname is None:
@@ -1013,6 +1019,17 @@ def find_and_write_trimbits_scaled(fname = None, tb_fname = None, tau = None):
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
     np.savez( pathname, trimbits = tb, fit = result)
+    
+    
+    #Actual trimbit files
+    dacs = detector.dacs.get_asarray()
+    dacs = np.vstack((dacs, np.zeros(1)))
+    ##
+    os.chdir(cfg.path.data)
+    host = detector.hostname
+    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
+        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
+        io.write_trimbit_file( fn, tb[hm], dacs[:,i] )
     
     return tb, target, data,x, result
     

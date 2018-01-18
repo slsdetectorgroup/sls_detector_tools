@@ -15,11 +15,20 @@ from functools import partial
 import re
 from pathlib import Path
 from contextlib import contextmanager
-
+import time
 @contextmanager
 def xrf_shutter_open(box, target):
     box.target = target
     box.open_shutter('XRF')
+
+    #Communication with vacuum box seems tricky
+    for i in range(10):
+        if box.shutter_status['XRF'] != 'ON':
+            box.open_shutter('XRF')
+            time.sleep(0.3)
+    if box.shutter_status['XRF'] != 'ON':
+        raise RuntimeError('Shutter not open!')
+
     print('open')
     yield
     box.close_shutter('XRF')
@@ -68,49 +77,15 @@ class DummyBox:
         
 class XrayBox():
     """
-    Wrapper around the xrayClient64, uses the executable from afs, make sure
-    that you have access. Supports logging of commands using the python logger.
-    
-    
-    Examples
-    -----------
-    
-    ::
-        
-       from sls_detector_tools import XrayBox
-       box = XrayBox()
-       box.unlock()
-       
-       box.current = 40
-       box.voltage = 30
-       box.target = 'Cu'
-       
-       box.voltage
-       >> 30.0
-       box.current
-       >> 40.0
-       
-       #For setting target open and close shutter we have a context manager
-       from sls_detector_tools import xrf_shutter_open
-       
-       with xrf_shutter_open(box, 'Cu'):
-           #do your measurement
-           #shutter is closed when exiting
-           #this block
-    
-    .. note:: 
-        Requires access to afs, make sure that you klog or (kinit+aklog)
-        before starting measurement
-        
+    Base class for BigXrayBox and VacuumBox
     """
     
-    _shutter_name_to_index = {'XRF': 1,
-                     'Direct beam': 3}
+    _shutter_name_to_index = {'XRF': 4,
+                     'Right': 3}
     _shutter_index_to_name = {1: 'XRF',
-                              3: 'Direct beam'}    
+                              3: 'Right'}
     
     #Find the bin directory in the package
-#    _xrayClient = '/afs/psi.ch/project/sls_det_software/bin/xrayClient64'
     p = Path(__file__)
     _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
     print(_xrayClient)
@@ -328,7 +303,7 @@ class XrayBox():
             
         """
         status = {}
-        for i in [1,3]:
+        for i in self._shutter_index_to_name.keys():
             out = self._call('getshutter{:d}'.format(i)) 
             a = re.search('(?<=Shutter )\d:\S+', out.stdout.decode())
             j, s = a.group().split(':')
@@ -396,3 +371,36 @@ class XrayBox():
         print(out.stdout.decode())
 
         
+class BigXrayBox(XrayBox):
+    _shutter_name_to_index = {'XRF': 1,
+                              'Direct beam': 3}
+    _shutter_index_to_name = {1: 'XRF',
+                              3: 'Direct beam'}
+
+    # Find the bin directory in the package
+    p = Path(__file__)
+    _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+    print(_xrayClient)
+
+    def __init__(self):
+        if cfg.verbose:
+            print('BigXrayBox')
+        logger.info('Class instance initialized')
+
+class VacuumBox(XrayBox):
+    _shutter_name_to_index = {'XRF': 4,
+                              'Right': 3,
+                              'Up': 2}
+    _shutter_index_to_name = {4: 'XRF',
+                              3: 'Direct beam',
+                              2: 'Up'}
+
+    # Find the bin directory in the package
+    p = Path(__file__)
+    _xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
+    print(_xrayClient)
+
+    def __init__(self):
+        if cfg.verbose:
+            print('VacuumBox')
+        logger.info('Class instance initialized')
