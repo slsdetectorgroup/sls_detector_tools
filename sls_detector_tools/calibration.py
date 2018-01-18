@@ -516,23 +516,23 @@ def find_mean_and_set_vcmp(detector, fit_result):
     
     """
     #Mean value for each chip to be used as threshold during scan    
-    mean = np.zeros( cfg.nmod*4, dtype = np.int )
+    mean = np.zeros( detector.n_modules*4, dtype = np.int )
     
     #Find the mean values for both module and half module
     if cfg.geometry == 'quad':
-        #Half module
-        for i in range( 4, 8, 1):
-            m = fit_result['mu'][mask.chip[i]]
-            th = int( m[(m>10) & (m<1990)].mean() )
-            detector.set_dac(mask.vcmp[i-4], th)
-            mean[i - 4] = th
-            
-        vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        detector.set_dac('0:vcp', vcp0)
+        raise NotImplementedError('Need to do some work')
+        # #Half module
+        # for i in range( 4, 8, 1):
+        #     m = fit_result['mu'][mask.chip[i]]
+        #     th = int( m[(m>10) & (m<1990)].mean() )
+        #     detector.set_dac(mask.vcmp[i-4], th)
+        #     mean[i - 4] = th
+        #
+        # vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+        # detector.set_dac('0:vcp', vcp0)
         
     elif cfg.geometry == '500k':
-        #OK for Python API
-        for i in range( cfg.nmod*4 ):
+        for i in range(mean.size):
             m = fit_result['mu'][mask.chip[i]]
             try:
                 th = int( m[(m>100) & (m<1900)].mean() )
@@ -540,39 +540,40 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 th = 0
             mean[i] = th
         
-        vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        vcp1 = int( mean[4:][mean[4:]>0].mean() )
+        vcp0 = int(mean[0:4][mean[0:4]>0].mean())
+        vcp1 = int(mean[4:][mean[4:]>0].mean())
         detector.vcmp = mean
         detector.dacs.vcp = [vcp0, vcp1]
 
         
     elif cfg.geometry == '2M':
+        raise NotImplementedError('Need to do some work')
         #Module stuff
-        vcmp = np.zeros( (len(mask.eiger2M.module), 8) )
-        vcp  = np.zeros( (len(mask.eiger2M.module), 2) )
-        
-        for j,mod in enumerate( mask.eiger2M.module):
-            for i in range( 8 ):
-                m = fit_result['mu'][mod][mask.chip[i]]
-                try:
-                    th = int( m[(m>10) & (m<1990)].mean() )
-                except:
-                    th = 0
-                vcmp[j,i] = th
-                
-                if type(detector) != type( None ):
-                    detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)
-                    
-                mean[i] = th
-        
-            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-            vcp1 = int( mean[4:][mean[4:]>0].mean() )
-            vcp[j,0] = vcp0
-            vcp[j,1] = vcp1
-            
-            if type( detector ) != type(None):
-                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1)  
+        # vcmp = np.zeros( (len(mask.eiger2M.module), 8) )
+        # vcp  = np.zeros( (len(mask.eiger2M.module), 2) )
+        #
+        # for j,mod in enumerate( mask.eiger2M.module):
+        #     for i in range( 8 ):
+        #         m = fit_result['mu'][mod][mask.chip[i]]
+        #         try:
+        #             th = int( m[(m>10) & (m<1990)].mean() )
+        #         except:
+        #             th = 0
+        #         vcmp[j,i] = th
+        #
+        #         if type(detector) != type( None ):
+        #             detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)
+        #
+        #         mean[i] = th
+        #
+        #     vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+        #     vcp1 = int( mean[4:][mean[4:]>0].mean() )
+        #     vcp[j,0] = vcp0
+        #     vcp[j,1] = vcp1
+        #
+        #     if type( detector ) != type(None):
+        #         detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+        #         detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1)
 
 
     elif cfg.geometry == '9M':
@@ -608,7 +609,6 @@ def find_mean_and_set_vcmp(detector, fit_result):
             vcp[j,1] = vcp1
             
 #            if type( detector ) != type(None):
-                
 #                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
 #                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             

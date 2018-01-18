@@ -5,7 +5,7 @@ to the */afs/psi.ch/project/sls_det_software/bin/xrayClient64*. Provides a
 DummyBox that only writes the commands to the log file without doing anything.
 
 """
-from __future__ import print_function
+import os
 from . import config as cfg
 #from subprocess import Popen, PIPE, run
 import subprocess
@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger()
 from functools import partial
 import re
-
+from pathlib import Path
 from contextlib import contextmanager
 
 @contextmanager
@@ -36,7 +36,9 @@ class DummyBox:
     def __init__(self):
         self.kV = 0
         self.mA = 0
+        self_HV = False
         logger.info('Xray box initialized')
+        print(__file__)
 
     def open_shutter(self, sh):
         pass
@@ -51,50 +53,18 @@ class DummyBox:
     @target.setter
     def target(self, t):
         pass
-        
-    
-#    def target(self, t):
-#        """
-#        Write target name to logfile
-#        """
-#        logger.info('Switching to %s target', t)
-#
-#    def shutter(self, s):
-#        """
-#        Write opening shutter to logfile
-#        """
-#        logger.info('Opening shutter')
-#
-#    def unlock(self):
-#        """
-#        Write unlock to the logfile
-#        """
-#        logger.info('Unlocking the dummy Xraybox from other users')
-#        
-#    def HV(self, value):
-#        """
-#        Emulating High Voltage on and off
-#        """
-#        if value is True:
-#            logger.info('Switching on HV')
-#
-#        else:
-#            logger.info('Switching off HV')
-#
-#    def set_kV(self, kV):
-#        self.kV = kV
-#        logger.info('Setting HV to {:.2f} kV'.format(kV))
-#        
-#    def get_kV(self):
-#        logger.info('Voltage is {:.2f} kV'.format(self.kV))
-#        return self.kV
-#        
-#    def set_mA(self, mA):
-#        self.mA = mA
-#        logger.info('Setting HV to {:.2f} mA'.format(mA))
-#    def get_mA(self):
-#        logger.info('Tube current is {:.2f} mA'.format(mA))
-#        return self.mA
+
+    @property
+    def HV(self):
+        return self._HV
+
+    @HV.setter
+    def HV(self, value):
+        self._HV = value
+
+    def unlock(self):
+        pass
+
         
 class XrayBox():
     """
@@ -139,7 +109,11 @@ class XrayBox():
     _shutter_index_to_name = {1: 'XRF',
                               3: 'Direct beam'}    
     
-    _xrayClient = '/afs/psi.ch/project/sls_det_software/bin/xrayClient64'
+    #Find the bin directory in the package
+#    _xrayClient = '/afs/psi.ch/project/sls_det_software/bin/xrayClient64'
+    p = Path(__file__)
+    _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+    print(_xrayClient)
     
     def __init__(self):
         if cfg.verbose:
@@ -264,10 +238,14 @@ class XrayBox():
         
         """
         out = self._call('getActualC')
-        a = re.search('(?<=Rxd data:)\w+', out.stdout.decode())
-        mA = float(a.group())/1e3
-        logger.info('Current is {:.2f} mA'.format(mA))
-        return mA
+        try:
+            a = re.search('(?<=Rxd data:)\w+', out.stdout.decode())
+            mA = float(a.group())/1e3
+            logger.info('Current is {:.2f} mA'.format(mA))
+            return mA
+        except ValueError:
+            print(out.stdout.decode())
+        
     
     @current.setter
     def current(self, mA):

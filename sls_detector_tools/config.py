@@ -9,7 +9,7 @@ import logging
 import os
 import sys
 
-verbose = False
+verbose = True
 debug = False
 
 #Detector
