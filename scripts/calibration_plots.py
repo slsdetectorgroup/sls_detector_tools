@@ -63,3 +63,18 @@ ax, im = imshow(tb)
 ax.set_title('Trimbit map')
 a = calibration._plot_trimbit_histogram(tb)
 
+
+cfg.calibration.run_id = 1
+
+#plot vcmp
+with np.load(os.path.join(cfg.path.data, calibration.get_data_fname())) as f:
+    data = f['data']
+    x = f['x']
+
+fit_result = np.load(os.path.join(cfg.path.data, calibration.get_fit_fname()))
+
+
+calibration._plot_scurve(data, x)
+mean, std, lines = chip_histograms( fit_result['mu'] )
+plt.xlabel('Vcmp [DAC LSB]')
+plt.ylabel('Number of Pixels')
