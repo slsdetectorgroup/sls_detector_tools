@@ -12,6 +12,7 @@ from scipy.interpolate import interp1d
 from sls_detector_tools import function
 
 
+
 def get_dtype(dr):
     """
     Returns the correct numpy dtype from a number or string

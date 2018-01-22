@@ -3,6 +3,8 @@
 #include <numpy/arrayobject.h>
 #include <iostream>
 #include "fit_tgraph.h"
+#include "TH1D.h"
+
 
 
 /* Docstrings */
@@ -63,12 +65,14 @@ PyDoc_STRVAR(
 static PyObject *fit(PyObject *self, PyObject *args);
 static PyObject *find_trimbits(PyObject *self, PyObject *args);
 static PyObject *vrf_fit(PyObject *self, PyObject *args);
+static PyObject *hist(PyObject *self, PyObject *args);
 
 /* Module specification */
 static PyMethodDef module_methods[] = {
     {"fit", (PyCFunction)fit, METH_VARARGS, fit_doc},
     {"find_trimbits", find_trimbits, METH_VARARGS, find_trimbits_doc},
     {"vrf_fit", vrf_fit, METH_VARARGS, find_trimbits_doc},
+    {"hist", hist, METH_VARARGS, find_trimbits_doc},
     {NULL, NULL, 0, NULL}
 };
 
@@ -318,4 +322,88 @@ static PyObject *vrf_fit(PyObject *self, PyObject *args)
     Py_DECREF(par_array);
 
     return result_array;
+}
+
+static PyObject *hist(PyObject *self, PyObject *args)
+{
+    //PyObject to be extracted from *args
+    PyObject *data_obj;
+    PyObject *par_obj;
+
+    //Check and parse..
+    if (!PyArg_ParseTuple(args, "OO", &data_obj, &par_obj)){
+        return NULL;
+    }
+
+    //Numpy array from the parsed objects
+    PyObject *data_array = PyArray_FROM_OTF(data_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+    PyObject *par_array = PyArray_FROM_OTF(par_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+
+    //Exception if it fails
+    if (data_array == NULL || par_array == NULL ){
+        std::cout << "Something went wrong, possibly crappy arguments?" << std::endl;
+        return NULL;
+    }
+
+
+
+    //!TODO Find this automatically
+    const int npar = 3;
+
+    //Check that we have the righ number of parameters
+    if ( (int)PyArray_NDIM( (PyArrayObject*)par_array) != 1 ){
+        std::cout << "ndimpar!" << std::endl;
+        return NULL;
+    }
+
+
+
+
+    /* Get a pointer to the data as C-types. */
+    double *data = (double*)PyArray_DATA((PyArrayObject*)data_array);
+    double *lim = (double*)PyArray_DATA((PyArrayObject*)par_array);
+    double xmin = lim[0];
+    double xmax = lim[1];
+    int bins = static_cast<int>(lim[2]);
+
+
+    //Histogram goes here
+    auto h = new TH1D("test", "test", bins, xmin, xmax);
+
+    //Number of elements in the data array
+    const int n_elements = (int)PyArray_SIZE((PyArrayObject*)data_array);
+
+    //Fill the histogram
+    for (int i=0; i<n_elements; ++i)
+        h->Fill(data[i]);
+
+
+    //Create numpy array for result
+    npy_intp dims[1] = { bins };
+    PyObject *x_array = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+    PyObject *y_array = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+
+    /* Get a pointer to the data as C-types. */
+    double *x = (double*)PyArray_DATA((PyArrayObject*)x_array);
+    double *y = (double*)PyArray_DATA((PyArrayObject*)y_array);
+
+//    //Loop and fetch data
+    for (int i=0; i<bins; ++i){
+        //bin 0 is underflow starting with bin 1
+        x[i] = h->GetBinLowEdge(i+1);
+        y[i] = h->GetBinContent(i+1);
+    }
+
+    //List to use with returns
+    auto dict = PyDict_New();
+    PyDict_SetItemString(dict, "x", x_array);
+    PyDict_SetItemString(dict, "y", y_array);
+    PyDict_SetItemString(dict,"mean", Py_BuildValue("f", h->GetMean()));
+    PyDict_SetItemString(dict,"std", Py_BuildValue("f", h->GetStdDev()));
+
+    //Clean up
+    Py_DECREF(data_array);
+    Py_DECREF(par_array);
+
+    return dict;
 }

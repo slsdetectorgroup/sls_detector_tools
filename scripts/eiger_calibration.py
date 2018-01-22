@@ -50,8 +50,8 @@ cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = 'EM3'
 cfg.calibration.gain = 'gain3'
 cfg.calibration.target = 'Cr'
-cfg.path.data = os.path.join('/mnt/local_sw_raid/eiger_data/trash',
-                             cfg.det_id, cfg.calibration.gain)
+#cfg.path.data = os.path.join('/mnt/local_sw_raid/eiger_data/trash',
+#                             cfg.det_id, cfg.calibration.gain)
 
 cfg.calibration.run_id = 0
 
@@ -62,26 +62,26 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
 #-------------------------------------------------------------Xray box control
-box = VacuumBox()  #XrayBox or DummyBox
-box.unlock()
-box.HV =  True
-print(box.current)
+#box = VacuumBox()  #XrayBox or DummyBox
+#box.unlock()
+#box.HV =  True
+#print(box.current)
 
 
 
 
 #--------------------------------------------Setup for taking calibration data
-d = Eiger()
-calibration.setup_detector(d)
-vrf, t, cts = calibration.do_vrf_scan(d, box)
-d.dacs.vrf = vrf
-cfg.calibration.exptime = 30 #or t
+#d = Eiger()
+#calibration.setup_detector(d)
+#vrf, t, cts = calibration.do_vrf_scan(d, box)
+#d.dacs.vrf = vrf
+#cfg.calibration.exptime = 30 #or t
 #
-data, x = calibration.do_scurve(d, box)
+#data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
-data, x = calibration.do_trimbit_scan(d, box)
-tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
-calibration.load_trimbits(d)
+#data, x = calibration.do_trimbit_scan(d, box)
+#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+#calibration.load_trimbits(d)
 
 
 

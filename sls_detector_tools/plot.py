@@ -20,6 +20,7 @@ import seaborn as sns
 from . import mask
 from . import config as cfg
 from . import utils
+from _sls_cmodule import hist
 #from sls_detector import function
 
 
@@ -31,6 +32,17 @@ from . import utils
 #    print('sls_detector/plot: ROOT version of r not imported! Using python version')
 #    from sls_detector import py_r as r
 
+
+
+
+def histogram(data, xmin = 0, xmax = 10, bins = 10, plot = True):
+    h = hist(data, np.array((xmin, xmax, bins)))
+
+    if plot is True:
+        fig, ax = plt.subplots(1)
+        ax.plot(h['x'],h['y'], drawstyle = 'steps-post')
+        return h, fig,ax
+    return h
 
 def imshow(data, cmap='coolwarm',
            log=False,
@@ -449,12 +461,13 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
     bins: int, optional
         Number of bins in the histogram
     """
-    from sls_detector_tools import root_helper as r
-    
-    if cfg.nmod == 1:
+
+    if cfg.geometry == '250k':
         chips = mask.chip[4:]
+        print('tva hundra')
     else:
         chips = mask.chip
+        print(cfg.geometry)
 
     mean = []
     std = []
@@ -468,15 +481,18 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
 
     for m in mask.detector[cfg.geometry].module:
         for i, c in enumerate(chips):
-            canvas, histogram = r.hist(data[m][c], xmin=xmin,
-                                       xmax=xmax, bins=bins)
-            mean.append(histogram.GetMean())
-            std.append(histogram.GetStdDev())
+            h = histogram(data[m][c],
+                          xmin=xmin,
+                          xmax=xmax,
+                          bins=bins,
+                          plot = False)
+            mean.append(h['mean'])
+            std.append(h['std'])
 
             label = r'{:d}: $\mu$: {:.1f} $\sigma$: {:.1f}'.format(i,
                                                                    mean[-1], std[-1])
 
-            x0, y0 = r.getHist(histogram)
+            x0, y0 = h['x'], h['y']
             if cfg.calibration.plot:
                 plt.plot(x0, y0, ls='steps', label=label)
 
@@ -485,6 +501,7 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
 
 
             lines.append((x0, y0))
+
     if cfg.calibration.plot:
         plt.legend(loc='best')
         plt.ylim(0, max_value*1.1)
