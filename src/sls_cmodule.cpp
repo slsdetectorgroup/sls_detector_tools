@@ -326,7 +326,7 @@ static PyObject *vrf_fit(PyObject *self, PyObject *args)
 
 static PyObject *hist(PyObject *self, PyObject *args)
 {
-    //PyObject to be extracted from *args
+    //PyObject to be extracted from *args holds data and parameters to the TH1D
     PyObject *data_obj;
     PyObject *par_obj;
 
@@ -347,16 +347,12 @@ static PyObject *hist(PyObject *self, PyObject *args)
 
 
 
-    //!TODO Find this automatically
+    //is the length of par 3? [xmin, xmax, bins]
     const int npar = 3;
-
-    //Check that we have the righ number of parameters
-    if ( (int)PyArray_NDIM( (PyArrayObject*)par_array) != 1 ){
-        std::cout << "ndimpar!" << std::endl;
+    if ( (int)PyArray_NDIM( (PyArrayObject*)par_array) != npar ){
+        std::cout << "Wrong length of parameters" << std::endl;
         return NULL;
     }
-
-
 
 
     /* Get a pointer to the data as C-types. */
@@ -394,7 +390,7 @@ static PyObject *hist(PyObject *self, PyObject *args)
         y[i] = h->GetBinContent(i+1);
     }
 
-    //List to use with returns
+    //Dict to use with returns dict['x'] etc.
     auto dict = PyDict_New();
     PyDict_SetItemString(dict, "x", x_array);
     PyDict_SetItemString(dict, "y", y_array);
@@ -402,6 +398,7 @@ static PyObject *hist(PyObject *self, PyObject *args)
     PyDict_SetItemString(dict,"std", Py_BuildValue("f", h->GetStdDev()));
 
     //Clean up
+    delete h;
     Py_DECREF(data_array);
     Py_DECREF(par_array);
 

@@ -835,15 +835,14 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
 
     fit_result = mpfit.fit(data, x, cfg.calibration.nproc, par)  
     
-#    #If specified plot and save the result
+   #If specified plot and save the result
     if cfg.calibration.plot:
         mean, std, lines = plot.chip_histograms( fit_result['mu'], xmin = thrange[0], xmax = thrange[1] )
         plt.xlabel('Vcmp [DAC LSB]')
         plt.ylabel('Number of Pixels')
         plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') ) )
-#    
-#    
-#    #Save the fit result
+
+   #Save the fit result
     fname = get_fit_fname().strip('.npy')
     pathname = os.path.join(cfg.path.data, fname)
     np.save(pathname, fit_result)
@@ -892,7 +891,13 @@ def _plot_trimbit_scan(data,x):
     fig.suptitle('Trimbit scan')
     fig.tight_layout()
     return fig, ax1, ax2
-    
+
+
+def _plot_trimbit_histogram(tb):
+    h, fig, ax = plot.histogram(tb, 0, 64, 64)
+    ax.set_xlabel('Trimbits')
+    return h
+
 def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     """
     Setup the detector and then scan trough the trimbits. Normally with 

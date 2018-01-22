@@ -65,22 +65,26 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 #box = VacuumBox()  #XrayBox or DummyBox
 #box.unlock()
 #box.HV =  True
-#print(box.current)
 
 
 
+
+cfg.calibration.threshold = 1200
+cfg.calibration.vrf_scan_exptime = 0.1
 
 #--------------------------------------------Setup for taking calibration data
 #d = Eiger()
 #calibration.setup_detector(d)
-#vrf, t, cts = calibration.do_vrf_scan(d, box)
+#vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3950)
 #d.dacs.vrf = vrf
-#cfg.calibration.exptime = 30 #or t
+#cfg.calibration.exptime = t
+#
 #
 #data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit_scaled()
+#fit_result = calibration.do_scurve_fit_scaled()
+#cfg.calibration.exptime = 29.32
 #data, x = calibration.do_trimbit_scan(d, box)
-#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #calibration.load_trimbits(d)
 
 

@@ -25,7 +25,7 @@ class ZmqReceiver:
     
     .. warning ::
         
-        Currently only Eiger500k or 9M supports limited number of images!
+        Current support: 250k, 500k and 9M. Only single frame acq.
     
     expects:
     json - header
@@ -33,14 +33,13 @@ class ZmqReceiver:
     json - end of acq
     """
     def __init__(self, detector):
-        warnings.warn('ZmqReceiver currently only supports Eiger500k')
+        warnings.warn('ZmqReceiver currently only supports single frames')
 
         ip = detector.rx_udpip #Workaround until we get zmqip
         ports = detector.rx_zmqport
 
         #ip and ports
         self.image_size = detector.image_size
-        print()
         self.ports = ports
         self.ip = ip
         self.context = zmq.Context()
@@ -59,11 +58,6 @@ class ZmqReceiver:
 
             
         """
-        # if cfg.geometry == '500k':
-        #     image = np.zeros((512,1024))
-        # elif cfg.geometry == '9M':
-        #     image = np.zeros((3072,3072))
-
         image = np.zeros(self.image_size)
             
         for p,s in zip(self.mask.port, self.sockets):
@@ -77,14 +71,12 @@ class ZmqReceiver:
                 tmp2[0::2] = np.bitwise_and(tmp, 0x0f)
                 tmp2[1::2] = np.bitwise_and(tmp >> 4, 0x0f)
                 image[p] = tmp2.reshape(256,512)
-#                image[p][1::2] = np.bitwise_and(tmp >> 4, 0x0f)
             else:
                 image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
         
         #flip bottom
         for hm in self.mask.halfmodule[1::2]:
             image[hm] = image[hm][::-1,:]
-#        image[0:256,:] = image[255::-1,:]
+
         return image
-#        return data
-            
+

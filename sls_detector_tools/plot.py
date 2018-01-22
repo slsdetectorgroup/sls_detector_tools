@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Plotting routines for displaying image sensor data using matplotlib and
-seaborn. Some routines like the chip_histograms rely on PyROOT but the import
-should work even without ROOT.
+seaborn.
 """
-#Print function to be ready for Python3
-from __future__ import print_function
+
 
 #Python imports
 from itertools import permutations
@@ -21,27 +19,36 @@ from . import mask
 from . import config as cfg
 from . import utils
 from _sls_cmodule import hist
-#from sls_detector import function
-
-
-#Try to import r (root plotting stuff) otherwise fallback on python version
-#try:
-#    from sls_detector_tools import root_helper as r
-#except ImportError:
-#    pass
-#    print('sls_detector/plot: ROOT version of r not imported! Using python version')
-#    from sls_detector import py_r as r
 
 
 
+def histogram(data, xmin = 0, xmax = 10, nbins = 10, plot = True):
+    """Histogram using a ROOT.TH1D
 
-def histogram(data, xmin = 0, xmax = 10, bins = 10, plot = True):
-    h = hist(data, np.array((xmin, xmax, bins)))
+    Parameters
+    ------------
+    data: numpy_array any dimension
+        Data points for the histogram
+    xmin: double
+        Low limit
+    xmax: double
+        High limit
+    nbins: int
+        number of bins of the histogram
+
+
+    Returns
+    ---------
+    result: dict
+        Python dict holding x, y, mean and std
+
+    """
+    h = hist(data, np.array((xmin, xmax, nbins)))
 
     if plot is True:
-        fig, ax = plt.subplots(1)
+        fig, ax = plt.subplots(1, figsize = (14,7))
         ax.plot(h['x'],h['y'], drawstyle = 'steps-post')
-        return h, fig,ax
+        return h, fig ,ax
     return h
 
 def imshow(data, cmap='coolwarm',
@@ -484,7 +491,7 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
             h = histogram(data[m][c],
                           xmin=xmin,
                           xmax=xmax,
-                          bins=bins,
+                          nbins=bins,
                           plot = False)
             mean.append(h['mean'])
             std.append(h['std'])
