@@ -397,9 +397,9 @@ class BigXrayBox(XrayBox):
     def __init__(self):
         # Find the bin directory in the package
         p = Path(__file__)
-        _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+        self._xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
         if cfg.verbose:
-            print('BigXrayBox using: {}'.format(_xrayClient))
+            print('BigXrayBox using: {}'.format(self._xrayClient))
         logger.info('BigXrayBox created')
 
 class VacuumBox(XrayBox):
@@ -424,7 +424,7 @@ class VacuumBox(XrayBox):
     def __init__(self):
         # Find the bin directory in the package
         p = Path(__file__)
-        _xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
+        self._xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
         if cfg.verbose:
-            print('VacuumBox using: {}'.format(_xrayClient))
+            print('VacuumBox using: {}'.format(self._xrayClient))
         logger.info('VacuumBox Created')
