@@ -175,8 +175,8 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="c1">#ROOT</span>
-<span class="kn">import</span> <span class="nn">ROOT</span>
-<span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">TF1</span>
+<span class="c1">#import ROOT</span>
+<span class="c1">#from ROOT import TF1</span>
     
 
 
@@ -195,7 +195,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="c1">#sls_detector imports</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">root_helper</span> <span class="k">as</span> <span class="n">r</span>
+<span class="c1">#from . import root_helper as r</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">plot</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">u</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
@@ -206,6 +206,8 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">xrf_shutter_open</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">mpfit</span>
 
+<span class="c1">#compiled</span>
+<span class="kn">from</span> <span class="nn">_sls_cmodule</span> <span class="k">import</span> <span class="n">vrf_fit</span>
 
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <div class="viewcode-block" id="setup_measurement"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.setup_measurement">[docs]</a><span class="nd">@contextmanager</span>
@@ -234,7 +236,7 @@
 <span class="c1">#    detector.exposure_time = 0.01 </span>
     <span class="n">dacs</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>  
     
-    <span class="k">yield</span> <span class="n">ZmqReceiver</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">rx_zmqip</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">rx_zmqport</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="n">ZmqReceiver</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
     
     <span class="c1">#Teardown after test</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">set_from_array</span><span class="p">(</span> <span class="n">dacs</span> <span class="p">)</span></div>
@@ -400,6 +402,9 @@
     <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;9M&#39;</span><span class="p">:</span>
         <span class="n">a</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">halfmodule</span>
+    <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;250k&#39;</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">eiger250k</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">halfmodule</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Half module mask doses not exist for the&#39;</span>\
                                   <span class="s1">&#39;selected geometry:&#39;</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">)</span></div>
@@ -481,8 +486,6 @@
     <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">vrf_array</span>
 
 <span class="k">def</span> <span class="nf">_threshold_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="mi">2001</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">40</span><span class="p">):</span>
-     <span class="c1">#Switch to 16bit since we always scan this fast</span>
-
     <span class="n">detector</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">dynamic_range</span> 
     <span class="n">detector</span><span class="o">.</span><span class="n">exposure_time</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">exptime</span>
 
@@ -522,7 +525,7 @@
     <span class="n">vrf</span> <span class="o">=</span> <span class="p">[]</span>
     
     <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
-        <span class="n">colors</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span>  <span class="n">n_colors</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nmod</span> <span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span>  <span class="n">n_colors</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hostnames</span><span class="p">)</span> <span class="p">)</span>
         <span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
         <span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">300</span><span class="p">)</span>
     
@@ -543,18 +546,21 @@
             <span class="nb">print</span><span class="p">(</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="p">)</span>
         
         <span class="c1">#Graph and fit function</span>
-        <span class="n">c</span><span class="p">,</span><span class="n">h</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">yd</span><span class="p">)</span>
-        <span class="n">func</span> <span class="o">=</span> <span class="n">TF1</span><span class="p">(</span><span class="s1">&#39;func&#39;</span><span class="p">,</span> <span class="s1">&#39;gaus&#39;</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
-        <span class="n">fit</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="s1">&#39;func&#39;</span><span class="p">,</span> <span class="s1">&#39;SQR&#39;</span><span class="p">)</span> 
+<span class="c1">#        c,h = r.plot(x,yd)</span>
+<span class="c1">#        func = TF1(&#39;func&#39;, &#39;gaus&#39;, xmin, xmax)</span>
+<span class="c1">#        fit = h.Fit(&#39;func&#39;, &#39;SQR&#39;) </span>
+<span class="c1">#        </span>
+<span class="c1">#        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]</span>
         
-        <span class="n">par</span> <span class="o">=</span> <span class="p">[</span> <span class="n">fit</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">GetNpar</span><span class="p">())</span> <span class="p">]</span>
-        
+        <span class="n">par</span> <span class="o">=</span> <span class="n">vrf_fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">yd</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hostnames</span><span class="p">),</span> <span class="n">hostnames</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
             <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="n">hostnames</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">yd</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;$\mu: $</span><span class="si">{:.0f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
             <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">function</span><span class="o">.</span><span class="n">gaus</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="o">*</span><span class="n">par</span><span class="p">),</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
         
-        <span class="n">vrf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span> <span class="n">fit</span><span class="o">.</span><span class="n">Get</span><span class="p">()</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="p">)</span>
+<span class="c1">#        vrf.append( int( np.round( fit.Get().Parameter(1))) )</span>
+        <span class="n">vrf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="nb">int</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">par</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="p">)</span>
     
     <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
         <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span> <span class="o">=</span> <span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
@@ -632,11 +638,13 @@
     <span class="n">vrf</span> <span class="o">=</span> <span class="n">_fit_and_plot_vrf_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">detector</span><span class="o">.</span><span class="n">hostname</span><span class="p">)</span>
     
     <span class="c1">#Save vrf?</span>
-    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="o">*</span><span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">vrf_scan_exptime</span><span class="p">)</span><span class="o">/</span><span class="nb">min</span><span class="p">([</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">vrf</span><span class="p">[</span><span class="n">i</span><span class="p">]))]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)])</span>
+    <span class="n">cts</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">vrf</span><span class="p">[</span><span class="n">i</span><span class="p">]))]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">n_modules</span><span class="p">)]</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1000</span><span class="o">*</span><span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">vrf_scan_exptime</span><span class="p">)</span><span class="o">/</span><span class="nb">min</span><span class="p">([</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="o">-</span><span class="n">vrf</span><span class="p">[</span><span class="n">i</span><span class="p">]))]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">detector</span><span class="o">.</span><span class="n">n_modules</span><span class="p">)])</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Suggested exptime: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
     
+    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_vrf_fname</span><span class="p">()),</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">vrf</span> <span class="o">=</span> <span class="n">vrf</span> <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">vrf</span><span class="p">,</span> <span class="n">t</span>  </div>
+    <span class="k">return</span> <span class="n">vrf</span><span class="p">,</span> <span class="n">t</span>  <span class="p">,</span> <span class="n">cts</span></div>
     
 
 <div class="viewcode-block" id="find_mean_and_set_vcmp"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_mean_and_set_vcmp">[docs]</a><span class="k">def</span> <span class="nf">find_mean_and_set_vcmp</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">fit_result</span><span class="p">):</span>
@@ -675,23 +683,24 @@
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1">#Mean value for each chip to be used as threshold during scan    </span>
-    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nmod</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span> <span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="n">detector</span><span class="o">.</span><span class="n">n_modules</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span> <span class="p">)</span>
     
     <span class="c1">#Find the mean values for both module and half module</span>
-    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;quad&#39;</span><span class="p">:</span>
-        <span class="c1">#Half module</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">][</span><span class="n">mask</span><span class="o">.</span><span class="n">chip</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-            <span class="n">th</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="o">&gt;</span><span class="mi">10</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">m</span><span class="o">&lt;</span><span class="mi">1990</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-            <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">4</span><span class="p">],</span> <span class="n">th</span><span class="p">)</span>
-            <span class="n">mean</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
-            
-        <span class="n">vcp0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-        <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;0:vcp&#39;</span><span class="p">,</span> <span class="n">vcp0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;250k&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mean</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">][</span><span class="n">mask</span><span class="o">.</span><span class="n">chip</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">4</span><span class="p">]]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">th</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">m</span><span class="o">&lt;</span><span class="mi">1900</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">th</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
+        
+        <span class="n">vcp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">vcmp</span> <span class="o">=</span> <span class="n">mean</span>
+        <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vcp</span> <span class="o">=</span> <span class="n">vcp</span>
         
     <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;500k&#39;</span><span class="p">:</span>
-        <span class="c1">#OK for Python API</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">nmod</span><span class="o">*</span><span class="mi">4</span> <span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mean</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
             <span class="n">m</span> <span class="o">=</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">][</span><span class="n">mask</span><span class="o">.</span><span class="n">chip</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">th</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">m</span><span class="o">&lt;</span><span class="mi">1900</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
@@ -699,39 +708,40 @@
                 <span class="n">th</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
         
-        <span class="n">vcp0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-        <span class="n">vcp1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:][</span><span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
+        <span class="n">vcp0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="n">vcp1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:][</span><span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
         <span class="n">detector</span><span class="o">.</span><span class="n">vcmp</span> <span class="o">=</span> <span class="n">mean</span>
         <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vcp</span> <span class="o">=</span> <span class="p">[</span><span class="n">vcp0</span><span class="p">,</span> <span class="n">vcp1</span><span class="p">]</span>
 
         
     <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;2M&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Need to do some work&#39;</span><span class="p">)</span>
         <span class="c1">#Module stuff</span>
-        <span class="n">vcmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger2M</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span> <span class="p">)</span>
-        <span class="n">vcp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger2M</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
-        
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">mask</span><span class="o">.</span><span class="n">eiger2M</span><span class="o">.</span><span class="n">module</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="mi">8</span> <span class="p">):</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">][</span><span class="n">mod</span><span class="p">][</span><span class="n">mask</span><span class="o">.</span><span class="n">chip</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">th</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="o">&gt;</span><span class="mi">10</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">m</span><span class="o">&lt;</span><span class="mi">1990</span><span class="p">)]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-                <span class="k">except</span><span class="p">:</span>
-                    <span class="n">th</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
-                
-                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span> <span class="kc">None</span> <span class="p">):</span>
-                    <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger2M</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">th</span><span class="p">)</span>
-                    
-                <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
-        
-            <span class="n">vcp0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-            <span class="n">vcp1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span> <span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:][</span><span class="n">mean</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="p">)</span>
-            <span class="n">vcp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vcp0</span>
-            <span class="n">vcp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vcp1</span>
-            
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="n">detector</span> <span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">:vcp&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span> <span class="n">vcp0</span><span class="p">)</span>
-                <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">:vcp&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">vcp1</span><span class="p">)</span>  
+        <span class="c1"># vcmp = np.zeros( (len(mask.eiger2M.module), 8) )</span>
+        <span class="c1"># vcp  = np.zeros( (len(mask.eiger2M.module), 2) )</span>
+        <span class="c1">#</span>
+        <span class="c1"># for j,mod in enumerate( mask.eiger2M.module):</span>
+        <span class="c1">#     for i in range( 8 ):</span>
+        <span class="c1">#         m = fit_result[&#39;mu&#39;][mod][mask.chip[i]]</span>
+        <span class="c1">#         try:</span>
+        <span class="c1">#             th = int( m[(m&gt;10) &amp; (m&lt;1990)].mean() )</span>
+        <span class="c1">#         except:</span>
+        <span class="c1">#             th = 0</span>
+        <span class="c1">#         vcmp[j,i] = th</span>
+        <span class="c1">#</span>
+        <span class="c1">#         if type(detector) != type( None ):</span>
+        <span class="c1">#             detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)</span>
+        <span class="c1">#</span>
+        <span class="c1">#         mean[i] = th</span>
+        <span class="c1">#</span>
+        <span class="c1">#     vcp0 = int( mean[0:4][mean[0:4]&gt;0].mean() )</span>
+        <span class="c1">#     vcp1 = int( mean[4:][mean[4:]&gt;0].mean() )</span>
+        <span class="c1">#     vcp[j,0] = vcp0</span>
+        <span class="c1">#     vcp[j,1] = vcp1</span>
+        <span class="c1">#</span>
+        <span class="c1">#     if type( detector ) != type(None):</span>
+        <span class="c1">#         detector.set_dac(&#39;{:d}:vcp&#39;.format(j*2), vcp0)</span>
+        <span class="c1">#         detector.set_dac(&#39;{:d}:vcp&#39;.format(j*2+1), vcp1)</span>
 
 
     <span class="k">elif</span> <span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span> <span class="o">==</span> <span class="s1">&#39;9M&#39;</span><span class="p">:</span>
@@ -739,10 +749,11 @@
         <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
         
         <span class="c1">#Module stuff</span>
-        <span class="n">vcmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span> <span class="p">)</span>
-        <span class="n">vcp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">dm</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">detector</span><span class="p">[</span><span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
+        <span class="n">vcmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dm</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">8</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">vcp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dm</span><span class="o">.</span><span class="n">module</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="p">)</span>
         
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="o">.</span><span class="n">module</span> <span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span><span class="n">mod</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">dm</span><span class="o">.</span><span class="n">module</span> <span class="p">):</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="mi">8</span> <span class="p">):</span>
                 <span class="n">m</span> <span class="o">=</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">][</span><span class="n">mod</span><span class="p">][</span><span class="n">mask</span><span class="o">.</span><span class="n">chip</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -752,11 +763,11 @@
 
                 <span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
                 
-                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span> <span class="kc">None</span> <span class="p">):</span>
-                    <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">th</span><span class="p">)</span>
+<span class="c1">#                if type(detector) != type( None ):</span>
+<span class="c1">##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)</span>
   
                 <span class="c1">#Integer division!</span>
-                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;./sls_detector_put </span><span class="si">{:s}</span><span class="s1"> </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">mask</span><span class="o">.</span><span class="n">eiger9M</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">th</span><span class="p">)</span> <span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;./sls_detector_put </span><span class="si">{:s}</span><span class="s1"> </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span> <span class="n">dm</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">j</span><span class="o">*</span><span class="mi">8</span><span class="o">+</span><span class="n">i</span><span class="p">],</span> <span class="n">th</span><span class="p">)</span> <span class="p">)</span>
                     
                 <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">th</span>
         
@@ -765,14 +776,22 @@
             <span class="n">vcp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">vcp0</span>
             <span class="n">vcp</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">vcp1</span>
             
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span> <span class="n">detector</span> <span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">:vcp&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span> <span class="n">vcp0</span><span class="p">)</span>
-                <span class="n">detector</span><span class="o">.</span><span class="n">set_dac</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:d}</span><span class="s1">:vcp&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">vcp1</span><span class="p">)</span> 
+<span class="c1">#            if type( detector ) != type(None):</span>
+<span class="c1">#                detector.set_dac(&#39;{:d}:vcp&#39;.format(j*2), vcp0)</span>
+<span class="c1">#                detector.set_dac(&#39;{:d}:vcp&#39;.format(j*2+1), vcp1) </span>
             
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;./sls_detector_put </span><span class="si">{:d}</span><span class="s1">:vcp </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="n">vcp0</span><span class="p">))</span>
             <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;./sls_detector_put </span><span class="si">{:d}</span><span class="s1">:vcp </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">vcp1</span><span class="p">))</span>
-                
-        <span class="k">return</span> <span class="n">vcmp</span><span class="p">,</span> <span class="n">vcp</span><span class="p">,</span> <span class="n">lines</span></div>
+        
+        <span class="k">if</span> <span class="n">detector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Setting vcmp&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vcmp</span><span class="o">.</span><span class="n">flat</span><span class="p">):</span>
+                <span class="n">detector</span><span class="o">.</span><span class="n">vcmp</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">vcp</span> <span class="o">=</span> <span class="n">vcp</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span><span class="o">.</span><span class="n">flat</span><span class="p">[:]</span>
+        
+        <span class="k">return</span> <span class="n">vcmp</span><span class="p">,</span> <span class="n">vcp</span><span class="p">,</span> <span class="n">lines</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Check detector geometry&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="find_initial_parameters"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_initial_parameters">[docs]</a><span class="k">def</span> <span class="nf">find_initial_parameters</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">thrange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2200</span><span class="p">)):</span>
@@ -875,13 +894,14 @@
         
     <span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">xraybox</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">target</span><span class="p">):</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">_threshold_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">step</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_data_fname</span><span class="p">()),</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="c1">#plotting the result of the scurve scan</span>
     <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
         <span class="n">_plot_scurve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
    
     <span class="c1">#Save data</span>
-    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_data_fname</span><span class="p">()),</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)</span>
+<span class="c1">#    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)</span>
     
     <span class="c1">#if data should be used interactivly</span>
     <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span></div>
@@ -979,18 +999,17 @@
 
     <span class="n">fit_result</span> <span class="o">=</span> <span class="n">mpfit</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">nproc</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span>  
     
-<span class="c1">#    #If specified plot and save the result</span>
-<span class="c1">#    if cfg.calibration.plot:</span>
-<span class="c1">#        mean, std, lines = plot.chip_histograms( fit_result[&#39;mu&#39;], xmin = thrange[0], xmax = thrange[1] ) </span>
-<span class="c1">#        plt.xlabel(&#39;Vcmp [DAC LSB]&#39;)</span>
-<span class="c1">#        plt.ylabel(&#39;Number of Pixels&#39;)</span>
-<span class="c1">#        plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip(&#39;.npy&#39;) ) )</span>
-<span class="c1">#    </span>
-<span class="c1">#    </span>
-<span class="c1">#    #Save the fit result</span>
-<span class="c1">#    fname = get_fit_fname().strip(&#39;.npy&#39;)</span>
-<span class="c1">#    pathname = os.path.join(cfg.path.data, fname)</span>
-<span class="c1">#    np.save(pathname, fit_result)</span>
+   <span class="c1">#If specified plot and save the result</span>
+    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">lines</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">chip_histograms</span><span class="p">(</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span> <span class="n">xmin</span> <span class="o">=</span> <span class="n">thrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">thrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Vcmp [DAC LSB]&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Number of Pixels&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_fit_fname</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;.npy&#39;</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+
+   <span class="c1">#Save the fit result</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">get_fit_fname</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;.npy&#39;</span><span class="p">)</span>
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">pathname</span><span class="p">,</span> <span class="n">fit_result</span><span class="p">)</span>
     
     <span class="k">return</span> <span class="n">fit_result</span></div>
 
@@ -1036,7 +1055,13 @@
     <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Trimbit scan&#39;</span><span class="p">)</span>
     <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span>
-    
+
+
+<span class="k">def</span> <span class="nf">_plot_trimbit_histogram</span><span class="p">(</span><span class="n">tb</span><span class="p">):</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Trimbits&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h</span>
+
 <div class="viewcode-block" id="do_trimbit_scan"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.do_trimbit_scan">[docs]</a><span class="k">def</span> <span class="nf">do_trimbit_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">xraybox</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">data_mask</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Setup the detector and then scan trough the trimbits. Normally with </span>
@@ -1074,10 +1099,8 @@
 <span class="c1">#    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)</span>
     <span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">xraybox</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">target</span><span class="p">):</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">_trimbit_scan</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
-    
-    
-    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_tbdata_fname</span><span class="p">()),</span> 
-             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_tbdata_fname</span><span class="p">()),</span> 
+                 <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">)</span>
     
     
     <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">calibration</span><span class="o">.</span><span class="n">plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
@@ -1108,20 +1131,37 @@
     <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
     <span class="n">detector</span><span class="o">.</span><span class="n">load_trimbits</span><span class="p">(</span><span class="n">pathname</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="find_and_write_trimbits_scaled"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits_scaled">[docs]</a><span class="k">def</span> <span class="nf">find_and_write_trimbits_scaled</span><span class="p">(</span><span class="n">fr_fname</span><span class="p">,</span> <span class="n">tb_fname</span><span class="p">,</span> <span class="n">scale</span> <span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="find_and_write_trimbits_scaled"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits_scaled">[docs]</a><span class="k">def</span> <span class="nf">find_and_write_trimbits_scaled</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">fname</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tb_fname</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    
+    <span class="c1">#Filename for scurve</span>
+    <span class="k">if</span> <span class="n">fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">get_data_fname</span><span class="p">()</span>
+        
+    <span class="c1">#filename for tb data</span>
+    <span class="k">if</span> <span class="n">tb_fname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tb_fname</span> <span class="o">=</span> <span class="n">get_tbdata_fname</span><span class="p">()</span>
+        
+    <span class="c1">#Load scurve data and calculate scale</span>
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="n">tb_pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tb_fname</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">pathname</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">scale</span> <span class="o">=</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][:,:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span> <span class="o">/</span> <span class="mf">1000.</span>
+    
+
     
     <span class="c1">#Load trimbit scan    </span>
-    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">tb_fname</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">tb_pathname</span> <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>    
+
     <span class="c1">#Scale data</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">double</span> <span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
         <span class="n">data</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">scale</span>
     
     <span class="c1">#Load the fit result from the vcmp scan </span>
-    <span class="n">fit_result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">fr_fname</span> <span class="p">)</span>
+    <span class="n">fit_result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">get_fit_fname</span><span class="p">())</span> <span class="p">)</span>
     
     <span class="c1">#Find the number of counts at the inflection point</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">scurve</span><span class="p">(</span> <span class="n">fit_result</span><span class="p">[</span><span class="s1">&#39;mu&#39;</span><span class="p">],</span> 
@@ -1140,10 +1180,25 @@
     <span class="n">tb</span><span class="p">[</span><span class="n">tb</span><span class="o">&gt;</span><span class="mi">63</span><span class="p">]</span> <span class="o">=</span> <span class="mi">63</span>
     <span class="n">tb</span><span class="p">[</span><span class="n">tb</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">round</span><span class="p">()</span>
-    <span class="n">c</span><span class="p">,</span><span class="n">h</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">xmin</span> <span class="o">=</span> <span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="mf">63.5</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="mi">64</span><span class="p">)</span>
+<span class="c1">#    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)</span>
     <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">ax</span><span class="p">,</span> <span class="n">im</span> <span class="o">=</span> <span class="n">plot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
 <span class="c1">#    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip(&#39;.npz&#39;) + &#39;_image&#39; ) )</span>
+    
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">get_trimbit_fname</span><span class="p">()</span>
+    <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span> <span class="n">pathname</span><span class="p">,</span> <span class="n">trimbits</span> <span class="o">=</span> <span class="n">tb</span><span class="p">,</span> <span class="n">fit</span> <span class="o">=</span> <span class="n">result</span><span class="p">)</span>
+    
+    
+    <span class="c1">#Actual trimbit files</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">dacs</span><span class="o">.</span><span class="n">get_asarray</span><span class="p">()</span>
+    <span class="n">dacs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">dacs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="c1">##</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">hostname</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">hm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">detector</span><span class="p">[</span><span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span><span class="o">.</span><span class="n">halfmodule</span><span class="p">):</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.sn</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">get_trimbit_fname</span><span class="p">(),</span><span class="n">host</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">:])</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">write_trimbit_file</span><span class="p">(</span> <span class="n">fn</span><span class="p">,</span> <span class="n">tb</span><span class="p">[</span><span class="n">hm</span><span class="p">],</span> <span class="n">dacs</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="p">)</span>
     
     <span class="k">return</span> <span class="n">tb</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="n">result</span></div>
     
@@ -1151,7 +1206,7 @@
     
 <div class="viewcode-block" id="find_and_write_trimbits"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.calibration.find_and_write_trimbits">[docs]</a><span class="k">def</span> <span class="nf">find_and_write_trimbits</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">tau</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Examples</span>
+<span class="sd">    Examples</span>
 <span class="sd">    ---------</span>
 <span class="sd">    </span>
 <span class="sd">    ::</span>
@@ -1219,8 +1274,6 @@
         
     <span class="n">fname</span> <span class="o">=</span> <span class="n">get_trimbit_fname</span><span class="p">()</span>
     <span class="n">pathname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
-    
-
     <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span> <span class="n">pathname</span><span class="p">,</span> <span class="n">trimbits</span> <span class="o">=</span> <span class="n">tb</span><span class="p">,</span> <span class="n">fit</span> <span class="o">=</span> <span class="n">result</span><span class="p">)</span>
     
     <span class="n">hostname</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">hostname</span>

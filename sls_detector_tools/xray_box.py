@@ -74,26 +74,27 @@ class DummyBox:
     def unlock(self):
         pass
 
-        
+
 class XrayBox():
     """
-    Base class for BigXrayBox and VacuumBox
+    Base class for controlling the BigXrayBox and the VacuumBox.
+    Currently uses the client binaries
     """
     
-    _shutter_name_to_index = {'XRF': 4,
-                     'Right': 3}
-    _shutter_index_to_name = {1: 'XRF',
-                              3: 'Right'}
+    # _shutter_name_to_index = {'XRF': 4,
+    #                  'Right': 3}
+    # _shutter_index_to_name = {1: 'XRF',
+    #                           3: 'Right'}
     
     #Find the bin directory in the package
-    p = Path(__file__)
-    _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
-    print(_xrayClient)
-    
-    def __init__(self):
-        if cfg.verbose:
-            print('XrayBox')
-        logger.info('Class instace initialized')
+    # p = Path(__file__)
+    # _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+    # print(_xrayClient)
+    #
+    # def __init__(self):
+    #     if cfg.verbose:
+    #         print('XrayBox')
+    #     logger.info('Class instace initialized')
         
         
     def _call(self, *args):
@@ -372,22 +373,46 @@ class XrayBox():
 
         
 class BigXrayBox(XrayBox):
+    """
+    BigXrayBox at PSI
+
+    Examples
+    ---------
+
+    ::
+
+        box = BigXrayBox()
+        box.target = 'Fe'
+        box.voltage = 30
+        box.current = 80
+        box.open_shutter('XRF')
+
+
+    """
     _shutter_name_to_index = {'XRF': 1,
                               'Direct beam': 3}
     _shutter_index_to_name = {1: 'XRF',
                               3: 'Direct beam'}
 
-    # Find the bin directory in the package
-    p = Path(__file__)
-    _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
-    print(_xrayClient)
-
     def __init__(self):
+        # Find the bin directory in the package
+        p = Path(__file__)
+        _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
         if cfg.verbose:
-            print('BigXrayBox')
-        logger.info('Class instance initialized')
+            print('BigXrayBox using: {}'.format(_xrayClient))
+        logger.info('BigXrayBox created')
 
 class VacuumBox(XrayBox):
+    """
+    VacuumBox at PSI.
+
+    **Available shutters:**
+
+    * XRF
+    * Right
+    * Up
+
+    """
     _shutter_name_to_index = {'XRF': 4,
                               'Right': 3,
                               'Up': 2}
@@ -395,12 +420,11 @@ class VacuumBox(XrayBox):
                               3: 'Direct beam',
                               2: 'Up'}
 
-    # Find the bin directory in the package
-    p = Path(__file__)
-    _xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
-    print(_xrayClient)
 
     def __init__(self):
+        # Find the bin directory in the package
+        p = Path(__file__)
+        _xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
         if cfg.verbose:
-            print('VacuumBox')
-        logger.info('Class instance initialized')
+            print('VacuumBox using: {}'.format(_xrayClient))
+        logger.info('VacuumBox Created')

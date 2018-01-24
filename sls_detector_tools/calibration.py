@@ -1042,7 +1042,7 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     
 def find_and_write_trimbits(detector, tau = None):
     """
-        Examples
+    Examples
     ---------
     
     ::

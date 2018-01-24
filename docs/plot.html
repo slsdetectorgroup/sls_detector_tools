@@ -165,8 +165,7 @@
   <div class="section" id="module-sls_detector_tools.plot">
 <span id="plotting"></span><h1>Plotting<a class="headerlink" href="#module-sls_detector_tools.plot" title="Permalink to this headline">¶</a></h1>
 <p>Plotting routines for displaying image sensor data using matplotlib and
-seaborn. Some routines like the chip_histograms rely on PyROOT but the import
-should work even without ROOT.</p>
+seaborn.</p>
 <dl class="function">
 <dt id="sls_detector_tools.plot.add_module_gaps">
 <code class="descclassname">sls_detector_tools.plot.</code><code class="descname">add_module_gaps</code><span class="sig-paren">(</span><em>image</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#add_module_gaps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.add_module_gaps" title="Permalink to this definition">¶</a></dt>
@@ -282,6 +281,32 @@ Works on sigle module data with one or several frames</p>
 <p class="first admonition-title">Warning</p>
 <p class="last">Chip divided plot is only implemented for a single module</p>
 </div>
+</dd></dl>
+
+<dl class="function">
+<dt id="sls_detector_tools.plot.histogram">
+<code class="descclassname">sls_detector_tools.plot.</code><code class="descname">histogram</code><span class="sig-paren">(</span><em>data</em>, <em>xmin=0</em>, <em>xmax=10</em>, <em>nbins=10</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/plot.html#histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.plot.histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Histogram using a ROOT.TH1D</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>numpy_array any dimension</em>) – Data points for the histogram</li>
+<li><strong>xmin</strong> (<em>double</em>) – Low limit</li>
+<li><strong>xmax</strong> (<em>double</em>) – High limit</li>
+<li><strong>nbins</strong> (<em>int</em>) – number of bins of the histogram</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>result</strong> – Python dict holding x, y, mean and std</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

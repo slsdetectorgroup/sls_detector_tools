@@ -166,13 +166,13 @@
 <h1>ZmqReceiver<a class="headerlink" href="#zmqreceiver" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="sls_detector_tools.ZmqReceiver">
-<em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">ZmqReceiver</code><span class="sig-paren">(</span><em>ip</em>, <em>ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.ZmqReceiver" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">ZmqReceiver</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.ZmqReceiver" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Simple receiver that reads data from zmq streams and put this together
 to an image.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Currently only Eiger500k</p>
+<p class="last">Current support: 250k, 500k and 9M. Only single frame acq.</p>
 </div>
 <p>expects:
 json - header
@@ -182,10 +182,6 @@ json - end of acq</p>
 <dt id="sls_detector_tools.ZmqReceiver.get_frame">
 <code class="descname">get_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.ZmqReceiver.get_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read one frame from the streams</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">4 bit mode</p>
-</div>
 </dd></dl>
 
 </dd></dl>
