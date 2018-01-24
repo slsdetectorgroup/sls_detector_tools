@@ -84,7 +84,7 @@ cfg.calibration.vrf_scan_exptime = 0.1
 fit_result = calibration.do_scurve_fit_scaled()
 #cfg.calibration.exptime = 29.32
 #data, x = calibration.do_trimbit_scan(d, box)
-tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #calibration.load_trimbits(d)
 
 

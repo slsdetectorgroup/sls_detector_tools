@@ -349,7 +349,7 @@ static PyObject *hist(PyObject *self, PyObject *args)
 
     //is the length of par 3? [xmin, xmax, bins]
     const int npar = 3;
-    if ( (int)PyArray_NDIM( (PyArrayObject*)par_array) != npar ){
+    if ( (int)PyArray_SIZE( (PyArrayObject*)par_array) != npar ){
         std::cout << "Wrong length of parameters" << std::endl;
         return NULL;
     }
