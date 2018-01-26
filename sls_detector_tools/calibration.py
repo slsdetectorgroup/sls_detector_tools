@@ -474,6 +474,9 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     #Since we do a sparse scan using test pulses we should not try to clean data
     if cfg.calibration.type != 'TP':
         data = _clean_vrf_data(data)
+
+    np.savez(os.path.join(cfg.path.data, get_vrf_fname()), data=data, x=x,)
+
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
