@@ -7,6 +7,7 @@ Created on Thu Nov 16 20:17:59 2017
 """
 
 from setuptools import setup, Extension, find_packages
+import subprocess
 import os
 #import sys
 #import setuptools
@@ -14,12 +15,16 @@ import numpy.distutils.misc_util
 __version__ = '0.0.1'
 
 
+out = subprocess.run(['root-config', '--cflags', '--glibs'], stdout=subprocess.PIPE)
+args = out.stdout.decode()
+
 c_ext = Extension("_sls_cmodule",
-                  sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"], 
+                  sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"],
                   libraries = ['stdc++', 'Core', 'MathCore', 'Hist'],
-                  library_dirs = [ os.path.join(os.environ['ROOTSYS'], 'lib') ])
+                  library_dirs = [ os.path.join(os.environ['ROOTSYS'], 'lib') ],
+                  extra_compile_args= [args])
                   
-c_ext.extra_compile_args = ['-std=c++11 `root-config --cflags --glibs`']
+#c_ext.extra_compile_args = ['-std=c++11 `root-config --cflags --glibs`']
 
 c_ext.language = 'c++'
 

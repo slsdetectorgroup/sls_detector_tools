@@ -1,11 +1,12 @@
-#include "fit_tgraph.h"
 #include <iostream>
 #include <iomanip>
 #include "TGraph.h"
 #include "TF1.h"
 #include "TMath.h"
-#include "Math/MinimizerOptions.h"
 #include "TROOT.h"
+#include "fit_tgraph.h"
+
+
 
 /* scurve model including charge sharing and a linear background */
 double scurve_model(double *x, double *par)
@@ -16,7 +17,6 @@ double scurve_model(double *x, double *par)
 
 
 void gaus_fit(int n, double *x, double *y, double xmin, double xmax, double *result){
-
 
     auto f = new TF1( "func", "gaus", xmin, xmax);
     auto g = new TGraph(n, x, y);

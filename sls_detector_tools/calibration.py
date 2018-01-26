@@ -31,7 +31,6 @@ import time
 import shutil
 
 #sls_detector imports
-#from . import root_helper as r
 from . import plot as plot
 from . import utils as u
 from . import config as cfg
@@ -305,20 +304,28 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     detector.exposure_time = cfg.calibration.vrf_scan_exptime
 
     vrf_array = np.arange(start, stop, step)
-    print(vrf_array)
     
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, vrf_array.size))
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(vrf_array):
             detector.dacs.vrf = v
-            print(detector.dacs.vrf)
+            print('{} - {}'.format(time.asctime(), v))
+            if cfg.calibration.type == 'TP':
+                detector.pulse_diagonal(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
     
     #Reset dr
     detector.dynamic_range = dr
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
+
     return data, vrf_array
 
 def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
@@ -373,20 +380,15 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         yd = np.gradient( y )
         center = np.argmax( yd )
         print( center )
-        if center > 75:
-            xmin = x[72]
+        N = len(y)
+        if center > N-3:
+            xmin = x[N-4]
             xmax = x[-1]
         else:
             xmin = x[center-4]
             xmax = x[center+3]
             print( xmin, xmax )
-        
-        #Graph and fit function
-#        c,h = r.plot(x,yd)
-#        func = TF1('func', 'gaus', xmin, xmax)
-#        fit = h.Fit('func', 'SQR') 
-#        
-#        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
+
         
         par = vrf_fit(x, yd, np.array((xmin, xmax)))
         print(len(hostnames), hostnames)
@@ -394,8 +396,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
             ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
             ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
             ax2.plot(xx, function.gaus(xx, *par), color = colors[i])
-        
-#        vrf.append( int( np.round( fit.Get().Parameter(1))) )
+        #
         vrf.append( int( np.round(par[1])) )
     
     if cfg.calibration.plot:
@@ -408,7 +409,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         ax2.set_xlim(xmin-100, xmax+100)
         fig.suptitle('{:s} vrf scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
         plt.tight_layout()
-        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz')) ) 
+        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz'))+'.png', format='png' ) 
     
     return vrf
 
@@ -469,8 +470,10 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     if pixelmask is not None:
         for i in range( data.shape[2] ):
             data[:,:,i][pixelmask] = 0
-   
-    data = _clean_vrf_data(data)
+
+    #Since we do a sparse scan using test pulses we should not try to clean data
+    if cfg.calibration.type != 'TP':
+        data = _clean_vrf_data(data)
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
