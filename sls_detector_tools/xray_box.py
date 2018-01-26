@@ -42,18 +42,46 @@ class DummyBox:
     an X-ray source that is not control but you don't want to modify 
     you calibration scripts
     """
+
+    _shutter_name_to_index = {'XRF': 1,
+                              'Direct beam': 3}
+    _shutter_index_to_name = {1: 'XRF',
+                              3: 'Direct beam'}
+
     def __init__(self):
         self.kV = 0
         self.mA = 0
         self_HV = False
-        logger.info('Xray box initialized')
+        logger.info('Dummy box initialized')
+        self._shutter = {}
+        for sh in self._shutter_name_to_index:
+            self._shutter[sh] = 'OFF'
         print(__file__)
 
     def open_shutter(self, sh):
-        pass
+        self._shutter[sh] = 'ON'
 
     def close_shutter(self, sh):
-        pass
+        self._shutter[sh] = 'OFF'
+
+    @property
+    def shutter_status(self):
+        """
+        Check status of shutters and return dictionary
+
+        Examples
+        ---------
+
+        ::
+
+            box.shutter_status
+            >> {'Direct beam': 'OFF', 'XRF': 'OFF'}
+
+        """
+
+
+        return self._shutter
+
 
     @property
     def target(self):
