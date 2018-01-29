@@ -336,14 +336,22 @@ def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
 
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, threshold.size))
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,th in enumerate(threshold):
             detector.vthreshold = th
             print(detector.vthreshold)
+            if cfg.calibration.type == 'TP':
+                detector.pulse_all_pixels(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
+
     return data, threshold    
 
 
@@ -381,7 +389,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         center = np.argmax( yd )
         print( center )
         N = len(y)
-        if center > N-3:
+        if center > N-4:
             xmin = x[N-4]
             xmax = x[-1]
         else:
@@ -475,6 +483,7 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     if cfg.calibration.type != 'TP':
         data = _clean_vrf_data(data)
 
+    #TODO! Remove this
     np.savez(os.path.join(cfg.path.data, get_vrf_fname()), data=data, x=x,)
 
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
@@ -709,7 +718,7 @@ def _plot_scurve(data, x):
     
     fig.suptitle('{:s} threshold scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
     fig.tight_layout()
-    plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') ) )
+    plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') )+'.png' )
     
 def do_scurve(detector, xraybox,
               start = 0, 
@@ -846,7 +855,7 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
         mean, std, lines = plot.chip_histograms( fit_result['mu'], xmin = thrange[0], xmax = thrange[1] )
         plt.xlabel('Vcmp [DAC LSB]')
         plt.ylabel('Number of Pixels')
-        plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') ) )
+        plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') )+'.png' )
 
    #Save the fit result
     fname = get_fit_fname().strip('.npy')
@@ -865,20 +874,26 @@ def _trimbit_scan(detector, step = 2):
 
 
     detector.exposure_time = cfg.calibration.exptime
-
     tb_array = np.arange(0, 64, step)
-    print(tb_array)
     
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, tb_array.size))
-    
+
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(tb_array):
             detector.trimbits = v
             print(detector.trimbits)
+            if cfg.calibration.type == 'TP':
+                detector.pulse_all_pixels(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
 
     return data, tb_array
 
@@ -947,7 +962,7 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     
     if cfg.calibration.plot is True:
         fig, ax1, ax2 = _plot_trimbit_scan(data, x)
-        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') ) )
+        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') )+'.png' )
     
     return data, x
 
@@ -1034,7 +1049,7 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     
     #Actual trimbit files
     dacs = detector.dacs.get_asarray()
-    dacs = np.vstack((dacs, np.zeros(1)))
+    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
     ##
     os.chdir(cfg.path.data)
     host = detector.hostname

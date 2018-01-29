@@ -72,27 +72,30 @@ box.HV =  True
 
 cfg.calibration.threshold = 1200
 cfg.calibration.vrf_scan_exptime = 0.1
+cfg.calibration.exptime = 0.1
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
+#d.dacs.vcall = 3700
 vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
-#d.dacs.vrf = vrf
-#cfg.calibration.exptime = t
+d.dacs.vrf = vrf
+##cfg.calibration.exptime = t
+##
 #
-#impo
-#data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit_scaled()
-#cfg.calibration.exptime = 29.32
-#data, x = calibration.do_trimbit_scan(d, box)
-#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
-#calibration.load_trimbits(d)
+##impo
+data, x = calibration.do_scurve(d, box)
+fit_result = calibration.do_scurve_fit_scaled()
+###cfg.calibration.exptime = 29.32
+data, x = calibration.do_trimbit_scan(d, box)
+tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+calibration.load_trimbits(d)
 
 
 
-#cfg.calibration.run_id = 1
-#data, x = calibration.do_scurve(d, box)
-#calibration.do_scurve_fit()
+cfg.calibration.run_id = 1
+data, x = calibration.do_scurve(d, box)
+calibration.do_scurve_fit_scaled()
 #data, x = calibration.take_global_calibration_data(d, box)
 #calibration.per_chip_global_calibration()
 #
@@ -103,6 +106,10 @@ vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 #with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
 #    data = f['data']
 #    x = f['x']
+#import time
+#t0 = time.time()
+#d.pulse_all_pixels(1000)
+#print(time.time()-t0)
 #
-#
+
 #calibration._plot_trimbit_scan(data,x)
