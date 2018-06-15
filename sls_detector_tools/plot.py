@@ -453,7 +453,7 @@ def random_pixels(data, x, n_pixels=5, rows=(0, 512), cols=(0, 1024)):
     for pixel in pixels:
         plt.plot(x, data[pixel])
 
-def chip_histograms(data, xmin=0, xmax=2000, bins=400):
+def chip_histograms(data, xmin=0, xmax=2000, bins=400, log = False):
     """
     Plot a histogram per chip of the inflection point (fit_result['mu'])
 
@@ -513,6 +513,8 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
         plt.legend(loc='best')
         plt.ylim(0, max_value*1.1)
         plt.xlim(xmin, xmax)
+        if log:
+            plt.yscale('log')
 
 
     return mean, std, lines

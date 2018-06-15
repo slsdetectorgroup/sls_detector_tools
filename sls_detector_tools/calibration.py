@@ -381,7 +381,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         xx = np.linspace(x.min(), x.max(), 300)
     
     
-    halfmodule = get_halfmodule_mask()
+    halfmodule = get_halfmodule_mask()#[6:8]
     
     for i in range( len(halfmodule) ):
         y = data[halfmodule[i]].sum(axis = 0).sum(axis = 0)
@@ -392,14 +392,16 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         if center > N-4:
             xmin = x[N-4]
             xmax = x[-1]
+            print( xmin, xmax )
         else:
             xmin = x[center-4]
             xmax = x[center+3]
             print( xmin, xmax )
 
-        
-        par = vrf_fit(x, yd, np.array((xmin, xmax)))
-        print(len(hostnames), hostnames)
+#        xmax = 3600
+        par = vrf_fit(x, yd, np.array((xmin, xmax), dtype = np.float))
+#        par = np.zeros(3)
+
         if cfg.calibration.plot:
             ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
             ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
@@ -534,7 +536,11 @@ def find_mean_and_set_vcmp(detector, fit_result):
     
     """
     #Mean value for each chip to be used as threshold during scan    
-    mean = np.zeros( detector.n_modules*4, dtype = np.int )
+    if detector is None:
+        mean = np.zeros( len(mask.detector[cfg.geometry].halfmodule)*4, dtype = np.int )
+    else:
+        mean = np.zeros( detector.n_modules*4, dtype = np.int )
+    
     
     #Find the mean values for both module and half module
     if cfg.geometry == '250k':
@@ -618,7 +624,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
 ##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
   
                 #Integer division!
-                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
+                lines.append('./sls_detector_put {:s} {:d}\n'.format( dm.vcmp[j*8+i], th) )
                     
                 mean[i] = th
         
@@ -631,8 +637,8 @@ def find_mean_and_set_vcmp(detector, fit_result):
 #                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
 #                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
+            lines.append('./sls_detector_put {:d}:vcp {:d}\n'.format(j*2, vcp0))
+            lines.append('./sls_detector_put {:d}:vcp {:d}\n'.format(j*2+1, vcp1))
         
         if detector is not None:
             print('Setting vcmp')
@@ -702,7 +708,7 @@ def _plot_scurve(data, x):
     The purpouse of this plot is to verify that the scurve data is ok
     """
     fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
-    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+    for p in u.random3605_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
         ax1.plot(x, data[p[0], p[1], :])
     
     for c in mask.chip:
@@ -1047,15 +1053,15 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     np.savez( pathname, trimbits = tb, fit = result)
     
     
-    #Actual trimbit files
-    dacs = detector.dacs.get_asarray()
-    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
-    ##
-    os.chdir(cfg.path.data)
-    host = detector.hostname
-    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
-        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
-        io.write_trimbit_file( fn, tb[hm], dacs[:,i] )
+#    #Actual trimbit files
+#    dacs = detector.dacs.get_asarray()
+#    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
+#    ##
+#    os.chdir(cfg.path.data)
+#    host = detector.hostname
+#    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
+#        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
+#        io.write_trimbit_file( fn, tb[hm], dacs[:,i] )
     
     return tb, target, data,x, result
     

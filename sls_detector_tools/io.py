@@ -18,6 +18,7 @@ import logging
 from . import config as cfg
 from . import mask
 from collections import OrderedDict
+import struct
 
 #Logger to record progress of data processing
 logger = logging.getLogger()
@@ -186,7 +187,7 @@ def read_frame_header( fname ):
     """
     Read and decode the frame header of a raw file
     """
-    with open( fname ) as f:
+    with open( fname, 'rb' ) as f:
         tmp = f.read( 48 )
     fh = struct.unpack('Q2I2Q4HIH2B',tmp)
     return fh
@@ -213,6 +214,8 @@ def read_frame(f, dr):
         data[1::2] = np.bitwise_and(tmp >> 4, 0x0f)
         print('shape', data.shape)
         return data.reshape((256,512))
+
+
 
 def load_file(fname, header, N = 1):
     """
@@ -373,3 +376,22 @@ def load_frame(bname, run_id,
             return image
         else:
             raise NotImplementedError('Multi frame files for 9M is not yet implemented')
+
+def load_raw( fname ):
+    
+    
+    data = np.fromfile(fname, dtype = np.int64)
+    
+    #extract signals 
+    signal_bits = [1,9,13,15,17,19,21,23]
+    signal_names = ['cout', 'Q1_0', 'Q1_3', 'STD_0', 'STD_1', 'STD_2', 'STD_3', 'OUT']
+    
+    dt = [(name, np.int64) for name in signal_names] 
+    signals = np.zeros( data.size, dtype = dt )
+    
+    
+    for bit, name in zip(signal_bits, signal_names):
+        signals[ name ] = np.bitwise_and(data, 2**bit)
+        signals[ name ] = np.right_shift( signals[name], bit )
+
+    return signals
