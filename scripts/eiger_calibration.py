@@ -1,20 +1,13 @@
+
 # -*- coding: utf-8 -*-
 """
-Script to calibrate an EIGER module using the big X-ray box
-
-
-
-Erik Frojdh
+Script to calibrate an EIGER module using the big X-ray box.
 """
-
-import ROOT
-
 import sys
 
 #Temporary paths for dev
 sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
 sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
-
 #python
 import os
 import logging
@@ -29,9 +22,11 @@ sns.set_context('talk', font_scale = 1.2)
 #sls_detector
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
-from sls_detector import Detector
-from sls_detector_tools import XrayBox, xrf_shutter_open
+from sls_detector import Detector, Eiger
+from sls_detector_tools import BigXrayBox, VacuumBox, xrf_shutter_open, DummyBox
 from sls_detector_tools.plot import imshow
+from sls_detector_tools.io import write_trimbit_file
+from sls_detector_tools import mask
 
 #Current Eiger calibration plan
 """
@@ -49,18 +44,17 @@ gain10               Sn
 
 """
 
-cfg.verbose = True
-cfg.nmod = 2
-cfg.geometry = '500k'
-cfg.calibration.type = 'XRF'
-
 #Configuration for the calibration script
-cfg.det_id = 'T63'
-cfg.calibration.gain = 'gain5'
-cfg.calibration.target = 'Cu'
-cfg.path.data = os.path.join( '/mnt/disk1/calibration/', 
-                             cfg.det_id, cfg.calibration.gain)
+cfg.geometry = '500k' #quad, 500k, 2M, 9M
+cfg.calibration.type = 'TP' #Sets function to fit etc.
+cfg.det_id = 'T45'
+cfg.calibration.gain = 'gain1'
+cfg.calibration.target = 'TP'
+cfg.calibration.energy = 5
+#cfg.path.data = os.path.join('/mnt/local_sw_raid/eiger_data/trash',
+#                             cfg.det_id, cfg.calibration.gain)
 
+cfg.calibration.run_id = 0
 
 #Record the measurement in a log file
 logger = logging.getLogger()
@@ -69,30 +63,42 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
 #-------------------------------------------------------------Xray box control
-box = XrayBox()
+box = DummyBox()  #XrayBox or DummyBox
 box.unlock()
 box.HV =  True
 
+
+
+
+cfg.calibration.threshold = 1200
+cfg.calibration.vrf_scan_exptime = 0.1
+cfg.calibration.exptime = 0.1
+
 #--------------------------------------------Setup for taking calibration data
-d = Detector()
+d = Eiger()
 calibration.setup_detector(d)
-vrf, t = calibration.do_vrf_scan(d, box)
+#d.dacs.vcall = 3700
+vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 d.dacs.vrf = vrf
-cfg.calibration.exptime = t
-
-
+##cfg.calibration.exptime = t
+##
+#
+##impo
 data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit()
-out = calibration.find_mean_and_set_vcmp(d, fit_result)
+fit_result = calibration.do_scurve_fit_scaled()
+###cfg.calibration.exptime = 29.32
 data, x = calibration.do_trimbit_scan(d, box)
-calibration.find_and_write_trimbits(d, tau = 200)
-#calibration.load_trim(d)
-#cfg.calibration.run_id = 1
-#data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit()
+tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+calibration.load_trimbits(d)
+
+
+
+cfg.calibration.run_id = 1
+data, x = calibration.do_scurve(d, box)
+calibration.do_scurve_fit_scaled()
 #data, x = calibration.take_global_calibration_data(d, box)
 #calibration.per_chip_global_calibration()
-
+#
 #cfg.top = d.hostname[0]
 #cfg.bottom = d.hostname[1]
 #calibration.generate_calibration_report()
@@ -100,6 +106,10 @@ calibration.find_and_write_trimbits(d, tau = 200)
 #with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
 #    data = f['data']
 #    x = f['x']
-#    
-#    
+#import time
+#t0 = time.time()
+#d.pulse_all_pixels(1000)
+#print(time.time()-t0)
+#
+
 #calibration._plot_trimbit_scan(data,x)

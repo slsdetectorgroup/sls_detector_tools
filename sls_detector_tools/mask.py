@@ -31,6 +31,25 @@ vcmp = ['0:vcmp_ll',
 
 
 
+class eiger250k:
+    """
+    Mask for Eiger500k module
+    """
+    def __init__(self):
+        self.nrow = 256
+        self.ncol = 1024
+
+        self.module = [[slice(0, 256, 1), slice(0, 1024, 1)]]
+
+        #Half modules
+        self.halfmodule = [[slice(0, 256, 1), slice(0, 1024, 1)]]
+
+        self.port = []
+        for col in range(1):
+            for row in range(1,0,-1):
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+
 
 class eiger500k:
     """
@@ -133,6 +152,7 @@ class eiger2M:
 
 
 #Dictionary lookup for using detector geometry for lookup
-detector = {'500k': eiger500k(),
+detector = {'250k': eiger250k(),
+            '500k': eiger500k(),
             '2M': eiger2M(),
             '9M': eiger9M()}

@@ -169,7 +169,7 @@
 <span class="sd">DummyBox that only writes the commands to the log file without doing anything.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
 <span class="c1">#from subprocess import Popen, PIPE, run</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
@@ -177,13 +177,22 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
 <span class="kn">import</span> <span class="nn">re</span>
-
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
-
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="nd">@contextmanager</span>
 <span class="k">def</span> <span class="nf">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
     <span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
     <span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+
+    <span class="c1">#Communication with vacuum box seems tricky</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">box</span><span class="o">.</span><span class="n">shutter_status</span><span class="p">[</span><span class="s1">&#39;XRF&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;ON&#39;</span><span class="p">:</span>
+            <span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">box</span><span class="o">.</span><span class="n">shutter_status</span><span class="p">[</span><span class="s1">&#39;XRF&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;ON&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Shutter not open!&#39;</span><span class="p">)</span>
+
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;open&#39;</span><span class="p">)</span>
     <span class="k">yield</span>
     <span class="n">box</span><span class="o">.</span><span class="n">close_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
@@ -200,101 +209,56 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kV</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mA</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">self_HV</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Xray box initialized&#39;</span><span class="p">)</span>
-        
-    
-    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write target name to logfile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching to </span><span class="si">%s</span><span class="s1"> target&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write opening shutter to logfile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Opening shutter&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">open_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">close_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+    
+    <span class="nd">@target</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_HV</span>
+
+    <span class="nd">@HV</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_HV</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write unlock to the logfile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Unlocking the dummy Xraybox from other users&#39;</span><span class="p">)</span>
-        
-    <span class="k">def</span> <span class="nf">HV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Emulating High Voltage on and off</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching on HV&#39;</span><span class="p">)</span>
+        <span class="k">pass</span>
 
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Switching off HV&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kV</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">kV</span> <span class="o">=</span> <span class="n">kV</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> kV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kV</span><span class="p">))</span>
-        
-    <span class="k">def</span> <span class="nf">get_kV</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Voltage is </span><span class="si">{:.2f}</span><span class="s1"> kV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kV</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kV</span>
-        
-    <span class="k">def</span> <span class="nf">set_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mA</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mA</span> <span class="o">=</span> <span class="n">mA</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting HV to </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
-    <span class="k">def</span> <span class="nf">get_mA</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Tube current is </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mA</span>
-        
-<div class="viewcode-block" id="XrayBox"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox">[docs]</a><span class="k">class</span> <span class="nc">XrayBox</span><span class="p">():</span>
+<span class="k">class</span> <span class="nc">XrayBox</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Wrapper around the xrayClient64, uses the executable from afs, make sure</span>
-<span class="sd">    that you have access. Supports logging of commands using the python logger.</span>
-<span class="sd">    </span>
-<span class="sd">    </span>
-<span class="sd">    Examples</span>
-<span class="sd">    -----------</span>
-<span class="sd">    </span>
-<span class="sd">    ::</span>
-<span class="sd">        </span>
-<span class="sd">       from sls_detector_tools import XrayBox</span>
-<span class="sd">       box = XrayBox()</span>
-<span class="sd">       box.unlock()</span>
-<span class="sd">       </span>
-<span class="sd">       box.current = 40</span>
-<span class="sd">       box.voltage = 30</span>
-<span class="sd">       box.target = &#39;Cu&#39;</span>
-<span class="sd">       </span>
-<span class="sd">       box.voltage</span>
-<span class="sd">       &gt;&gt; 30.0</span>
-<span class="sd">       box.current</span>
-<span class="sd">       &gt;&gt; 40.0</span>
-<span class="sd">       </span>
-<span class="sd">       #For setting target open and close shutter we have a context manager</span>
-<span class="sd">       from sls_detector_tools import xrf_shutter_open</span>
-<span class="sd">       </span>
-<span class="sd">       with xrf_shutter_open(box, &#39;Cu&#39;):</span>
-<span class="sd">           #do your measurement</span>
-<span class="sd">           #shutter is closed when exiting</span>
-<span class="sd">           #this block</span>
-<span class="sd">    </span>
-<span class="sd">    .. note:: </span>
-<span class="sd">        Requires access to afs, make sure that you klog or (kinit+aklog)</span>
-<span class="sd">        before starting measurement</span>
-<span class="sd">        </span>
+<span class="sd">    Base class for controlling the BigXrayBox and the VacuumBox.</span>
+<span class="sd">    Currently uses the client binaries</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="n">_shutter_name_to_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                     <span class="s1">&#39;Direct beam&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
-    <span class="n">_shutter_index_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;XRF&#39;</span><span class="p">,</span>
-                              <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;Direct beam&#39;</span><span class="p">}</span>    
+    <span class="c1"># _shutter_name_to_index = {&#39;XRF&#39;: 4,</span>
+    <span class="c1">#                  &#39;Right&#39;: 3}</span>
+    <span class="c1"># _shutter_index_to_name = {1: &#39;XRF&#39;,</span>
+    <span class="c1">#                           3: &#39;Right&#39;}</span>
     
-    <span class="n">_xrayClient</span> <span class="o">=</span> <span class="s1">&#39;/afs/psi.ch/project/sls_det_software/bin/xrayClient64&#39;</span>
-    
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;XrayBox&#39;</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Class instace initialized&#39;</span><span class="p">)</span>
+    <span class="c1">#Find the bin directory in the package</span>
+    <span class="c1"># p = Path(__file__)</span>
+    <span class="c1"># _xrayClient = os.path.join(p.parent.parent, &#39;bin/xrayClient64&#39;)</span>
+    <span class="c1"># print(_xrayClient)</span>
+    <span class="c1">#</span>
+    <span class="c1"># def __init__(self):</span>
+    <span class="c1">#     if cfg.verbose:</span>
+    <span class="c1">#         print(&#39;XrayBox&#39;)</span>
+    <span class="c1">#     logger.info(&#39;Class instace initialized&#39;)</span>
         
         
     <span class="k">def</span> <span class="nf">_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
@@ -414,10 +378,14 @@
 <span class="sd">        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getActualC&#39;</span><span class="p">)</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
-        <span class="n">mA</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span><span class="o">/</span><span class="mf">1e3</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current is </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">mA</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Rxd data:)\w+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+            <span class="n">mA</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">())</span><span class="o">/</span><span class="mf">1e3</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Current is </span><span class="si">{:.2f}</span><span class="s1"> mA&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mA</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">mA</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+        
     
     <span class="nd">@current</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mA</span><span class="p">):</span>
@@ -447,7 +415,7 @@
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;shutter&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">sh</span><span class="p">),</span> <span class="n">status</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Shutter </span><span class="si">{:s}</span><span class="s1">: </span><span class="si">{:s}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sh_name</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>   
 
-<div class="viewcode-block" id="XrayBox.open_shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.open_shutter">[docs]</a>    <span class="k">def</span> <span class="nf">open_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">open_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open shutter</span>
 <span class="sd">        </span>
@@ -464,9 +432,9 @@
 <span class="sd">            box.open_shutter(&#39;XRF&#39;)</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;on&#39;</span><span class="p">)</span>        </div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;on&#39;</span><span class="p">)</span>        
         
-<div class="viewcode-block" id="XrayBox.close_shutter"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.close_shutter">[docs]</a>    <span class="k">def</span> <span class="nf">close_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">close_shutter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sh</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Close shutter</span>
 <span class="sd">        </span>
@@ -483,7 +451,7 @@
 <span class="sd">            box.close_shutter(&#39;XRF&#39;)</span>
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shutter</span><span class="p">(</span><span class="n">sh</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;off&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">shutter_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -500,7 +468,7 @@
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shutter_index_to_name</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span><span class="s1">&#39;getshutter</span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> 
             <span class="n">a</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(?&lt;=Shutter )\d:\S+&#39;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
             <span class="n">j</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">group</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
@@ -559,15 +527,71 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Target set to: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">t_set</span><span class="p">)</span>
 <span class="c1">#        return t_set</span>
               
-<div class="viewcode-block" id="XrayBox.unlock"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.XrayBox.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Unlock the control from another user</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Unlocking Xray box from other users&#39;</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call</span><span class="p">(</span> <span class="s1">&#39;unlock&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div></div>
+        <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
 
         
+<div class="viewcode-block" id="BigXrayBox"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.BigXrayBox">[docs]</a><span class="k">class</span> <span class="nc">BigXrayBox</span><span class="p">(</span><span class="n">XrayBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    BigXrayBox at PSI</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ---------</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        box = BigXrayBox()</span>
+<span class="sd">        box.target = &#39;Fe&#39;</span>
+<span class="sd">        box.voltage = 30</span>
+<span class="sd">        box.current = 80</span>
+<span class="sd">        box.open_shutter(&#39;XRF&#39;)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_shutter_name_to_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                              <span class="s1">&#39;Direct beam&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+    <span class="n">_shutter_index_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;XRF&#39;</span><span class="p">,</span>
+                              <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;Direct beam&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Find the bin directory in the package</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">_xrayClient</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;bin/xrayClient64&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;BigXrayBox using: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_xrayClient</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;BigXrayBox created&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VacuumBox"><a class="viewcode-back" href="../../instruments.html#sls_detector_tools.VacuumBox">[docs]</a><span class="k">class</span> <span class="nc">VacuumBox</span><span class="p">(</span><span class="n">XrayBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    VacuumBox at PSI.</span>
+
+<span class="sd">    **Available shutters:**</span>
+<span class="sd">    </span>
+<span class="sd">    * XRF</span>
+<span class="sd">    * Right</span>
+<span class="sd">    * Up</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_shutter_name_to_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+                              <span class="s1">&#39;Right&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                              <span class="s1">&#39;Up&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+    <span class="n">_shutter_index_to_name</span> <span class="o">=</span> <span class="p">{</span><span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;XRF&#39;</span><span class="p">,</span>
+                              <span class="mi">3</span><span class="p">:</span> <span class="s1">&#39;Direct beam&#39;</span><span class="p">,</span>
+                              <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;Up&#39;</span><span class="p">}</span>
+
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Find the bin directory in the package</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="n">_xrayClient</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;bin/vacuumClient64&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;VacuumBox using: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_xrayClient</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;VacuumBox Created&#39;</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

@@ -1,17 +1,32 @@
-#include "fit_tgraph.h"
 #include <iostream>
 #include <iomanip>
 #include "TGraph.h"
 #include "TF1.h"
 #include "TMath.h"
-#include "Math/MinimizerOptions.h"
 #include "TROOT.h"
+#include "fit_tgraph.h"
+
+
 
 /* scurve model including charge sharing and a linear background */
 double scurve_model(double *x, double *par)
 {
    double f = (par[0] + par[1]*x[0]) + 0.5 * (1+TMath::Erf( (x[0]-par[2])/(sqrt(2)*par[3]) ) ) * ( par[4] + par[5]*(x[0]-par[2]));
    return f;
+}
+
+
+void gaus_fit(int n, double *x, double *y, double xmin, double xmax, double *result){
+
+    auto f = new TF1( "func", "gaus", xmin, xmax);
+    auto g = new TGraph(n, x, y);
+    g->Fit( "func",  "NSQR");
+    for (int i = 0; i<f->GetNpar(); ++i){
+        result[i] = f->GetParameter(i);
+    }
+    delete f;
+    delete g;
+    
 }
 
 void fit_using_tgraph(double *data, double *x, int shape[3], double *initpar, double *result){

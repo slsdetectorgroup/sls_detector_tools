@@ -13,9 +13,9 @@ import warnings
 
 #import sys
 #sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
-from .mask import eiger500k
+from . import mask as mask
 from .utils import get_dtype
-
+from . import config as cfg
 
 
 class ZmqReceiver:
@@ -25,21 +25,27 @@ class ZmqReceiver:
     
     .. warning ::
         
-        Currently only Eiger500k
+        Current support: 250k, 500k and 9M. Only single frame acq.
     
     expects:
     json - header
     data - as specified in header
     json - end of acq
     """
-    def __init__(self, ip, ports):
-        warnings.warn('ZmqReceiver currently only supports Eiger500k')
-        
+    def __init__(self, detector):
+        warnings.warn('ZmqReceiver currently only supports single frames')
+
+        ip = detector.rx_udpip #Workaround until we get zmqip
+        ports = detector.rx_zmqport
+
+        #ip and ports
+        self.image_size = detector.image_size
         self.ports = ports
         self.ip = ip
         self.context = zmq.Context()
         self.sockets = [ self.context.socket(zmq.SUB) for p in self.ports ]
-        self.mask = eiger500k()
+        
+        self.mask = mask.detector[cfg.geometry]
         #connect sockets
         for p,s in zip(self.ports, self.sockets):
             print('Initializing: {:d}'.format(p))
@@ -49,14 +55,11 @@ class ZmqReceiver:
     def get_frame(self):
         """
         Read one frame from the streams
-        
-        .. todo::
-            
-            4 bit mode
-            
+
             
         """
-        image = np.zeros((512,1024))
+        image = np.zeros(self.image_size)
+            
         for p,s in zip(self.mask.port, self.sockets):
             header = json.loads( s.recv() )
             data = s.recv()
@@ -68,12 +71,12 @@ class ZmqReceiver:
                 tmp2[0::2] = np.bitwise_and(tmp, 0x0f)
                 tmp2[1::2] = np.bitwise_and(tmp >> 4, 0x0f)
                 image[p] = tmp2.reshape(256,512)
-#                image[p][1::2] = np.bitwise_and(tmp >> 4, 0x0f)
             else:
                 image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
         
         #flip bottom
-        image[0:256,:] = image[255::-1,:]
+        for hm in self.mask.halfmodule[1::2]:
+            image[hm] = image[hm][::-1,:]
+
         return image
-#        return data
-            
+

@@ -14,6 +14,12 @@ from ROOT import (
     )
 
 
+def style_histogram(h):
+    h.SetFillColor(style.hist_color)
+    h.SetLineColor(style.hist_line_color)
+    h.SetLineWidth(style.hist_line_width)
+    h.SetFillStyle(style.fill_style)
+
 class style:
     """
     Class used to configure the apparence of PyROOT draw objects
@@ -25,6 +31,7 @@ class style:
     hist_color = kAzure+4
     hist_line_width = 1
     hist_line_color = kBlack
+    fill_style = 1001
 
 
 def plot(x, y, options='ALP', title="A TGraph",

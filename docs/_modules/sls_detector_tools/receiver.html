@@ -177,9 +177,9 @@
 
 <span class="c1">#import sys</span>
 <span class="c1">#sys.path.append(&#39;/home/l_frojdh/slsdetectorgrup/sls_detector_tools&#39;)</span>
-<span class="kn">from</span> <span class="nn">.mask</span> <span class="k">import</span> <span class="n">eiger500k</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">mask</span> <span class="k">as</span> <span class="n">mask</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">get_dtype</span>
-
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
 
 
 <div class="viewcode-block" id="ZmqReceiver"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.ZmqReceiver">[docs]</a><span class="k">class</span> <span class="nc">ZmqReceiver</span><span class="p">:</span>
@@ -189,21 +189,27 @@
 <span class="sd">    </span>
 <span class="sd">    .. warning ::</span>
 <span class="sd">        </span>
-<span class="sd">        Currently only Eiger500k</span>
+<span class="sd">        Current support: 250k, 500k and 9M. Only single frame acq.</span>
 <span class="sd">    </span>
 <span class="sd">    expects:</span>
 <span class="sd">    json - header</span>
 <span class="sd">    data - as specified in header</span>
 <span class="sd">    json - end of acq</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip</span><span class="p">,</span> <span class="n">ports</span><span class="p">):</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ZmqReceiver currently only supports Eiger500k&#39;</span><span class="p">)</span>
-        
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;ZmqReceiver currently only supports single frames&#39;</span><span class="p">)</span>
+
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">rx_udpip</span> <span class="c1">#Workaround until we get zmqip</span>
+        <span class="n">ports</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">rx_zmqport</span>
+
+        <span class="c1">#ip and ports</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">image_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ports</span> <span class="o">=</span> <span class="n">ports</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span> <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">eiger500k</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">detector</span><span class="p">[</span><span class="n">cfg</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
         <span class="c1">#connect sockets</span>
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Initializing: </span><span class="si">{:d}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
@@ -213,14 +219,11 @@
 <div class="viewcode-block" id="ZmqReceiver.get_frame"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.ZmqReceiver.get_frame">[docs]</a>    <span class="k">def</span> <span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read one frame from the streams</span>
-<span class="sd">        </span>
-<span class="sd">        .. todo::</span>
-<span class="sd">            </span>
-<span class="sd">            4 bit mode</span>
-<span class="sd">            </span>
+
 <span class="sd">            </span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">1024</span><span class="p">))</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_size</span><span class="p">)</span>
+            
         <span class="k">for</span> <span class="n">p</span><span class="p">,</span><span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">):</span>
             <span class="n">header</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span> <span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
@@ -232,15 +235,15 @@
                 <span class="n">tmp2</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
                 <span class="n">tmp2</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span><span class="n">tmp</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">,</span> <span class="mh">0x0f</span><span class="p">)</span>
                 <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>
-<span class="c1">#                image[p][1::2] = np.bitwise_and(tmp &gt;&gt; 4, 0x0f)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">image</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="s1">&#39;bitmode&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="mi">512</span><span class="p">)</span>
         
         <span class="c1">#flip bottom</span>
-        <span class="n">image</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">256</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="mi">255</span><span class="p">::</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+        <span class="k">for</span> <span class="n">hm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">halfmodule</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="n">image</span><span class="p">[</span><span class="n">hm</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">hm</span><span class="p">][::</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+
         <span class="k">return</span> <span class="n">image</span></div></div>
-<span class="c1">#        return data</span>
-            
+
 </pre></div>
 
            </div>

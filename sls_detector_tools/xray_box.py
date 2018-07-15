@@ -5,7 +5,7 @@ to the */afs/psi.ch/project/sls_det_software/bin/xrayClient64*. Provides a
 DummyBox that only writes the commands to the log file without doing anything.
 
 """
-from __future__ import print_function
+import os
 from . import config as cfg
 #from subprocess import Popen, PIPE, run
 import subprocess
@@ -13,13 +13,22 @@ import logging
 logger = logging.getLogger()
 from functools import partial
 import re
-
+from pathlib import Path
 from contextlib import contextmanager
-
+import time
 @contextmanager
 def xrf_shutter_open(box, target):
     box.target = target
     box.open_shutter('XRF')
+
+    #Communication with vacuum box seems tricky
+    for i in range(10):
+        if box.shutter_status['XRF'] != 'ON':
+            box.open_shutter('XRF')
+            time.sleep(0.3)
+    if box.shutter_status['XRF'] != 'ON':
+        raise RuntimeError('Shutter not open!')
+
     print('open')
     yield
     box.close_shutter('XRF')
@@ -33,104 +42,87 @@ class DummyBox:
     an X-ray source that is not control but you don't want to modify 
     you calibration scripts
     """
+
+    _shutter_name_to_index = {'XRF': 1,
+                              'Direct beam': 3}
+    _shutter_index_to_name = {1: 'XRF',
+                              3: 'Direct beam'}
+
     def __init__(self):
         self.kV = 0
         self.mA = 0
-        logger.info('Xray box initialized')
-        
-    
-    def target(self, t):
-        """
-        Write target name to logfile
-        """
-        logger.info('Switching to %s target', t)
+        self_HV = False
+        logger.info('Dummy box initialized')
+        self._shutter = {}
+        for sh in self._shutter_name_to_index:
+            self._shutter[sh] = 'OFF'
+        print(__file__)
 
-    def shutter(self, s):
+    def open_shutter(self, sh):
+        self._shutter[sh] = 'ON'
+
+    def close_shutter(self, sh):
+        self._shutter[sh] = 'OFF'
+
+    @property
+    def shutter_status(self):
         """
-        Write opening shutter to logfile
+        Check status of shutters and return dictionary
+
+        Examples
+        ---------
+
+        ::
+
+            box.shutter_status
+            >> {'Direct beam': 'OFF', 'XRF': 'OFF'}
+
         """
-        logger.info('Opening shutter')
+
+
+        return self._shutter
+
+
+    @property
+    def target(self):
+        pass
+    
+    @target.setter
+    def target(self, t):
+        pass
+
+    @property
+    def HV(self):
+        return self._HV
+
+    @HV.setter
+    def HV(self, value):
+        self._HV = value
 
     def unlock(self):
-        """
-        Write unlock to the logfile
-        """
-        logger.info('Unlocking the dummy Xraybox from other users')
-        
-    def HV(self, value):
-        """
-        Emulating High Voltage on and off
-        """
-        if value is True:
-            logger.info('Switching on HV')
+        pass
 
-        else:
-            logger.info('Switching off HV')
 
-    def set_kV(self, kV):
-        self.kV = kV
-        logger.info('Setting HV to {:.2f} kV'.format(kV))
-        
-    def get_kV(self):
-        logger.info('Voltage is {:.2f} kV'.format(self.kV))
-        return self.kV
-        
-    def set_mA(self, mA):
-        self.mA = mA
-        logger.info('Setting HV to {:.2f} mA'.format(mA))
-    def get_mA(self):
-        logger.info('Tube current is {:.2f} mA'.format(mA))
-        return self.mA
-        
 class XrayBox():
     """
-    Wrapper around the xrayClient64, uses the executable from afs, make sure
-    that you have access. Supports logging of commands using the python logger.
-    
-    
-    Examples
-    -----------
-    
-    ::
-        
-       from sls_detector_tools import XrayBox
-       box = XrayBox()
-       box.unlock()
-       
-       box.current = 40
-       box.voltage = 30
-       box.target = 'Cu'
-       
-       box.voltage
-       >> 30.0
-       box.current
-       >> 40.0
-       
-       #For setting target open and close shutter we have a context manager
-       from sls_detector_tools import xrf_shutter_open
-       
-       with xrf_shutter_open(box, 'Cu'):
-           #do your measurement
-           #shutter is closed when exiting
-           #this block
-    
-    .. note:: 
-        Requires access to afs, make sure that you klog or (kinit+aklog)
-        before starting measurement
-        
+    Base class for controlling the BigXrayBox and the VacuumBox.
+    Currently uses the client binaries
     """
     
-    _shutter_name_to_index = {'XRF': 1,
-                     'Direct beam': 3}
-    _shutter_index_to_name = {1: 'XRF',
-                              3: 'Direct beam'}    
+    # _shutter_name_to_index = {'XRF': 4,
+    #                  'Right': 3}
+    # _shutter_index_to_name = {1: 'XRF',
+    #                           3: 'Right'}
     
-    _xrayClient = '/afs/psi.ch/project/sls_det_software/bin/xrayClient64'
-    
-    def __init__(self):
-        if cfg.verbose:
-            print('XrayBox')
-        logger.info('Class instace initialized')
+    #Find the bin directory in the package
+    # p = Path(__file__)
+    # _xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+    # print(_xrayClient)
+    #
+    # def __init__(self):
+    #     if cfg.verbose:
+    #         print('XrayBox')
+    #     logger.info('Class instace initialized')
         
         
     def _call(self, *args):
@@ -250,10 +242,14 @@ class XrayBox():
         
         """
         out = self._call('getActualC')
-        a = re.search('(?<=Rxd data:)\w+', out.stdout.decode())
-        mA = float(a.group())/1e3
-        logger.info('Current is {:.2f} mA'.format(mA))
-        return mA
+        try:
+            a = re.search('(?<=Rxd data:)\w+', out.stdout.decode())
+            mA = float(a.group())/1e3
+            logger.info('Current is {:.2f} mA'.format(mA))
+            return mA
+        except ValueError:
+            print(out.stdout.decode())
+        
     
     @current.setter
     def current(self, mA):
@@ -336,7 +332,7 @@ class XrayBox():
             
         """
         status = {}
-        for i in [1,3]:
+        for i in self._shutter_index_to_name.keys():
             out = self._call('getshutter{:d}'.format(i)) 
             a = re.search('(?<=Shutter )\d:\S+', out.stdout.decode())
             j, s = a.group().split(':')
@@ -404,3 +400,59 @@ class XrayBox():
         print(out.stdout.decode())
 
         
+class BigXrayBox(XrayBox):
+    """
+    BigXrayBox at PSI
+
+    Examples
+    ---------
+
+    ::
+
+        box = BigXrayBox()
+        box.target = 'Fe'
+        box.voltage = 30
+        box.current = 80
+        box.open_shutter('XRF')
+
+
+    """
+    _shutter_name_to_index = {'XRF': 1,
+                              'Direct beam': 3}
+    _shutter_index_to_name = {1: 'XRF',
+                              3: 'Direct beam'}
+
+    def __init__(self):
+        # Find the bin directory in the package
+        p = Path(__file__)
+        self._xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+        if cfg.verbose:
+            print('BigXrayBox using: {}'.format(self._xrayClient))
+        logger.info('BigXrayBox created')
+
+class VacuumBox(XrayBox):
+    """
+    VacuumBox at PSI.
+
+    **Available shutters:**
+
+    * XRF
+    * Right
+    * Up
+
+    """
+    _shutter_name_to_index = {'XRF': 4,
+                              'Right': 3,
+                              'Up': 2}
+    _shutter_index_to_name = {4: 'XRF',
+                              3: 'Direct beam',
+                              2: 'Up'}
+
+
+    def __init__(self):
+        # Find the bin directory in the package
+        p = Path(__file__)
+        self._xrayClient = os.path.join(p.parent.parent, 'bin/vacuumClient64')
+        if cfg.verbose:
+            print('VacuumBox using: {}'.format(self._xrayClient))
+        logger.info('VacuumBox Created')

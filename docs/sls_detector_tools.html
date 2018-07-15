@@ -237,7 +237,7 @@ in the detector system.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>detector</strong> (<em>SlsDetector</em>) – The detector that should be scanned</li>
-<li><strong>xraybox</strong> (<a class="reference internal" href="instruments.html#sls_detector_tools.XrayBox" title="sls_detector_tools.XrayBox"><em>XrayBox</em></a><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
+<li><strong>xraybox</strong> (<em>XrayBox</em><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
 <li><strong>pixelmask</strong> (<em>np_array</em><em>(</em><em>bool</em><em>)</em><em>, </em><em>optional</em>) – Numpy array of bools of the same size and one frame or None to disable</li>
 <li><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – start value of the scan</li>
 <li><strong>stop</strong> (<em>int</em><em>, </em><em>optional</em>) – end value of the scan</li>
@@ -264,8 +264,7 @@ in the detector system.</p>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.find_and_write_trimbits">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits</code><span class="sig-paren">(</span><em>detector</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>Examples</div></blockquote>
+<dd><p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">find_and_write_trimbits</span><span class="p">(</span><span class="n">decector</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -274,7 +273,7 @@ in the detector system.</p>
 
 <dl class="function">
 <dt id="sls_detector_tools.calibration.find_and_write_trimbits_scaled">
-<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits_scaled</code><span class="sig-paren">(</span><em>fr_fname</em>, <em>tb_fname</em>, <em>scale</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits_scaled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits_scaled" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits_scaled</code><span class="sig-paren">(</span><em>detector</em>, <em>fname=None</em>, <em>tb_fname=None</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits_scaled"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits_scaled" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1011,6 +1010,13 @@ also holds some geometry information</p>
 <p>Uses a dictionary to provide easy access to different geometries
 trough the cfg.geometry setting.</p>
 <dl class="class">
+<dt id="sls_detector_tools.mask.eiger250k">
+<em class="property">class </em><code class="descclassname">sls_detector_tools.mask.</code><code class="descname">eiger250k</code><a class="reference internal" href="_modules/sls_detector_tools/mask.html#eiger250k"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.mask.eiger250k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Mask for Eiger500k module</p>
+</dd></dl>
+
+<dl class="class">
 <dt id="sls_detector_tools.mask.eiger2M">
 <em class="property">class </em><code class="descclassname">sls_detector_tools.mask.</code><code class="descname">eiger2M</code><a class="reference internal" href="_modules/sls_detector_tools/mask.html#eiger2M"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.mask.eiger2M" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
@@ -1038,13 +1044,13 @@ trough the cfg.geometry setting.</p>
 <p>&#64;author: l_frojdh</p>
 <dl class="class">
 <dt id="sls_detector_tools.receiver.ZmqReceiver">
-<em class="property">class </em><code class="descclassname">sls_detector_tools.receiver.</code><code class="descname">ZmqReceiver</code><span class="sig-paren">(</span><em>ip</em>, <em>ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.receiver.ZmqReceiver" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sls_detector_tools.receiver.</code><code class="descname">ZmqReceiver</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.receiver.ZmqReceiver" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Simple receiver that reads data from zmq streams and put this together
 to an image.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Currently only Eiger500k</p>
+<p class="last">Current support: 250k, 500k and 9M. Only single frame acq.</p>
 </div>
 <p>expects:
 json - header
@@ -1054,10 +1060,6 @@ json - end of acq</p>
 <dt id="sls_detector_tools.receiver.ZmqReceiver.get_frame">
 <code class="descname">get_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/receiver.html#ZmqReceiver.get_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.receiver.ZmqReceiver.get_frame" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read one frame from the streams</p>
-<div class="admonition-todo admonition" id="index-4">
-<p class="first admonition-title">Todo</p>
-<p class="last">4 bit mode</p>
-</div>
 </dd></dl>
 
 </dd></dl>

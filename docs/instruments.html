@@ -96,7 +96,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Instruments</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#agilent-multimeter">Agilent MultiMeter</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#keithley-sourcemeter">Keithley SourceMeter</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#big-xraybox">Big XrayBox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bigxraybox">BigXrayBox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vacuumbox">VacuumBox</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="plot.html">Plotting</a></li>
@@ -272,45 +273,24 @@ panel</p>
 </dd></dl>
 
 </div>
-<div class="section" id="big-xraybox">
-<h2>Big XrayBox<a class="headerlink" href="#big-xraybox" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="bigxraybox">
+<h2>BigXrayBox<a class="headerlink" href="#bigxraybox" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="sls_detector_tools.XrayBox">
-<em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">XrayBox</code><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Wrapper around the xrayClient64, uses the executable from afs, make sure
-that you have access. Supports logging of commands using the python logger.</p>
+<dt id="sls_detector_tools.BigXrayBox">
+<em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">BigXrayBox</code><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#BigXrayBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.BigXrayBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sls_detector_tools.xray_box.XrayBox</span></code></p>
+<p>BigXrayBox at PSI</p>
 <p class="rubric">Examples</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sls_detector_tools</span> <span class="k">import</span> <span class="n">XrayBox</span>
-<span class="n">box</span> <span class="o">=</span> <span class="n">XrayBox</span><span class="p">()</span>
-<span class="n">box</span><span class="o">.</span><span class="n">unlock</span><span class="p">()</span>
-
-<span class="n">box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">40</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span> <span class="o">=</span> <span class="n">BigXrayBox</span><span class="p">()</span>
+<span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Fe&#39;</span>
 <span class="n">box</span><span class="o">.</span><span class="n">voltage</span> <span class="o">=</span> <span class="mi">30</span>
-<span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Cu&#39;</span>
-
-<span class="n">box</span><span class="o">.</span><span class="n">voltage</span>
-<span class="o">&gt;&gt;</span> <span class="mf">30.0</span>
-<span class="n">box</span><span class="o">.</span><span class="n">current</span>
-<span class="o">&gt;&gt;</span> <span class="mf">40.0</span>
-
-<span class="c1">#For setting target open and close shutter we have a context manager</span>
-<span class="kn">from</span> <span class="nn">sls_detector_tools</span> <span class="k">import</span> <span class="n">xrf_shutter_open</span>
-
-<span class="k">with</span> <span class="n">xrf_shutter_open</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="s1">&#39;Cu&#39;</span><span class="p">):</span>
-    <span class="c1">#do your measurement</span>
-    <span class="c1">#shutter is closed when exiting</span>
-    <span class="c1">#this block</span>
+<span class="n">box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">80</span>
+<span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Requires access to afs, make sure that you klog or (kinit+aklog)
-before starting measurement</p>
-</div>
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.HV">
-<code class="descname">HV</code><a class="headerlink" href="#sls_detector_tools.XrayBox.HV" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.HV">
+<code class="descname">HV</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.HV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check or switch on/off the high voltage of the xray tube.</p>
 <p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">HV</span>
@@ -322,8 +302,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="sls_detector_tools.XrayBox.close_shutter">
-<code class="descname">close_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.close_shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.close_shutter" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.close_shutter">
+<code class="descname">close_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.BigXrayBox.close_shutter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Close shutter</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -340,8 +320,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.current">
-<code class="descname">current</code><a class="headerlink" href="#sls_detector_tools.XrayBox.current" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.current">
+<code class="descname">current</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.current" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tube current in mA</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">40</span>
 
@@ -352,8 +332,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="sls_detector_tools.XrayBox.open_shutter">
-<code class="descname">open_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.open_shutter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.open_shutter" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.open_shutter">
+<code class="descname">open_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.BigXrayBox.open_shutter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Open shutter</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -370,8 +350,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.safe">
-<code class="descname">safe</code><a class="headerlink" href="#sls_detector_tools.XrayBox.safe" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.safe">
+<code class="descname">safe</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.safe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if it is safe to open the door.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -386,8 +366,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.shutter_status">
-<code class="descname">shutter_status</code><a class="headerlink" href="#sls_detector_tools.XrayBox.shutter_status" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.shutter_status">
+<code class="descname">shutter_status</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.shutter_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check status of shutters and return dictionary</p>
 <p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">shutter_status</span>
@@ -397,8 +377,8 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.target">
-<code class="descname">target</code><a class="headerlink" href="#sls_detector_tools.XrayBox.target" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.target">
+<code class="descname">target</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.target" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fluorescence target</p>
 <p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Fe&#39;</span>
@@ -410,14 +390,14 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="sls_detector_tools.XrayBox.unlock">
-<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#XrayBox.unlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.XrayBox.unlock" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.unlock">
+<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.BigXrayBox.unlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unlock the control from another user</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.voltage">
-<code class="descname">voltage</code><a class="headerlink" href="#sls_detector_tools.XrayBox.voltage" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.voltage">
+<code class="descname">voltage</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.voltage" title="Permalink to this definition">¶</a></dt>
 <dd><p>High voltage of the X-ray tube in kV</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">voltge</span> <span class="o">=</span> <span class="mi">60</span>
 
@@ -428,8 +408,149 @@ before starting measurement</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="sls_detector_tools.XrayBox.warmup_time">
-<code class="descname">warmup_time</code><a class="headerlink" href="#sls_detector_tools.XrayBox.warmup_time" title="Permalink to this definition">¶</a></dt>
+<dt id="sls_detector_tools.BigXrayBox.warmup_time">
+<code class="descname">warmup_time</code><a class="headerlink" href="#sls_detector_tools.BigXrayBox.warmup_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the warmuptime left, returns 0 if warmup not in progress</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="vacuumbox">
+<h2>VacuumBox<a class="headerlink" href="#vacuumbox" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sls_detector_tools.VacuumBox">
+<em class="property">class </em><code class="descclassname">sls_detector_tools.</code><code class="descname">VacuumBox</code><a class="reference internal" href="_modules/sls_detector_tools/xray_box.html#VacuumBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.VacuumBox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sls_detector_tools.xray_box.XrayBox</span></code></p>
+<p>VacuumBox at PSI.</p>
+<p><strong>Available shutters:</strong></p>
+<ul class="simple">
+<li>XRF</li>
+<li>Right</li>
+<li>Up</li>
+</ul>
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.HV">
+<code class="descname">HV</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.HV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check or switch on/off the high voltage of the xray tube.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">HV</span>
+<span class="o">&gt;&gt;</span> <span class="kc">True</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">HV</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.VacuumBox.close_shutter">
+<code class="descname">close_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.VacuumBox.close_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close shutter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">int</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Shutter to close</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">close_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.current">
+<code class="descname">current</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.current" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tube current in mA</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="mi">40</span>
+
+<span class="n">xray_box</span><span class="o">.</span><span class="n">current</span>
+<span class="o">&gt;&gt;</span> <span class="mf">40.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.VacuumBox.open_shutter">
+<code class="descname">open_shutter</code><span class="sig-paren">(</span><em>sh</em><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.VacuumBox.open_shutter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open shutter</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">int</span></code> or <code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Shutter to open</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">open_shutter</span><span class="p">(</span><span class="s1">&#39;XRF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.safe">
+<code class="descname">safe</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.safe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if it is safe to open the door.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>value</strong> – <code class="xref py py-obj docutils literal"><span class="pre">True</span></code> if it is safe and otherwise <code class="xref py py-obj docutils literal"><span class="pre">False</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.shutter_status">
+<code class="descname">shutter_status</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.shutter_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check status of shutters and return dictionary</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">shutter_status</span>
+<span class="o">&gt;&gt;</span> <span class="p">{</span><span class="s1">&#39;Direct beam&#39;</span><span class="p">:</span> <span class="s1">&#39;OFF&#39;</span><span class="p">,</span> <span class="s1">&#39;XRF&#39;</span><span class="p">:</span> <span class="s1">&#39;OFF&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.target">
+<code class="descname">target</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fluorescence target</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">box</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;Fe&#39;</span>
+
+<span class="n">box</span><span class="o">.</span><span class="n">target</span>
+<span class="o">&gt;&gt;</span> <span class="s1">&#39;Fe&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sls_detector_tools.VacuumBox.unlock">
+<code class="descname">unlock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sls_detector_tools.VacuumBox.unlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unlock the control from another user</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.voltage">
+<code class="descname">voltage</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>High voltage of the X-ray tube in kV</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">xray_box</span><span class="o">.</span><span class="n">voltge</span> <span class="o">=</span> <span class="mi">60</span>
+
+<span class="n">xray_box</span><span class="o">.</span><span class="n">voltage</span>
+<span class="o">&gt;&gt;</span> <span class="mf">60.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sls_detector_tools.VacuumBox.warmup_time">
+<code class="descname">warmup_time</code><a class="headerlink" href="#sls_detector_tools.VacuumBox.warmup_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the warmuptime left, returns 0 if warmup not in progress</p>
 </dd></dl>
 

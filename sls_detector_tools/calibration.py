@@ -11,8 +11,8 @@ The fitting relies on the routines in sls_cmodule
 
 """
 #ROOT
-import ROOT
-from ROOT import TF1
+#import ROOT
+#from ROOT import TF1
     
 
 
@@ -31,7 +31,6 @@ import time
 import shutil
 
 #sls_detector imports
-from . import root_helper as r
 from . import plot as plot
 from . import utils as u
 from . import config as cfg
@@ -42,6 +41,8 @@ from . import ZmqReceiver
 from . import xrf_shutter_open
 from . import mpfit
 
+#compiled
+from _sls_cmodule import vrf_fit
 
 from contextlib import contextmanager
 @contextmanager
@@ -70,7 +71,7 @@ def setup_measurement(detector):
 #    detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
-    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+    yield ZmqReceiver(detector)
     
     #Teardown after test
     detector.dacs.set_from_array( dacs )
@@ -236,6 +237,9 @@ def get_halfmodule_mask():
     elif cfg.geometry == '9M':
         a = mask.eiger9M()
         return a.halfmodule
+    elif cfg.geometry == '250k':
+        a = mask.eiger250k()
+        return a.halfmodule
     else:
         raise NotImplementedError('Half module mask doses not exist for the'\
                                   'selected geometry:', cfg.geometry)
@@ -300,25 +304,31 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     detector.exposure_time = cfg.calibration.vrf_scan_exptime
 
     vrf_array = np.arange(start, stop, step)
-    print(vrf_array)
     
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, vrf_array.size))
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(vrf_array):
             detector.dacs.vrf = v
-            print(detector.dacs.vrf)
+            print('{} - {}'.format(time.asctime(), v))
+            if cfg.calibration.type == 'TP':
+                detector.pulse_diagonal(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
     
     #Reset dr
     detector.dynamic_range = dr
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
+
     return data, vrf_array
 
 def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
-     #Switch to 16bit since we always scan this fast
-
     detector.dynamic_range = cfg.calibration.dynamic_range 
     detector.exposure_time = cfg.calibration.exptime
 
@@ -326,14 +336,22 @@ def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
 
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, threshold.size))
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,th in enumerate(threshold):
             detector.vthreshold = th
             print(detector.vthreshold)
+            if cfg.calibration.type == 'TP':
+                detector.pulse_all_pixels(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
+
     return data, threshold    
 
 
@@ -358,39 +376,38 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
     vrf = []
     
     if cfg.calibration.plot:
-        colors = sns.color_palette(  n_colors = cfg.nmod )
+        colors = sns.color_palette(  n_colors = len(hostnames) )
         fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
         xx = np.linspace(x.min(), x.max(), 300)
     
     
-    halfmodule = get_halfmodule_mask()
+    halfmodule = get_halfmodule_mask()#[6:8]
     
     for i in range( len(halfmodule) ):
         y = data[halfmodule[i]].sum(axis = 0).sum(axis = 0)
         yd = np.gradient( y )
         center = np.argmax( yd )
         print( center )
-        if center > 75:
-            xmin = x[72]
+        N = len(y)
+        if center > N-4:
+            xmin = x[N-4]
             xmax = x[-1]
+            print( xmin, xmax )
         else:
             xmin = x[center-4]
             xmax = x[center+3]
             print( xmin, xmax )
-        
-        #Graph and fit function
-        c,h = r.plot(x,yd)
-        func = TF1('func', 'gaus', xmin, xmax)
-        fit = h.Fit('func', 'SQR') 
-        
-        par = [ fit.Get().Parameter(j) for j in range(func.GetNpar()) ]
-        
+
+#        xmax = 3600
+        par = vrf_fit(x, yd, np.array((xmin, xmax), dtype = np.float))
+#        par = np.zeros(3)
+
         if cfg.calibration.plot:
             ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
             ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
             ax2.plot(xx, function.gaus(xx, *par), color = colors[i])
-        
-        vrf.append( int( np.round( fit.Get().Parameter(1))) )
+        #
+        vrf.append( int( np.round(par[1])) )
     
     if cfg.calibration.plot:
         ax1.legend(loc = 'upper left')
@@ -402,7 +419,7 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
         ax2.set_xlim(xmin-100, xmax+100)
         fig.suptitle('{:s} vrf scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
         plt.tight_layout()
-        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz')) ) 
+        plt.savefig( os.path.join(cfg.path.data, get_vrf_fname().strip('.npz'))+'.png', format='png' ) 
     
     return vrf
 
@@ -463,16 +480,24 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     if pixelmask is not None:
         for i in range( data.shape[2] ):
             data[:,:,i][pixelmask] = 0
-   
-    data = _clean_vrf_data(data)
+
+    #Since we do a sparse scan using test pulses we should not try to clean data
+    if cfg.calibration.type != 'TP':
+        data = _clean_vrf_data(data)
+
+    #TODO! Remove this
+    np.savez(os.path.join(cfg.path.data, get_vrf_fname()), data=data, x=x,)
+
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
-    t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(2)])
+    cts = [data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)]
+    t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)])
     print('Suggested exptime: {:.2f}'.format(t))
     
+    np.savez( os.path.join(cfg.path.data, get_vrf_fname()), data = data, x = x, vrf = vrf )
 
-    return vrf, t  
+    return vrf, t  , cts
     
 
 def find_mean_and_set_vcmp(detector, fit_result):
@@ -511,23 +536,28 @@ def find_mean_and_set_vcmp(detector, fit_result):
     
     """
     #Mean value for each chip to be used as threshold during scan    
-    mean = np.zeros( cfg.nmod*4, dtype = np.int )
+    if detector is None:
+        mean = np.zeros( len(mask.detector[cfg.geometry].halfmodule)*4, dtype = np.int )
+    else:
+        mean = np.zeros( detector.n_modules*4, dtype = np.int )
+    
     
     #Find the mean values for both module and half module
-    if cfg.geometry == 'quad':
-        #Half module
-        for i in range( 4, 8, 1):
-            m = fit_result['mu'][mask.chip[i]]
-            th = int( m[(m>10) & (m<1990)].mean() )
-            detector.set_dac(mask.vcmp[i-4], th)
-            mean[i - 4] = th
-            
-        vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        detector.set_dac('0:vcp', vcp0)
+    if cfg.geometry == '250k':
+        for i in range(mean.size):
+            m = fit_result['mu'][mask.chip[i+4]]
+            try:
+                th = int( m[(m>100) & (m<1900)].mean() )
+            except:
+                th = 0
+            mean[i] = th
+        
+        vcp = int(mean[0:4][mean[0:4]>0].mean())
+        detector.vcmp = mean
+        detector.dacs.vcp = vcp
         
     elif cfg.geometry == '500k':
-        #OK for Python API
-        for i in range( cfg.nmod*4 ):
+        for i in range(mean.size):
             m = fit_result['mu'][mask.chip[i]]
             try:
                 th = int( m[(m>100) & (m<1900)].mean() )
@@ -535,39 +565,40 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 th = 0
             mean[i] = th
         
-        vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        vcp1 = int( mean[4:][mean[4:]>0].mean() )
+        vcp0 = int(mean[0:4][mean[0:4]>0].mean())
+        vcp1 = int(mean[4:][mean[4:]>0].mean())
         detector.vcmp = mean
         detector.dacs.vcp = [vcp0, vcp1]
 
         
     elif cfg.geometry == '2M':
+        raise NotImplementedError('Need to do some work')
         #Module stuff
-        vcmp = np.zeros( (len(mask.eiger2M.module), 8) )
-        vcp  = np.zeros( (len(mask.eiger2M.module), 2) )
-        
-        for j,mod in enumerate( mask.eiger2M.module):
-            for i in range( 8 ):
-                m = fit_result['mu'][mod][mask.chip[i]]
-                try:
-                    th = int( m[(m>10) & (m<1990)].mean() )
-                except:
-                    th = 0
-                vcmp[j,i] = th
-                
-                if type(detector) != type( None ):
-                    detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)
-                    
-                mean[i] = th
-        
-            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-            vcp1 = int( mean[4:][mean[4:]>0].mean() )
-            vcp[j,0] = vcp0
-            vcp[j,1] = vcp1
-            
-            if type( detector ) != type(None):
-                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1)  
+        # vcmp = np.zeros( (len(mask.eiger2M.module), 8) )
+        # vcp  = np.zeros( (len(mask.eiger2M.module), 2) )
+        #
+        # for j,mod in enumerate( mask.eiger2M.module):
+        #     for i in range( 8 ):
+        #         m = fit_result['mu'][mod][mask.chip[i]]
+        #         try:
+        #             th = int( m[(m>10) & (m<1990)].mean() )
+        #         except:
+        #             th = 0
+        #         vcmp[j,i] = th
+        #
+        #         if type(detector) != type( None ):
+        #             detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)
+        #
+        #         mean[i] = th
+        #
+        #     vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+        #     vcp1 = int( mean[4:][mean[4:]>0].mean() )
+        #     vcp[j,0] = vcp0
+        #     vcp[j,1] = vcp1
+        #
+        #     if type( detector ) != type(None):
+        #         detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+        #         detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1)
 
 
     elif cfg.geometry == '9M':
@@ -575,10 +606,11 @@ def find_mean_and_set_vcmp(detector, fit_result):
         lines = []
         
         #Module stuff
-        vcmp = np.zeros( (len(mask.eiger9M.module), 8) )
-        vcp  = np.zeros( (len(mask.eiger9M.module), 2) )
+        dm = mask.detector[cfg.geometry]
+        vcmp = np.zeros( (len(dm.module), 8) )
+        vcp  = np.zeros( (len(dm.module), 2) )
         
-        for j,mod in enumerate( mask.eiger9M.module ):
+        for j,mod in enumerate( dm.module ):
             for i in range( 8 ):
                 m = fit_result['mu'][mod][mask.chip[i]]
                 try:
@@ -588,11 +620,11 @@ def find_mean_and_set_vcmp(detector, fit_result):
 
                 vcmp[j,i] = th
                 
-                if type(detector) != type( None ):
-                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
+#                if type(detector) != type( None ):
+##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
   
                 #Integer division!
-                lines.append('./sls_detector_put {:s} {:d}'.format( mask.eiger9M.vcmp[j*8+i], th) )
+                lines.append('./sls_detector_put {:s} {:d}\n'.format( dm.vcmp[j*8+i], th) )
                     
                 mean[i] = th
         
@@ -601,14 +633,22 @@ def find_mean_and_set_vcmp(detector, fit_result):
             vcp[j,0] = vcp0
             vcp[j,1] = vcp1
             
-            if type( detector ) != type(None):
-                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+#            if type( detector ) != type(None):
+#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
-                
+            lines.append('./sls_detector_put {:d}:vcp {:d}\n'.format(j*2, vcp0))
+            lines.append('./sls_detector_put {:d}:vcp {:d}\n'.format(j*2+1, vcp1))
+        
+        if detector is not None:
+            print('Setting vcmp')
+            for i, v in enumerate(vcmp.flat):
+                detector.vcmp[i] = int(v)
+            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+        
         return vcmp, vcp, lines
+    else:
+        raise NotImplementedError('Check detector geometry')
 
 
 def find_initial_parameters(x,y, thrange = (0,2200)):
@@ -668,7 +708,7 @@ def _plot_scurve(data, x):
     The purpouse of this plot is to verify that the scurve data is ok
     """
     fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
-    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+    for p in u.random3605_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
         ax1.plot(x, data[p[0], p[1], :])
     
     for c in mask.chip:
@@ -684,7 +724,7 @@ def _plot_scurve(data, x):
     
     fig.suptitle('{:s} threshold scan: {:s}'.format(cfg.det_id, cfg.calibration.target))
     fig.tight_layout()
-    plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') ) )
+    plt.savefig( os.path.join( cfg.path.data, get_data_fname().strip('.npz') )+'.png' )
     
 def do_scurve(detector, xraybox,
               start = 0, 
@@ -711,13 +751,14 @@ def do_scurve(detector, xraybox,
         
     with xrf_shutter_open(xraybox, cfg.calibration.target):
         data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
+        np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
 
     #plotting the result of the scurve scan
     if cfg.calibration.plot:
         _plot_scurve(data, x)
    
     #Save data
-    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
+#    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
     
     #if data should be used interactivly
     return data, x
@@ -815,18 +856,17 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
 
     fit_result = mpfit.fit(data, x, cfg.calibration.nproc, par)  
     
-#    #If specified plot and save the result
-#    if cfg.calibration.plot:
-#        mean, std, lines = plot.chip_histograms( fit_result['mu'], xmin = thrange[0], xmax = thrange[1] ) 
-#        plt.xlabel('Vcmp [DAC LSB]')
-#        plt.ylabel('Number of Pixels')
-#        plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') ) )
-#    
-#    
-#    #Save the fit result
-#    fname = get_fit_fname().strip('.npy')
-#    pathname = os.path.join(cfg.path.data, fname)
-#    np.save(pathname, fit_result)
+   #If specified plot and save the result
+    if cfg.calibration.plot:
+        mean, std, lines = plot.chip_histograms( fit_result['mu'], xmin = thrange[0], xmax = thrange[1] )
+        plt.xlabel('Vcmp [DAC LSB]')
+        plt.ylabel('Number of Pixels')
+        plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') )+'.png' )
+
+   #Save the fit result
+    fname = get_fit_fname().strip('.npy')
+    pathname = os.path.join(cfg.path.data, fname)
+    np.save(pathname, fit_result)
     
     return fit_result
 
@@ -840,20 +880,26 @@ def _trimbit_scan(detector, step = 2):
 
 
     detector.exposure_time = cfg.calibration.exptime
-
     tb_array = np.arange(0, 64, step)
-    print(tb_array)
     
     _s = detector.image_size
     data = np.zeros((_s.rows, _s.cols, tb_array.size))
-    
+
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = False
+
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(tb_array):
             detector.trimbits = v
             print(detector.trimbits)
+            if cfg.calibration.type == 'TP':
+                detector.pulse_all_pixels(1000)
             detector.acq()
             data[:,:,i] = receiver.get_frame()
-    
+
+    if cfg.calibration.type == 'TP':
+        detector.eiger_matrix_reset = True
 
     return data, tb_array
 
@@ -872,7 +918,13 @@ def _plot_trimbit_scan(data,x):
     fig.suptitle('Trimbit scan')
     fig.tight_layout()
     return fig, ax1, ax2
-    
+
+
+def _plot_trimbit_histogram(tb):
+    h, fig, ax = plot.histogram(tb, 0, 64, 64)
+    ax.set_xlabel('Trimbits')
+    return h
+
 def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     """
     Setup the detector and then scan trough the trimbits. Normally with 
@@ -910,15 +962,13 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
 #    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)
     with xrf_shutter_open(xraybox, cfg.calibration.target):
         data, x = _trimbit_scan(detector)
-    
-    
-    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
-             data = data, x = x)
+        np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
+                 data = data, x = x)
     
     
     if cfg.calibration.plot is True:
         fig, ax1, ax2 = _plot_trimbit_scan(data, x)
-        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') ) )
+        fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') )+'.png' )
     
     return data, x
 
@@ -944,20 +994,37 @@ def load_trimbits(detector):
     pathname = os.path.join(cfg.path.data, fname)
     detector.load_trimbits(pathname)
 
-def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
+def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None):
+    
+    #Filename for scurve
+    if fname is None:
+        fname = get_data_fname()
+        
+    #filename for tb data
+    if tb_fname is None:
+        tb_fname = get_tbdata_fname()
+        
+    #Load scurve data and calculate scale
+    pathname = os.path.join( cfg.path.data, fname)
+    tb_pathname = os.path.join( cfg.path.data, tb_fname)
+    with np.load( pathname ) as f:
+        scale =f['data'][:,:,-1]
+        scale = scale / 1000.
+    
+
     
     #Load trimbit scan    
-    with np.load( tb_fname ) as f:
+    with np.load( tb_pathname ) as f:
         data = f['data']
         x = f['x']
-    x = np.arange(0,64,2)    
+
     #Scale data
     data = data.astype( np.double )
     for i in range(data.shape[2]):
         data[:,:,i] /= scale
     
     #Load the fit result from the vcmp scan 
-    fit_result = np.load( fr_fname )
+    fit_result = np.load( os.path.join(cfg.path.data, get_fit_fname()) )
     
     #Find the number of counts at the inflection point
     target = function.scurve( fit_result['mu'], 
@@ -976,10 +1043,25 @@ def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
     tb[tb>63] = 63
     tb[tb<0] = 0
     tb = tb.round()
-    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
+#    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
     tb = tb.astype(np.int32)
     ax, im = plot.imshow(tb)
 #    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
+    
+    fname = get_trimbit_fname()
+    pathname = os.path.join(cfg.path.data, fname)
+    np.savez( pathname, trimbits = tb, fit = result)
+    
+    
+#    #Actual trimbit files
+#    dacs = detector.dacs.get_asarray()
+#    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
+#    ##
+#    os.chdir(cfg.path.data)
+#    host = detector.hostname
+#    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
+#        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
+#        io.write_trimbit_file( fn, tb[hm], dacs[:,i] )
     
     return tb, target, data,x, result
     
@@ -987,7 +1069,7 @@ def find_and_write_trimbits_scaled(fr_fname, tb_fname, scale , tau = None):
     
 def find_and_write_trimbits(detector, tau = None):
     """
-        Examples
+    Examples
     ---------
     
     ::
@@ -1055,8 +1137,6 @@ def find_and_write_trimbits(detector, tau = None):
         
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
-    
-
     np.savez( pathname, trimbits = tb, fit = result)
     
     hostname = detector.hostname

@@ -195,6 +195,25 @@
 
 
 
+<div class="viewcode-block" id="eiger250k"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.mask.eiger250k">[docs]</a><span class="k">class</span> <span class="nc">eiger250k</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Mask for Eiger500k module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrow</span> <span class="o">=</span> <span class="mi">256</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncol</span> <span class="o">=</span> <span class="mi">1024</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]]</span>
+
+        <span class="c1">#Half modules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">halfmodule</span> <span class="o">=</span> <span class="p">[[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="p">(</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">256</span><span class="o">*</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">512</span><span class="o">*</span><span class="n">col</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span><span class="mi">512</span><span class="o">*</span><span class="p">(</span><span class="n">col</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">256</span><span class="o">*</span><span class="p">(</span><span class="n">row</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="mi">256</span><span class="o">*</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">512</span><span class="o">*</span><span class="p">(</span><span class="n">col</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="mi">512</span><span class="o">*</span><span class="p">(</span><span class="n">col</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="mi">1</span><span class="p">)]</span> <span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="eiger500k"><a class="viewcode-back" href="../../sls_detector_tools.html#sls_detector_tools.mask.eiger500k">[docs]</a><span class="k">class</span> <span class="nc">eiger500k</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -297,7 +316,8 @@
 
 
 <span class="c1">#Dictionary lookup for using detector geometry for lookup</span>
-<span class="n">detector</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;500k&#39;</span><span class="p">:</span> <span class="n">eiger500k</span><span class="p">(),</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;250k&#39;</span><span class="p">:</span> <span class="n">eiger250k</span><span class="p">(),</span>
+            <span class="s1">&#39;500k&#39;</span><span class="p">:</span> <span class="n">eiger500k</span><span class="p">(),</span>
             <span class="s1">&#39;2M&#39;</span><span class="p">:</span> <span class="n">eiger2M</span><span class="p">(),</span>
             <span class="s1">&#39;9M&#39;</span><span class="p">:</span> <span class="n">eiger9M</span><span class="p">()}</span>
 </pre></div>

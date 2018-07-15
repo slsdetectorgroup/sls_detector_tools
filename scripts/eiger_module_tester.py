@@ -1,38 +1,33 @@
-import numpy as np
+# -*- coding: utf-8 -*-
+
+#Python imports
 import os
 import sys
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.ion()
+sns.set_context('talk')
 
 #Temporary paths for dev
 sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
 sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
 
-from sls_detector import Detector
-#from sls_detector_tools.io import load_frame, save_txt, load_txt, load_file
+from sls_detector import Eiger
 from sls_detector_tools import eiger_tests
-#import matplotlib as mpl
-import matplotlib.pyplot as plt
-plt.ion()
-
-#import time 
-import seaborn as sns
-#from sls_detector_tools.plot import *
-sns.set_context('talk')
-
 import sls_detector_tools.config as cfg
 
-#Initialize the system
-#d = SlsDetector(cfg = 'pc1875_tests.cfg')
+
 cfg.verbose = False
 cfg.debug = False
-d = Detector()
+d = Eiger()
 
 
 ##Setup
 cfg.det_id = 'T63'
+cfg.geometry= '500k'
 path = os.path.join( cfg.path.test, cfg.det_id )
 
-
-cfg.geometry= '500k'
 
 try:
 	os.mkdir( path )
@@ -51,7 +46,7 @@ d.dacs.rxb_lb = 1100
 d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
-#out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
+out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
 #out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
 ##
 ####################
@@ -59,16 +54,16 @@ d.dacs.rxb_rb = 1100
 #out = eiger_tests.io_delay(d, clk = 'Half Speed')
 ######################
 ###
-#a = eiger_tests.analog_pulses(d)
+a = eiger_tests.analog_pulses(d)
 #
 ######################
 #a = eiger_tests.counter(d, clk = 'Half Speed')
-a = eiger_tests.counter(d, clk = 'Full Speed')
+#a = eiger_tests.counter(d, clk = 'Full Speed')
 #tests.counter(name, d, clk = 1)
 #####################
-data = eiger_tests.overflow(d)
+#data = eiger_tests.overflow(d)
 ########
-eiger_tests.generate_report(path)
+#eiger_tests.generate_report(path)
 
 #plt.ioff()
 #

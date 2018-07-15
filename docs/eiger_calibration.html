@@ -293,7 +293,7 @@ in the detector system.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>detector</strong> (<em>SlsDetector</em>) – The detector that should be scanned</li>
-<li><strong>xraybox</strong> (<a class="reference internal" href="instruments.html#sls_detector_tools.XrayBox" title="sls_detector_tools.XrayBox"><em>XrayBox</em></a><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
+<li><strong>xraybox</strong> (<em>XrayBox</em><em> or </em><em>DummyBox</em>) – Used for selecting the right target and controlling the shutter</li>
 <li><strong>pixelmask</strong> (<em>np_array</em><em>(</em><em>bool</em><em>)</em><em>, </em><em>optional</em>) – Numpy array of bools of the same size and one frame or None to disable</li>
 <li><strong>start</strong> (<em>int</em><em>, </em><em>optional</em>) – start value of the scan</li>
 <li><strong>stop</strong> (<em>int</em><em>, </em><em>optional</em>) – end value of the scan</li>
@@ -361,8 +361,7 @@ performa a trimbit scan</p>
 <dl class="function">
 <dt id="sls_detector_tools.calibration.find_and_write_trimbits">
 <code class="descclassname">sls_detector_tools.calibration.</code><code class="descname">find_and_write_trimbits</code><span class="sig-paren">(</span><em>detector</em>, <em>tau=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sls_detector_tools/calibration.html#find_and_write_trimbits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sls_detector_tools.calibration.find_and_write_trimbits" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>Examples</div></blockquote>
+<dd><p class="rubric">Examples</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">fit_result</span> <span class="o">=</span> <span class="n">calibration</span><span class="o">.</span><span class="n">find_and_write_trimbits</span><span class="p">(</span><span class="n">decector</span><span class="p">)</span>
 </pre></div>
 </div>

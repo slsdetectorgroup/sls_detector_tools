@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Plotting routines for displaying image sensor data using matplotlib and
-seaborn. Some routines like the chip_histograms rely on PyROOT but the import
-should work even without ROOT.
+seaborn.
 """
-#Print function to be ready for Python3
-from __future__ import print_function
+
 
 #Python imports
 from itertools import permutations
@@ -20,17 +18,38 @@ import seaborn as sns
 from . import mask
 from . import config as cfg
 from . import utils
-#from sls_detector import function
+from _sls_cmodule import hist
 
 
-#Try to import r (root plotting stuff) otherwise fallback on python version
-#try:
-#    from sls_detector_tools import root_helper as r
-#except ImportError:
-#    pass
-#    print('sls_detector/plot: ROOT version of r not imported! Using python version')
-#    from sls_detector import py_r as r
 
+def histogram(data, xmin = 0, xmax = 10, nbins = 10, plot = True):
+    """Histogram using a ROOT.TH1D
+
+    Parameters
+    ------------
+    data: numpy_array any dimension
+        Data points for the histogram
+    xmin: double
+        Low limit
+    xmax: double
+        High limit
+    nbins: int
+        number of bins of the histogram
+
+
+    Returns
+    ---------
+    result: dict
+        Python dict holding x, y, mean and std
+
+    """
+    h = hist(data, np.array((xmin, xmax, nbins)))
+
+    if plot is True:
+        fig, ax = plt.subplots(1, figsize = (14,7))
+        ax.plot(h['x'],h['y'], drawstyle = 'steps-post')
+        return h, fig ,ax
+    return h
 
 def imshow(data, cmap='coolwarm',
            log=False,
@@ -434,7 +453,7 @@ def random_pixels(data, x, n_pixels=5, rows=(0, 512), cols=(0, 1024)):
     for pixel in pixels:
         plt.plot(x, data[pixel])
 
-def chip_histograms(data, xmin=0, xmax=2000, bins=400):
+def chip_histograms(data, xmin=0, xmax=2000, bins=400, log = False):
     """
     Plot a histogram per chip of the inflection point (fit_result['mu'])
 
@@ -449,12 +468,13 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
     bins: int, optional
         Number of bins in the histogram
     """
-    from sls_detector_tools import root_helper as r
-    
-    if cfg.nmod == 1:
+
+    if cfg.geometry == '250k':
         chips = mask.chip[4:]
+        print('tva hundra')
     else:
         chips = mask.chip
+        print(cfg.geometry)
 
     mean = []
     std = []
@@ -468,15 +488,18 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
 
     for m in mask.detector[cfg.geometry].module:
         for i, c in enumerate(chips):
-            canvas, histogram = r.hist(data[m][c], xmin=xmin,
-                                       xmax=xmax, bins=bins)
-            mean.append(histogram.GetMean())
-            std.append(histogram.GetStdDev())
+            h = histogram(data[m][c],
+                          xmin=xmin,
+                          xmax=xmax,
+                          nbins=bins,
+                          plot = False)
+            mean.append(h['mean'])
+            std.append(h['std'])
 
             label = r'{:d}: $\mu$: {:.1f} $\sigma$: {:.1f}'.format(i,
                                                                    mean[-1], std[-1])
 
-            x0, y0 = r.getHist(histogram)
+            x0, y0 = h['x'], h['y']
             if cfg.calibration.plot:
                 plt.plot(x0, y0, ls='steps', label=label)
 
@@ -485,10 +508,13 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400):
 
 
             lines.append((x0, y0))
+
     if cfg.calibration.plot:
         plt.legend(loc='best')
         plt.ylim(0, max_value*1.1)
         plt.xlim(xmin, xmax)
+        if log:
+            plt.yscale('log')
 
 
     return mean, std, lines
