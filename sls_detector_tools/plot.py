@@ -56,7 +56,8 @@ def imshow(data, cmap='coolwarm',
            draw_asics=False,
            asic_color='white',
            asic_linewidth=2,
-           figsize=(16, 10)):
+           figsize=(16, 10),
+           kwargs={}):
     """Plot an image with colorbar
 
     Parameters
@@ -109,7 +110,7 @@ def imshow(data, cmap='coolwarm',
                        norm=mpl.colors.LogNorm(vmin=0.1))
     else:
         im = ax.imshow(data, interpolation='nearest',
-                       origin='lower', cmap=cmap)
+                       origin='lower', cmap=cmap,  **kwargs)
 
 
     # create an axes on the right side of ax. The width of cax will be 5%

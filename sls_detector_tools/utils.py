@@ -11,7 +11,13 @@ from scipy.interpolate import interp1d
 #sls detector
 from sls_detector_tools import function
 
-
+def rebin_image(image, size):
+    """Rebin image"""
+    new = np.zeros( np.floor(np.asarray(image.shape)/size).astype(np.int))
+    for i in range(size):
+        for j in range(size):
+            new += image[i::size, j::size][0:new.shape[0], 0:new.shape[1]]
+    return new
 
 def get_dtype(dr):
     """

@@ -175,7 +175,8 @@ def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
     """
 
     #Convert other data, (Note! does not copy is its already a numpy array)
-    data = np.asarray(data)
+    if data is not None:
+        data = np.asarray(data)
 
     #Apply custom plot settings
     if color is None:
@@ -211,6 +212,7 @@ def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
     h.SetFillStyle(fill_style)
 
 #    #If we have data fill the histogram otherwise leave it
+#    print('data:', data, type(data))
     if data is not None:
         hfill = h.Fill #slight speed up
         for x in np.nditer(data):
@@ -233,7 +235,7 @@ def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
 
     return c, h
 
-def th2(x, y, xmin=0, xmax=0, ymin=0, ymax=0, bins=False):
+def th2(x, y, xmin=None, xmax=None, ymin=None, ymax=None, bins=None):
     """Plot a TH2
 
     Parameters
@@ -260,7 +262,8 @@ def th2(x, y, xmin=0, xmax=0, ymin=0, ymax=0, bins=False):
         x = np.asarray(x)
     if isinstance(y, list):
         y = np.asarray(y)
-    if not ymin:
+        
+    if ymin is None:
         xmin = 0
         xmax = x.max()
 
@@ -268,7 +271,7 @@ def th2(x, y, xmin=0, xmax=0, ymin=0, ymax=0, bins=False):
         ymax= y.max()
 
 
-    if bins:
+    if bins is not None:
         if len(bins) == 1:
             nbinsx = bins[0]
             nbinsy = bins[0]
@@ -328,30 +331,31 @@ def getHist(h, edge='center'):
 
         if edge == 'low':
             for i in range(bins):
-                x[i] = h.GetBinLowEdge(i)
-                y[i] = h.GetBinContent(i)
+                x[i] = h.GetBinLowEdge(i+1)
+                y[i] = h.GetBinContent(i+1)
         elif edge == 'high':
             for i in range(bins):
-                x[i] = h.GetBinLowEdge(i) + h.GetBinWidth(i)
-                y[i] = h.GetBinContent(i)
+                x[i] = h.GetBinLowEdge(i+1) + h.GetBinWidth(i+1)
+                y[i] = h.GetBinContent(i+1)
         elif edge == 'center':
             for i in range(bins):
-                x[i] = h.GetBinCenter(i)
-                y[i] = h.GetBinContent(i)
+                x[i] = h.GetBinCenter(i+1)
+                y[i] = h.GetBinContent(i+1)
 
     elif edge == 'both':
-        print(edge)
-        print('Bins', bins)
-        x = np.zeros(bins*2)
-        y = np.zeros(bins*2)
-        print(x.size, y.size)
-
-        for i in range(bins):
-            x[i*2] = h.GetBinLowEdge(i)
-            x[i*2+1] = h.GetBinLowEdge(i) + h.GetBinWidth(i)
-
-            y[i*2] = h.GetBinContent(i)
-            y[i*2+1] = h.GetBinContent(i)
+        raise NotImplementedError('Both is no longer supported')
+#        print(edge)
+#        print('Bins', bins)
+#        x = np.zeros(bins*2)
+#        y = np.zeros(bins*2)
+#        print(x.size, y.size)
+#
+#        for i in range(bins):
+#            x[i*2] = h.GetBinLowEdge(i)
+#            x[i*2+1] = h.GetBinLowEdge(i) + h.GetBinWidth(i)
+#
+#            y[i*2] = h.GetBinContent(i)
+#            y[i*2+1] = h.GetBinContent(i)
 
     else:
         raise ValueError('Unknown edge specification use: high, low, center or both')

@@ -21,7 +21,7 @@ args = out.stdout.decode()
 c_ext = Extension("_sls_cmodule",
                   sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"],
                   libraries = ['stdc++', 'Core', 'MathCore', 'Hist'],
-                  library_dirs = [ os.path.join(os.environ['ROOTSYS'], 'lib/root') ],
+                  library_dirs = [ os.path.join(os.environ['ROOTSYS'], 'lib') ],
                   include_dirs=numpy.distutils.misc_util.get_numpy_include_dirs(),
                   extra_compile_args= [args])
                   

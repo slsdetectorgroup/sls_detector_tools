@@ -7,11 +7,23 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.ndimage as ndimage
-from skimage.measure import regionprops
+
+import skimage.morphology as morph
+from skimage.measure import regionprops, label
 
 
 #PyTables
 from tables import open_file, IsDescription, UInt32Col, Float32Col, UInt16Col, UInt32Col, Int32Atom, StringCol, Float32Atom
+
+class open_cluster_file:
+    def __init__(self, fname):
+        self.fname = fname
+    def __enter__(self):
+        self.file = open_file(self.fname)
+        self.table = self.file.root.clusters
+        return self.file, self.table
+    def __exit__(self, type, value, traceback):
+        self.file.close()
 
 
 class Cluster(IsDescription):
@@ -61,7 +73,7 @@ class Cluster_finder():
 
         self.clusters = self.file.root.clusters
         
-    def find_clusters(self, data, filename = 'temp.file'):
+    def find_clusters(self, data, threshold, expand = True):
         """
         Performs clustering on all frames in data
         Result stored as clusters and cluster info
@@ -85,22 +97,29 @@ class Cluster_finder():
         cluster = self.table.row
 
         connectivity = [[1,1,1],[1,1,1],[1,1,1]]
+
         
         for frame_nr, frame in enumerate(data):
             if frame_nr%100 == 0: 
                 print(f'Processing frame: {frame_nr}')
-            labeled, nrOfFeatures=ndimage.label(frame, connectivity)
+            
+            th_image = frame > threshold
+            labeled, nrOfFeatures=ndimage.label(th_image, connectivity)
+#            morph.dilation(labeled, out = labeled)
+#            labeled = label(th_image)
+#            nrOfFeatures = 1
             self.clustersPerFrame[self.n_frames] = nrOfFeatures
             self.countsPerFrame[self.n_frames] = frame.sum()
 
-            for p in regionprops(labeled, intensity_image = frame):
+            for p in regionprops(labeled, intensity_image = frame, coordinates='rc'):
                 #Write cluster properties to table
                 cluster['id'] = self.cluster_id
                 cluster['frameNr'] = self.n_frames
                 cluster['area'] = p.area
                 cluster['volume'] = p.intensity_image.sum()
+                cluster['center'] = p.weighted_centroid
                 if not self._basic:
-                    cluster['center'] = p.weighted_centroid
+#                    cluster['center'] = p.weighted_centroid
                     cluster['non_weighted_center'] = p.centroid
                     cluster['region'] = p.bbox
                     cluster['orientation'] = p.orientation
@@ -320,4 +339,20 @@ class Cluster_finder():
         c.Update()
 
         return c,h
+
+def view_clusters(cluster_id, table, cluster_array, shape):
+    image = np.zeros(shape)
+    for i in cluster_id:
+        data = cluster_array[i]
+        for item in zip(data[0::3], data[1::3], data[2::3]):
+            image[int(item[0]), int(item[1])] += item[2]
+    return image
+
+def hitmap(cluster_id, table, cluster_array, shape):
+    image = np.zeros(shape)
+    for i in cluster_id:
+        data = cluster_array[i]
+        for item in zip(data[0::3], data[1::3], data[2::3]):
+            image[int(item[0]), int(item[1])] += 1
+    return image
 
