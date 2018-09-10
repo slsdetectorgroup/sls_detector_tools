@@ -106,7 +106,7 @@ def generate_scurve(x, n_photons):
 
 def R(x):
     """
-    Quality measurement for one refelction spot. To be used with
+    Quality measurement for one reflection spot. To be used with
     a numpy array having the number of counts for a simulated
     or measured spot
     """
@@ -150,12 +150,11 @@ def ratecorr(values, tau, exptime):
 
 def sum_array(data, sum_size):
     """
-    Sum evry sum_size element of a numpy array and return the
-    summed array.
+    Sum every sum_size element of a numpy array and return the
+    summed array. Truncates the values that does not fit in a chunk
 
     data = 1d numpy array
     sum_size = number of consecutive elements to sum
     """
-    #Check lengt
-    remove = data.size % sum_size
-    return data[0:-remove].reshape(-1, sum_size).sum(axis=1)
+    end = data.size - data.size % sum_size
+    return data[0:end].reshape(-1, sum_size).sum(axis=1)
