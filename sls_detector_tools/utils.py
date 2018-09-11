@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 from sls_detector_tools import function
 
 def rebin_image(image, size):
-    """Rebin image"""
+    """Rebin image using a square cluster of size x size pixels"""
     new = np.zeros( np.floor(np.asarray(image.shape)/size).astype(np.int))
     for i in range(size):
         for j in range(size):
@@ -22,6 +22,8 @@ def rebin_image(image, size):
 def get_dtype(dr):
     """
     Returns the correct numpy dtype from a number or string
+    Note this dtype is used for storing data and is not neccessary the
+    same as the number asked for
     """
     if isinstance(dr, str):
         dr = int(dr)

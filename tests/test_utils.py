@@ -40,3 +40,28 @@ def test_sum_array_small_array():
 def test_sum_array_large_array():
     arr = np.linspace(0,500,1000)
     assert utils.sum_array(arr,2).sum() == pytest.approx( arr.sum(), 1e-5)
+    
+    
+def test_random_pixel_with_default_args():
+    pixel = utils.random_pixel()
+    assert len(pixel) == 1
+    assert len(pixel[0]) == 2
+    assert 0 <= pixel[0][0] < 512
+    assert 0<= pixel[0][0] < 1024
+    
+def test_random_pixel():
+    pixels = utils.random_pixel(n_pixels=1000, rows=(10,60), cols=(50,500))
+    assert len(pixels) == 1000
+    for p in pixels:
+        assert 10 <= p[0] < 60
+        assert 50 <= p[1] < 500
+        
+def test_get_dr():
+    assert utils.get_dtype(4) == np.uint8
+    assert utils.get_dtype(8) == np.uint8
+    assert utils.get_dtype(16) == np.int16
+    assert utils.get_dtype(32) == np.int32
+    assert utils.get_dtype('4') == np.uint8
+    assert utils.get_dtype('8') == np.uint8
+    assert utils.get_dtype('16') == np.int16
+    assert utils.get_dtype('32') == np.int32
