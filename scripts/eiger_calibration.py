@@ -46,10 +46,10 @@ gain10               Sn
 
 #Configuration for the calibration script
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
-cfg.calibration.type = 'TP' #Sets function to fit etc.
-cfg.det_id = 'T45'
-cfg.calibration.gain = 'gain1'
-cfg.calibration.target = 'TP'
+cfg.calibration.type = 'XRF' #Sets function to fit etc.
+cfg.det_id = 'T62'
+cfg.calibration.gain = 'gain5'
+cfg.calibration.target = 'Cu'
 cfg.calibration.energy = 5
 #cfg.path.data = os.path.join('/mnt/local_sw_raid/eiger_data/trash',
 #                             cfg.det_id, cfg.calibration.gain)
@@ -77,25 +77,26 @@ cfg.calibration.exptime = 0.1
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
-#d.dacs.vcall = 3700
-vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
-d.dacs.vrf = vrf
-##cfg.calibration.exptime = t
-##
-#
-##impo
-data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit_scaled()
-###cfg.calibration.exptime = 29.32
-data, x = calibration.do_trimbit_scan(d, box)
-tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 calibration.load_trimbits(d)
-
-
-
-cfg.calibration.run_id = 1
-data, x = calibration.do_scurve(d, box)
-calibration.do_scurve_fit_scaled()
+#d.dacs.vcall = 3700
+for i in range(5):
+    vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
+##d.dacs.vrf = vrf
+#cfg.calibration.exptime = 3
+####
+###
+#####impo
+#data, x = calibration.do_scurve(d, box)
+#fit_result = calibration.do_scurve_fit_scaled()
+#data, x = calibration.do_trimbit_scan(d, box)
+#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+#
+##
+#calibration.load_trimbits(d)
+###
+#cfg.calibration.run_id = 1
+#data, x = calibration.do_scurve(d, box)
+#fit_result = calibration.do_scurve_fit_scaled()
 #data, x = calibration.take_global_calibration_data(d, box)
 #calibration.per_chip_global_calibration()
 #

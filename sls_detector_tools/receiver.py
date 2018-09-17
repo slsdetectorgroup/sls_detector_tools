@@ -61,9 +61,11 @@ class ZmqReceiver:
         image = np.zeros(self.image_size)
             
         for p,s in zip(self.mask.port, self.sockets):
-            header = json.loads( s.recv() )
+#            header =  s.recv()
+#            return header
+            header = json.loads( s.recv()[0:-1] ) #Temporary fix for 4.0.0
             data = s.recv()
-            end = json.loads( s.recv() )
+            end = json.loads( s.recv()[0:-1] )
             if header['bitmode'] == 4:
                 print('4bit')
                 tmp = np.frombuffer(data, dtype=np.uint8)

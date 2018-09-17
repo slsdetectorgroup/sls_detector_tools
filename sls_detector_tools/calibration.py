@@ -708,7 +708,7 @@ def _plot_scurve(data, x):
     The purpouse of this plot is to verify that the scurve data is ok
     """
     fig, (ax1, ax2) = plt.subplots(1,2, figsize = (14,7))
-    for p in u.random3605_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
+    for p in u.random_pixel(n_pixels = 50, rows = (0, data.shape[0],), cols = (0, data.shape[1])):
         ax1.plot(x, data[p[0], p[1], :])
     
     for c in mask.chip:
@@ -1054,14 +1054,14 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     
     
 #    #Actual trimbit files
-#    dacs = detector.dacs.get_asarray()
-#    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
+    dacs = detector.dacs.get_asarray()
+    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
 #    ##
 #    os.chdir(cfg.path.data)
-#    host = detector.hostname
-#    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
-#        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
-#        io.write_trimbit_file( fn, tb[hm], dacs[:,i] )
+    host = detector.hostname
+    for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
+        fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
+        io.write_trimbit_file( os.path.join(cfg.path.data, fn), tb[hm], dacs[:,i] )
     
     return tb, target, data,x, result
     
