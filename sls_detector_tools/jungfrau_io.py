@@ -194,10 +194,11 @@ def correct_data(data, threshold = 2):
 
 
 def mp_calculate_pedestal(output, gain_id):
-    data = jf.load_file(f'raw/pedestal_d0_f000000000000_{gain_id}.raw', n_frames_pedestal, skipframes = 100)
+    n_frames_pedestal = 1000
+    data = load_file(f'raw/pedestal_d0_f000000000000_{gain_id}.raw', n_frames_pedestal, skipframes = 100)
     gain = np.right_shift(data[0], 14)
     gain[gain==3]=2
-    np.bitwise_and(data, jf.bitmask, out=data)
+    np.bitwise_and(data, bitmask, out=data)
 #    imshow(gain)
     pd = data.mean(axis = 2)
     output.put((pd, gain_id))
