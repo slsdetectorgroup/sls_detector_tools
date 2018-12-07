@@ -15,10 +15,34 @@ double scurve_model(double *x, double *par)
    return f;
 }
 
+double gaus_func(double *x, double *par){
+    double f =  par[0]*TMath::Gaus(x[0], par[1], par[2]);
+    return f;
+    // // A*np.exp(-0.5*((x-mu)/sigma)**2)
+    // par[0]*TMath::Exp(-0.5*TMath::Power(x[0]-par[1]/2,2))
+}
+
 
 void gaus_fit(int n, double *x, double *y, double xmin, double xmax, double *result){
 
     auto f = new TF1( "func", "gaus", xmin, xmax);
+    auto g = new TGraph(n, x, y);
+    g->Fit( "func",  "NSQR");
+    for (int i = 0; i<f->GetNpar(); ++i){
+        result[i] = f->GetParameter(i);
+    }
+    delete f;
+    delete g;
+    
+}
+void gaus_fit2(int n, double *x, double *y, double xmin, double xmax, double *result){
+
+    const int npar = 3;
+    auto f = new TF1( "func", gaus_func, xmin, xmax, npar);
+    f->SetParameter(0, 100);
+    f->SetParameter(1, 20);
+    f->SetParameter(2, 5);
+    // auto f = new TF1( "func", "gaus", xmin, xmax);
     auto g = new TGraph(n, x, y);
     g->Fit( "func",  "NSQR");
     for (int i = 0; i<f->GetNpar(); ++i){
