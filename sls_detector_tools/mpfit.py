@@ -48,6 +48,25 @@ def mp_wrapper(cols, args, output):
     output.put( (cols, res) )
     return
 
+def mp_wrapper_float(cols, args, output):
+    """
+    Wrapper around the sls_cmodule.fit function to fit scurves. Calls the
+    function and puts the return value in a queue
+    
+    Parameters
+    ---------
+    cols: (int, int)
+        Column indicies to put the result in the right place
+    args: [data, x, par]
+        data to fit, xaxis and initial parameters
+    output: Queue
+        Queue for the result of the fit
+        
+    """
+    res = (_sls_cmodule.fit_float( *args ))
+    output.put( (cols, res) )
+    return
+
 def mp_wrapper2(cols, args, output):
     """
     Wrapper around the sls_cmodule.find_trimbits function to fit the trimbit
@@ -129,6 +148,8 @@ def fit(data, x, n_proc, par):
     #Report time
     print( "Fitting done in: ", time.time()-t0, "s")
     return result
+
+
 
 
 

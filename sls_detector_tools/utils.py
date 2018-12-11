@@ -7,9 +7,19 @@ fit well into a specific block
 
 import numpy as np
 from scipy.interpolate import interp1d
-
+import subprocess
 #sls detector
 from sls_detector_tools import function
+
+def git_rev():
+    p = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text = True)
+    p = p.stdout.strip('\n')
+    #Check if 
+    s =subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
+    if not s.stdout == '':
+        return ''.join([p, '*'])
+    else:
+        return p
 
 def rebin_image(image, size):
     """Rebin image using a square cluster of size x size pixels"""
@@ -95,13 +105,13 @@ def random_pixel(n_pixels=1, rows=(0, 512), cols=(0, 1024)):
             for i in range(n_pixels)]
 
 
-def generate_scurve(x, n_photons):
+def generate_scurve(x, n_photons, mu = 1000):
     """
     Return an scurve with some typical parameters
     """
     #Scale C propotional to A s for a real measurement
     C = n_photons/1000.*0.4
-    y = function.scurve(x, 0, 0, 1000, 170, n_photons, C)
+    y = function.scurve(x, 0, 0, mu, 170, n_photons, C)
     y = np.random.poisson(y)
     return y
 

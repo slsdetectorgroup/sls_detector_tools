@@ -12,7 +12,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import seaborn as sns
-
+import datetime
 
 #sls_detector imports
 from . import mask
@@ -20,7 +20,24 @@ from . import config as cfg
 from . import utils
 from _sls_cmodule import hist
 
+def generate_label(label):
+    date = datetime.date.today().strftime('%d/%m/%Y')
+    rev = utils.git_rev()
+    return f'Date: {date} Src: {rev} id: {label}'
 
+def add_colorbar(axes, images):
+    for ax, im in zip(axes, images):
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)
+        plt.colorbar(im, cax=cax)
+
+def add_label(fig, plot_id, x = 0.98, y = 0.98, 
+              fontsize = 10):
+    return fig.text(x,y,plot_id, 
+        fontsize = fontsize, 
+        transform=fig.transFigure,
+        horizontalalignment = 'right',
+        verticalalignment = 'top')
 
 def histogram(data, xmin = 0, xmax = 10, nbins = 10, plot = True):
     """Histogram using a ROOT.TH1D

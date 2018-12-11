@@ -88,6 +88,11 @@ def paralyzable(x, tau):
 
 #--------------------------------------------------------- Edge functions
 
+
+#[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))
+def gaus_edge(x, A, mu, sigma):
+    return A/2 * (1-erf((x-mu)/(sigma*np.sqrt(2))))
+
 def double_gaus_edge(x, A, mu, sigma1, sigma2):
     """
     double gaussian

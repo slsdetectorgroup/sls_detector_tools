@@ -173,8 +173,11 @@ def read_header( fname ):
     #Put information in the dict
     header = OrderedDict()
     for i in range(11):
-        field = tmp[i][0:19].strip(' ')
-        value = tmp[i][22:].strip('\n').strip(' ')
+#        field = tmp[i][0:19].strip(' ')
+#        value = tmp[i][22:].strip('\n').strip(' ')
+        field, value = tmp[i].split(':')
+        field = field.strip(' ')
+        value = value.strip(' ')
         if field == 'Dynamic Range':
             value = int(value)
         header[ field ] = value
@@ -224,7 +227,7 @@ def load_file(fname, header, N = 1):
     """
     
     #Assign correct dynamic range
-    dr = int( header['Dynamic Range'] )
+    dr = header['Dynamic Range']
     if dr in [8,16,32]:
         dt = np.dtype( 'uint{:d}'.format(dr) )
     elif dr == 4:

@@ -36,6 +36,8 @@ class Cluster(IsDescription):
     area = UInt16Col()
     volume = Float32Col()
     center = Float32Col(2)
+    row = UInt16Col()
+    col = UInt16Col()
     non_weighted_center = Float32Col(2)
     region = UInt16Col(4)
     orientation = Float32Col()
@@ -105,9 +107,6 @@ class Cluster_finder():
             
             th_image = frame > threshold
             labeled, nrOfFeatures=ndimage.label(th_image, connectivity)
-#            morph.dilation(labeled, out = labeled)
-#            labeled = label(th_image)
-#            nrOfFeatures = 1
             self.clustersPerFrame[self.n_frames] = nrOfFeatures
             self.countsPerFrame[self.n_frames] = frame.sum()
 
@@ -116,8 +115,12 @@ class Cluster_finder():
                 cluster['id'] = self.cluster_id
                 cluster['frameNr'] = self.n_frames
                 cluster['area'] = p.area
-                cluster['volume'] = p.intensity_image.sum()
-                cluster['center'] = p.weighted_centroid
+                cluster['volume'] = p.intensity_image.sum() #includes also below th pixels?
+                centroid = p.weighted_centroid
+                cluster['center'] = centroid
+                cluster['row'] = np.round(centroid[0]).astype(np.uint16)
+                cluster['col'] = np.round(centroid[1]).astype(np.uint16)
+                cluster['max_intensity'] = p.max_intensity
                 if not self._basic:
 #                    cluster['center'] = p.weighted_centroid
                     cluster['non_weighted_center'] = p.centroid
@@ -356,3 +359,10 @@ def hitmap(cluster_id, table, cluster_array, shape):
             image[int(item[0]), int(item[1])] += 1
     return image
 
+def hitmap_energy(cluster_id, table, cluster_array, shape):
+    image = np.zeros(shape)
+    for i in cluster_id:
+        data = cluster_array[i]
+        for item in zip(data[0::3], data[1::3], data[2::3]):
+            image[int(item[0]), int(item[1])] += item[2]
+    return image

@@ -10,8 +10,19 @@ from ROOT import (
     TCanvas, TGraph, TH1D, TH2D,
     TGraphErrors,
     kGreen, kBlack, kWhite, kAzure,
-    gPad, gStyle
+    gPad, gStyle, TFile
     )
+
+
+class open_root_file:
+    def __init__(self, fname):
+        self.fname = fname
+    def __enter__(self):
+        self.file = TFile(self.fname)
+        return self.file
+    def __exit__(self, type, value, traceback):
+        print('closing file')
+        self.file.Close()
 
 
 def style_histogram(h):
