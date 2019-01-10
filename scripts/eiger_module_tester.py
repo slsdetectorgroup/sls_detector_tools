@@ -7,11 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 plt.ion()
-sns.set_context('talk')
+sns.set_context('paper')
 
 #Temporary paths for dev
-sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
-sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
+#sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
+#sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
 
 from sls_detector import Eiger
 from sls_detector_tools import eiger_tests
@@ -24,7 +24,7 @@ d = Eiger()
 
 
 ##Setup
-cfg.det_id = 'T63'
+cfg.det_id = 'T107'
 cfg.geometry= '500k'
 path = os.path.join( cfg.path.test, cfg.det_id )
 
@@ -47,24 +47,24 @@ d.dacs.rxb_rb = 1100
 
 ### RX bias test to find operation point
 out = eiger_tests.rx_bias(d, clk = 'Full Speed', npulse = 10)
-#out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
-##
-####################
-#out = eiger_tests.io_delay(d, clk = 'Full Speed')
-#out = eiger_tests.io_delay(d, clk = 'Half Speed')
+out = eiger_tests.rx_bias(d, clk = 'Half Speed', npulse = 10)
+####
 ######################
-###
+out = eiger_tests.io_delay(d, clk = 'Full Speed')
+out = eiger_tests.io_delay(d, clk = 'Half Speed')
+#########################
+######
 a = eiger_tests.analog_pulses(d)
+###
+########################
+a = eiger_tests.counter(d, clk = 'Half Speed')
+a = eiger_tests.counter(d, clk = 'Full Speed')
+##tests.counter(name, d, clk = 1)
+########################
+data = eiger_tests.overflow(d)
+#########
+a = eiger_tests.generate_report(path)
 #
-######################
-#a = eiger_tests.counter(d, clk = 'Half Speed')
-#a = eiger_tests.counter(d, clk = 'Full Speed')
-#tests.counter(name, d, clk = 1)
-#####################
-#data = eiger_tests.overflow(d)
-########
-#eiger_tests.generate_report(path)
-
 #plt.ioff()
 #
 #def plot_lines(x, lines):

@@ -13,8 +13,10 @@ import matplotlib.patches as patches
 
 
 from .io import load_frame, save_txt, load_txt
+
 #from .plot import *
 #from . import root_helper as r
+from _sls_cmodule import hist
 from . import config as cfg
 
 from . import ZmqReceiver
@@ -51,7 +53,8 @@ def setup_test_and_receiver(detector,clk):
     detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
-    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+#    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
+    yield ZmqReceiver(detector)
     
     #Teardown after test
     detector.dacs.set_from_array( dacs )
@@ -145,6 +148,7 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 10):
     print( "rx_bias test at: ", clk)
     t0 = time.time()
     
+
     with setup_test_and_receiver(detector, clk) as receiver:
         detector.vthreshold = 4000
         detector.dacs.vtr = 4000
@@ -156,10 +160,10 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 10):
             #Take frame and get data
             detector.acq()
             data = receiver.get_frame()
-    
             #Sum of pixels that are not equal to the expected pulse value
             for j,c in enumerate(chip):
-                N[j, i] = (data[c] != int(npulse*2+2)).sum()
+                N[j, i] = (data[c] != int(npulse*2+4)).sum()
+#                N[j, i] = (data[c] != int(npulse*2+2)).sum()
             
     print('rx_bias test done in: {:.2f}'.format(time.time()-t0))
 
@@ -311,8 +315,8 @@ def counter(detector, clk = 'Full Speed'):
             detector.pulse_chip(n)
             detector.acq()
             data = receiver.get_frame()
-            print('Found {:d} bad pixels'.format((data != n*2+2).sum()))
-            bad_pixels[data != n*2+2] = True
+            print('Found {:d} bad pixels'.format((data != n*2+4).sum()))
+            bad_pixels[data != n*2+4] = True
     
 
     #Output
@@ -610,8 +614,11 @@ def generate_report(path):
     cb = plt.colorbar(mappable = im, cax = cax)
     
     ax =  plt.subplot(gs[7])
-    c,h = r.hist(image, xmin = 0, xmax = 3000, bins = 3000)
-    x0,y0 = r.getHist(h)
+#    c,h = r.hist(image, xmin = 0, xmax = 3000, bins = 3000)
+    out = hist(image, (0,3000,3000))
+    x0 = out['x']
+    y0 = out['y']
+#    x0,y0 = r.getHist(h)
     ax.plot(x0,y0, ls = 'steps')
     ax.set_xlim(980,1021)
     ax.set_xlabel('Counts [1]')
@@ -628,8 +635,9 @@ def generate_report(path):
                        )   
                        
     image = np.zeros((512,1024))
-    tmp = load_txt( os.path.join(path, name+'_overflow_1.txt'))
+    tmp = np.asarray(load_txt( os.path.join(path, name+'_overflow_1.txt')), dtype = np.int)
     pixels = zip(tmp[0], tmp[1])
+#    return pixels
     for p in pixels:
         image[p] = 1
         
