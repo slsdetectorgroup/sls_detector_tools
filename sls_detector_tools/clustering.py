@@ -13,7 +13,7 @@ from skimage.measure import regionprops, label
 
 
 #PyTables
-from tables import open_file, IsDescription, UInt32Col, Float32Col, UInt16Col, UInt32Col, Int32Atom, StringCol, Float32Atom
+from tables import open_file, IsDescription, UInt32Col, Float32Col, UInt16Col, UInt32Col, Int32Atom, StringCol, Float32Atom,Float64Col, Int16Col
 
 class open_cluster_file:
     def __init__(self, fname):
@@ -24,6 +24,71 @@ class open_cluster_file:
         return self.file, self.table
     def __exit__(self, type, value, traceback):
         self.file.close()
+
+class Single_hit_finder:
+    class Hit(IsDescription):
+        row = Int16Col()
+        col = Int16Col()
+        energy = Float64Col()
+        
+    def __init__(self, filename='temp.h5f', hdf5 = False):
+        if hdf5:
+            self.file = open_file(filename, mode = 'w', title = 'Clusters')
+            self.table = self.file.create_table(self.file.root, 'clusters', self.Hit, 'Clusters from run')
+
+    def find_clusters(self, data, threshold):
+        t0 = time.time()
+        cluster = self.table.row
+        for frame_nr, frame in enumerate(data):
+            if frame_nr%100 == 0: 
+                print(f'Processing frame: {frame_nr}')
+            
+            th_image = frame > threshold
+#            labeled, nrOfFeatures=ndimage.label(th_image, connectivity)
+            labels = label(th_image, connectivity=2)
+            for p in regionprops(labels, intensity_image = frame, 
+                                 coordinates='rc', cache = False):
+                #Write cluster properties to table
+                if p.area == 1:
+                    cluster['row'], cluster['col'] = p.coords[0]
+                    cluster['energy'] = p.max_intensity
+                    cluster.append()
+
+        self.file.flush()
+        print(f'Done in {time.time()-t0:.2f}s')
+        return self.file
+
+    def find_clusters2(self, data, threshold):
+        t0 = time.time()
+        N = int(1e6)
+        dt = [('row', np.int64), ('col', np.int64), ('energy', np.double)]
+#        clusters = np.zeros(N, dtype = dt)
+#        it = np.nditer(clusters, [], ['writeonly'])
+        clusters = []
+        i = 0
+        for frame_nr, frame in enumerate(data):
+            if frame_nr%100 == 0: 
+                print(f'Processing frame: {frame_nr}')
+            
+            th_image = frame > threshold
+#            labeled, nrOfFeatures=ndimage.label(th_image, connectivity)
+            labels = label(th_image, connectivity=2)
+            for p in regionprops(labels, intensity_image = frame, 
+                                 coordinates='rc', cache = False):
+                #Write cluster properties to table
+                if p.area == 1:
+                    clusters.append((*p.coords[0],p.max_intensity))
+#                    it[0] = (*p.coords[0], p.intensity_image[0])
+#                    it[0]['row'],it[0]['col'] = p.coords[0] 
+#                    it.iternext()
+#                    clusters[i]['row'], clusters[i]['col'] = p.coords[0]
+#                    clusters[i]['col'] = p.coords[0,1]
+#                    clusters[i]['energy'] = p.intensity_image[0]
+#                    i+=1
+
+
+        print(f'Done in {time.time()-t0:.2f}s')
+        return clusters
 
 
 class Cluster(IsDescription):
@@ -49,6 +114,7 @@ class Cluster(IsDescription):
     mean_intensity = Float32Col()
     perimeter = Float32Col()
     dose = Float32Col()
+    box_volume = Float32Col()
     type = StringCol(50)
 
 
@@ -118,11 +184,16 @@ class Cluster_finder():
                 cluster['volume'] = p.intensity_image.sum() #includes also below th pixels?
                 centroid = p.weighted_centroid
                 cluster['center'] = centroid
-                cluster['row'] = np.round(centroid[0]).astype(np.uint16)
-                cluster['col'] = np.round(centroid[1]).astype(np.uint16)
+                row = np.round(centroid[0]).astype(np.uint16)
+                col = np.round(centroid[1]).astype(np.uint16)
+                cluster['row'] = row
+                cluster['col'] = col
                 cluster['max_intensity'] = p.max_intensity
+#                print(frame.shape)
+                
                 if not self._basic:
 #                    cluster['center'] = p.weighted_centroid
+                    cluster['box_volume'] = frame[row-10:row+10, col-10:col+10].sum()
                     cluster['non_weighted_center'] = p.centroid
                     cluster['region'] = p.bbox
                     cluster['orientation'] = p.orientation
@@ -344,6 +415,16 @@ class Cluster_finder():
         return c,h
 
 def view_clusters(cluster_id, table, cluster_array, shape):
+    """
+    return an image with the selected clusters
+    """
+    #Try catch block to find out if we have an iterable or just a single
+    #value. In the later case wrap as a 1 element list
+    try:
+        iter(cluster_id)
+    except TypeError:
+        cluster_id = [cluster_id]
+        
     image = np.zeros(shape)
     for i in cluster_id:
         data = cluster_array[i]

@@ -5,13 +5,16 @@ Created on Thu Apr  5 15:42:50 2018
 
 @author: l_frojdh
 """
-
+import os
 import numpy as np
 import time
 import bottleneck as bn
 import multiprocessing as mp
+
 nrows = 512
 ncols = 1024
+ngain = 3
+nrow_himac = 256 #half module broken
 bitmask = np.array([0x3fff], dtype = np.uint16)
 header_size = 48           #bytes
 frame_size = nrows*ncols*2 #bytes
@@ -247,6 +250,99 @@ def calculate_pedestal():
         p.join()
     print(f'Pedestal and noise calculated in {time.time()-t0:.2f}s')
     return pedestal
+
+
+class Rollover_aware_file:
+    """
+    Class to read jungfrau calibration files as one file
+    """
+    header_dt = np.dtype([
+        ('frame_number', np.uint64),
+        ('bunch_id', np.uint64)
+        ])
+
+    
+    def __init__(self, base_name, file_index, 
+                 order = 'C',
+                 nframes_pedestal = 640):
+        self._nframes_pedestal = nframes_pedestal
+        self._frame_size = self.header_dt.itemsize + 2 * nrows * ncols
+        self._base_name = base_name
+        self._file_index = file_index
+        self._order = order
+        self._open()
+        self._slice = (slice(0,256,1),(slice(300,640,1)))
+        
+    def _open(self):
+        self._file_handle = open(f'{self._base_name}_{self._file_index:06d}.dat', 'rb')
+        self._file_size = os.path.getsize(self.current_file)
+        
+    def open_next(self):
+        self._file_handle.close()
+        self._file_index += 1
+        self._open()
+        
+    def close(self):
+        self._file_handle.close()
+        
+    @property
+    def current_file(self):
+        return self._file_handle.name
+    
+    @property
+    def current_index(self):
+        return self._file_index
+
+    def read_frames(self, n_frames):
+#        t0 = time.time()
+        data = np.zeros((n_frames,
+                         self._slice[0].stop-self._slice[0].start, 
+                         self._slice[1].stop-self._slice[1].start, 
+                         ), dtype = np.uint16, order = self._order)
+        header = np.zeros(n_frames, dtype = self.header_dt)
+        for i in range(n_frames):
+            if self._file_handle.tell()==self._file_size:
+                print('Opening next file!!!')
+                self.open_next()
+            header[i] = np.fromfile(self._file_handle, dtype = self.header_dt, count = 1)
+            data[i, :,:] = np.fromfile(self._file_handle, dtype = np.uint16, count = nrows*ncols).reshape(nrows, ncols)[self._slice[0],self._slice[1]]  
+#        print(f'load_frames: {time.time()-t0:.2f}')
+        return data, header
+    
+    @property
+    def current_frame(self):
+        return self._file_handle.tell()/self._frame_size
+    
+    def seek(self, nframes):
+        self._file_handle.seek(nframes * self._frame_size)
+
+    def read_pedestal(self):
+        print('Starting to read pedestals')
+        t0 = time.time()
+        pedestal = np.zeros((nrow_himac,ncols, ngain))
+        noise = np.zeros((nrow_himac,ncols,ngain))
+        
+        for i in range(ngain):
+            data, header = self.read_frames(self._nframes_pedestal)
+            if not np.all(np.diff(header['frame_number'])==1):
+                raise ValueError('Invalid data, lost frames')
+            data = np.bitwise_and(data, bitmask).astype(np.double) #Throw away gain data
+            pedestal[:,:,i] = data.mean(axis = 2)
+            noise[:, :, i] = data.std(axis = 2)
+        print(f'Pedestals read in: {time.time()-t0:.2f}s')
+        return pedestal, noise
+    
+    def read_cs_point(self):
+        image = np.zeros((nrow_himac, ncol))
+        gain = np.zeros((nrow_himac, ncol))
+        data, header = self.read_frames(64)
+        raw_gain = np.right_shift(data, 14)
+        data = np.bitwise_and(data, jf.bitmask).astype(np.double)
+        for i in range(64):
+            image[:,i::64] = data[:,i::64,i]
+            gain[:,i::64] = raw_gain[:,i::64,i]
+        return image, gain
+    
 
 
 region = {'Silicon': (slice(None,None,None), slice(256,512,1), slice(256,512,1)),
