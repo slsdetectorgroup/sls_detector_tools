@@ -358,7 +358,7 @@ class XrayBox():
             
         """
         out = self._call('getfl')
-        return re.search('(?<=Fl is )\w\S+', out.stdout.decode()).group()
+        return re.search('(?<=Fl is )\d', out.stdout.decode()).group()
 
                
     @target.setter
@@ -376,8 +376,7 @@ class XrayBox():
             The name of the set target
         
         """
-        if target_name == 'Zr':
-            target_name = 'Empty'
+        
         logger.info('Switching to %s target', target_name)
         out = self._call('movefl', target_name)
         if cfg.debug:
@@ -422,13 +421,26 @@ class BigXrayBox(XrayBox):
     _shutter_index_to_name = {1: 'XRF',
                               3: 'Direct beam'}
 
+
+
     def __init__(self):
         # Find the bin directory in the package
         p = Path(__file__)
-        self._xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64')
+        self._xrayClient = os.path.join(p.parent.parent, 'bin/xrayClient64_sl6')
         if cfg.verbose:
             print('BigXrayBox using: {}'.format(self._xrayClient))
         logger.info('BigXrayBox created')
+    
+    @property
+    def target(self):
+        t = super().target
+        return self._to_name[t]
+
+    @target.setter
+    def target(self, target_name):
+        t = [item[0] for item in self._to_name.items() if item[1]== target_name][0]
+        super(BigXrayBox, self.__class__).target.fset(self, t)
+
 
 class VacuumBox(XrayBox):
     """
