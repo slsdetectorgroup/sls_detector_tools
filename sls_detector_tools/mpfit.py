@@ -128,7 +128,7 @@ def fit(data, x, n_proc, par):
     for i in range(n_proc):
         low =  i*shape[1]//n_proc
         high = (i+1)*shape[1]//n_proc
-        print(low, high)
+#        print(low, high)
         p = mp.Process(target = mp_wrapper, args = ((low,high), [data[:,low:high,:], x, par], output))
         processes.append(p)
     

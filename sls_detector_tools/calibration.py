@@ -12,7 +12,8 @@ The fitting relies on the routines in sls_cmodule
 """
 #ROOT
 #import ROOT
-#from ROOT import TF1
+from ROOT import TF1
+
     
 
 
@@ -40,7 +41,7 @@ from . import io
 from . import ZmqReceiver
 from . import xrf_shutter_open
 from . import mpfit
-
+from . import root_helper as r
 #compiled
 from _sls_cmodule import vrf_fit
 
