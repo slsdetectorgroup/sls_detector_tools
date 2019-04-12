@@ -146,7 +146,7 @@ def fit(data, x, n_proc, par):
         p.join()
     
     #Report time
-    print( "Fitting done in: ", time.time()-t0, "s")
+    print( f'Fitting done in: {time.time()-t0:.3}s')
     return result
 
 

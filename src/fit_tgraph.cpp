@@ -61,23 +61,21 @@ void fit_using_tgraph(double *data, double *x, int shape[3], double *initpar, do
     f.SetParLimits(3, 50, 300);
     f.SetParLimits(2, 0, 2000);
 
+    for (int i = 0; i != npar; ++i) {
+        if (initpar[i] == 0) {
+            f.FixParameter(i, 0);
+        }
+    }
+
     for (int col = 0; col != n_cols; ++col) {
-        //        if ( (col % (shape[1]/6) == 0) && (col != 0) ){
-        //            std::cout << "Processed: " << std::setprecision(3) <<
-        //            static_cast<float>(col) / static_cast<float>(shape[1]) * 100 <<
-        //            "%" << std::endl;
-        //        }
         for (int row = 0; row != n_rows; ++row) {
-            for (int i = 0; i < npar; ++i) {
-                (initpar[i] == 0) ? f.FixParameter(i, 0) : f.SetParameter(i, initpar[i]);
-            }
-            int sum = std::accumulate(data, data+n_elements, 0);
+            f.SetParameters(initpar);
+            int sum = std::accumulate(data, data + n_elements, 0);
             if (sum > 0) {
                 TGraph g(n_elements, x, data);
                 g.Fit(&f, "NSQR");
-                for (int i = 0; i < npar; ++i) {
-                    *result++ = f.GetParameter(i);
-                }
+                f.GetParameters(result);
+                result += npar;
             } else {
                 for (int i = 0; i != npar; ++i) {
                     *result++ = 0;

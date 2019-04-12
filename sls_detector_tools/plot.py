@@ -18,7 +18,12 @@ import datetime
 from . import mask
 from . import config as cfg
 from . import utils
-from _sls_cmodule import hist
+
+try:
+    from _sls_cmodule import hist
+except ModuleNotFoundError as e:
+    print(f'WARNING: {e}')
+
 
 def generate_label(label):
     date = datetime.date.today().strftime('%d/%m/%Y')
