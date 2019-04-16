@@ -9,6 +9,8 @@ import numpy as np
 
 
 n_counters = 64*3
+bitfield_size = 64
+
 header_dt = [('frameNumber',np.uint64),
              ('expLength',np.uint32),
              ('packetNumber', np.uint32),
@@ -51,18 +53,21 @@ def ExtractBits(data, dr=24, bit_nr0 = 17, bit_nr1 = 6):
     return counters
 
 
-def read_my302_file(fname, dr=24, bit_nr0 = 17, bit_nr1 = 6, offset=0):
+def read_my302_file(fname, dr=24, bit_nr0 = 17, bit_nr1 = 6, 
+                    offset=0, tail = 72, n_frames=1):
+    header = np.zeros(n_frames, header_dt)
+    data = np.zeros((n_frames, 192), dtype = np.uint64)
     with open(fname, 'rb') as f:
-        header = np.fromfile(f, count=1, dtype = header_dt)
-        bitfield = np.fromfile(f, count=64, dtype = np.uint8)
-        
-        f.seek(offset,1)
-        #data should start here
-        data = np.fromfile(f, dtype = np.uint64)
-    counters = ExtractBits(data, dr=dr, bit_nr0=bit_nr0, bit_nr1=bit_nr1)
-    return header, counters
+        for i in range(n_frames):
+            header[i], raw_data = _read_my302_frame(f, offset, tail, dr)
+            data[i] = ExtractBits(raw_data, dr=dr, bit_nr0=bit_nr0, bit_nr1=bit_nr1)
+    return header, data
 
 
-
-
+def _read_my302_frame(f, offset, tail, dr):
+    header = np.fromfile(f, count=1, dtype = header_dt)
+    f.seek(bitfield_size+offset, 1)
+    data = np.fromfile(f, count = int(n_counters*dr/2), dtype = np.uint64)
+    f.seek(tail, 1)
+    return header, data
 
