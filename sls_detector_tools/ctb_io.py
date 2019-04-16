@@ -46,7 +46,7 @@ def ExtractBits(raw_data, dr=24, bits = (17,6)):
 
 
 def read_my302_file(fname, dr=24, bits = (17,6),
-                    offset=0, tail = 72, n_frames=1):
+                    offset=48, tail = 72, n_frames=1):
     header = np.zeros(n_frames, header_dt)
     data = np.zeros((n_frames, n_counters), dtype = np.uint64)
     with open(fname, 'rb') as f:
