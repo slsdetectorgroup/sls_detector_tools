@@ -16,7 +16,7 @@ ncols = 1024
 ngain = 3
 nrow_himac = 256 #half module broken
 bitmask = np.array([0x3fff], dtype = np.uint16)
-header_size = 48           #bytes
+header_size = 112           #bytes
 frame_size = nrows*ncols*2 #bytes
 
 def load_file(fname, 
