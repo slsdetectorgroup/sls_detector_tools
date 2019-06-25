@@ -227,7 +227,7 @@ def mp_calculate_pedestal(output, gain_id):
     gain[gain==3]=2
     np.bitwise_and(data, bitmask, out=data)
 #    imshow(gain)
-    pd = data.mean(axis = 2)
+    pd = data.mean(axis = 0)
     output.put((pd, gain_id))
     
 def calculate_pedestal():
