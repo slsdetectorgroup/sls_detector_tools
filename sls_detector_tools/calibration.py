@@ -241,6 +241,12 @@ def get_halfmodule_mask():
     elif cfg.geometry == '250k':
         a = mask.eiger250k()
         return a.halfmodule
+    elif cfg.geometry == '1.5MOMNY':
+        a = mask.eiger1_5MOMNY()
+        return a.halfmodule
+    elif cfg.geometry == '1.5M':
+        a = mask.eiger1_5M()
+        return a.halfmodule
     else:
         raise NotImplementedError('Half module mask doses not exist for the'\
                                   'selected geometry:', cfg.geometry)
@@ -515,7 +521,8 @@ def find_mean_and_set_vcmp(detector, fit_result):
     * 500k
     * 2M
     * 9M
-    
+    *1.5OMNY
+    *1.5M
     Parameters
     ---------
     detector: SlsDetector
@@ -648,10 +655,95 @@ def find_mean_and_set_vcmp(detector, fit_result):
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
         return vcmp, vcp, lines
+    elif cfg.geometry == '1.5M':
+        print( 'Geometry == ', cfg.geometry )
+        lines = []
+        
+        #Module stuff
+        dm = mask.detector[cfg.geometry]
+        vcmp = np.zeros( (len(dm.module), 8) )
+        vcp  = np.zeros( (len(dm.module), 2) )
+        
+        for j,mod in enumerate( dm.module ):
+            for i in range( 8 ):
+                m = fit_result['mu'][mod][mask.chip[i]]
+                try:
+                    th = int( m[(m>10) & (m<1990)].mean() )
+                except:
+                    th = 0
+
+                vcmp[j,i] = th
+                
+#                if type(detector) != type( None ):
+##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
+  
+                #Integer division!
+                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
+                    
+                mean[i] = th
+        
+            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+            vcp1 = int( mean[4:][mean[4:]>0].mean() )
+            vcp[j,0] = vcp0
+            vcp[j,1] = vcp1
+            
+#            if type( detector ) != type(None):
+#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+            
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
+            
+    elif cfg.geometry == '1.5MOMNY':
+        print( 'Geometry == ', cfg.geometry )
+        lines = []
+        
+        #Module stuff
+        dm = mask.detector[cfg.geometry]
+        vcmp = np.zeros( (len(dm.module), 8) )
+        vcp  = np.zeros( (len(dm.module), 2) )
+        
+        for j,mod in enumerate( dm.module ):
+            for i in range( 8 ):
+                m = fit_result['mu'][mod][mask.chip[i]]
+                try:
+                    th = int( m[(m>10) & (m<1990)].mean() )
+                except:
+                    th = 0
+
+                vcmp[j,i] = th
+                
+#                if type(detector) != type( None ):
+##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
+  
+                #Integer division!
+                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
+                    
+                mean[i] = th
+        
+            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+            vcp1 = int( mean[4:][mean[4:]>0].mean() )
+            vcp[j,0] = vcp0
+            vcp[j,1] = vcp1
+            
+#            if type( detector ) != type(None):
+#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+            
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
+            
+        if detector is not None:
+            print('Setting vcmp')
+            for i, v in enumerate(vcmp.flat):
+                detector.vcmp[i] = int(v)
+            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+        
+        return vcmp, vcp, lines    
     else:
         raise NotImplementedError('Check detector geometry')
-
-
+                        
+                        
 def find_initial_parameters(x,y, thrange = (0,2200)):
     """
     Tries to find the best initial parameters for an per pixel scurve fit
