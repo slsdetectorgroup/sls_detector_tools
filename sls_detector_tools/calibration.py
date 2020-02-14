@@ -580,34 +580,50 @@ def find_mean_and_set_vcmp(detector, fit_result):
 
         
     elif cfg.geometry == '2M':
-        raise NotImplementedError('Need to do some work')
+        print( 'Geometry == ', cfg.geometry )
+        lines = []
+        
         #Module stuff
-        # vcmp = np.zeros( (len(mask.eiger2M.module), 8) )
-        # vcp  = np.zeros( (len(mask.eiger2M.module), 2) )
-        #
-        # for j,mod in enumerate( mask.eiger2M.module):
-        #     for i in range( 8 ):
-        #         m = fit_result['mu'][mod][mask.chip[i]]
-        #         try:
-        #             th = int( m[(m>10) & (m<1990)].mean() )
-        #         except:
-        #             th = 0
-        #         vcmp[j,i] = th
-        #
-        #         if type(detector) != type( None ):
-        #             detector.set_dac(mask.eiger2M.vcmp[j*8+i], th)
-        #
-        #         mean[i] = th
-        #
-        #     vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-        #     vcp1 = int( mean[4:][mean[4:]>0].mean() )
-        #     vcp[j,0] = vcp0
-        #     vcp[j,1] = vcp1
-        #
-        #     if type( detector ) != type(None):
-        #         detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-        #         detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1)
+        dm = mask.detector[cfg.geometry]
+        vcmp = np.zeros( (len(dm.module), 8) )
+        vcp  = np.zeros( (len(dm.module), 2) )
+        
+        for j,mod in enumerate( dm.module ):
+            for i in range( 8 ):
+                m = fit_result['mu'][mod][mask.chip[i]]
+                try:
+                    th = int( m[(m>10) & (m<1990)].mean() )
+                except:
+                    th = 0
 
+                vcmp[j,i] = th
+                
+#                if type(detector) != type( None ):
+##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
+  
+                #Integer division!
+                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
+                    
+                mean[i] = th
+        
+            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+            vcp1 = int( mean[4:][mean[4:]>0].mean() )
+            vcp[j,0] = vcp0
+            vcp[j,1] = vcp1
+            
+#            if type( detector ) != type(None):
+#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+            
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
+            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))   
+        if detector is not None:
+            print('Setting vcmp')
+            for i, v in enumerate(vcmp.flat):
+                detector.vcmp[i] = int(v)
+            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+        
+        return vcmp, vcp, lines
 
     elif cfg.geometry == '9M':
         print( 'Geometry == ', cfg.geometry )
@@ -693,7 +709,15 @@ def find_mean_and_set_vcmp(detector, fit_result):
             
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
-            
+     
+        if detector is not None:
+            print('Setting vcmp')
+            for i, v in enumerate(vcmp.flat):
+                detector.vcmp[i] = int(v)
+            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+        
+        return vcmp, vcp, lines            
+    
     elif cfg.geometry == '1.5MOMNY':
         print( 'Geometry == ', cfg.geometry )
         lines = []
@@ -739,7 +763,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 detector.vcmp[i] = int(v)
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
-        return vcmp, vcp, lines    
+    return vcmp, vcp, lines    
     else:
         raise NotImplementedError('Check detector geometry')
                         
