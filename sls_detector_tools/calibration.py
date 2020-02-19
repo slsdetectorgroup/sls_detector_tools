@@ -763,7 +763,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 detector.vcmp[i] = int(v)
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
-    return vcmp, vcp, lines    
+            return vcmp, vcp, lines    
     else:
         raise NotImplementedError('Check detector geometry')
                         
