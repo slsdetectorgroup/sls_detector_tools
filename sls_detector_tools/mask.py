@@ -129,7 +129,7 @@ class eiger2M:
 
         self.port = []
         for col in range(1):
-            for row in range(4,0,-1):
+            for row in range(8,0,-1):
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
 

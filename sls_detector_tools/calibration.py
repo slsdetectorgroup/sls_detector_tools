@@ -579,51 +579,51 @@ def find_mean_and_set_vcmp(detector, fit_result):
         detector.dacs.vcp = [vcp0, vcp1]
 
         
-    elif cfg.geometry == '2M':
-        print( 'Geometry == ', cfg.geometry )
-        lines = []
+    #elif cfg.geometry == '2M':
+        #print( 'Geometry == ', cfg.geometry )
+        #lines = []
         
         #Module stuff
-        dm = mask.detector[cfg.geometry]
-        vcmp = np.zeros( (len(dm.module), 8) )
-        vcp  = np.zeros( (len(dm.module), 2) )
+        #dm = mask.detector[cfg.geometry]
+        #vcmp = np.zeros( (len(dm.module), 8) )
+        #vcp  = np.zeros( (len(dm.module), 2) )
         
-        for j,mod in enumerate( dm.module ):
-            for i in range( 8 ):
-                m = fit_result['mu'][mod][mask.chip[i]]
-                try:
-                    th = int( m[(m>10) & (m<1990)].mean() )
-                except:
-                    th = 0
+        #for j,mod in enumerate( dm.module ):
+            #for i in range( 8 ):
+                #m = fit_result['mu'][mod][mask.chip[i]]
+                #try:
+                    #th = int( m[(m>10) & (m<1990)].mean() )
+                #except:
+                    #th = 0
 
-                vcmp[j,i] = th
+                #vcmp[j,i] = th
                 
 #                if type(detector) != type( None ):
 ##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
   
                 #Integer division!
-                lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
+                #lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
                     
-                mean[i] = th
+                #mean[i] = th
         
-            vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-            vcp1 = int( mean[4:][mean[4:]>0].mean() )
-            vcp[j,0] = vcp0
-            vcp[j,1] = vcp1
+            #vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
+            #vcp1 = int( mean[4:][mean[4:]>0].mean() )
+            #vcp[j,0] = vcp0
+            #vcp[j,1] = vcp1
             
-#            if type( detector ) != type(None):
-#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
+##            if type( detector ) != type(None):
+##                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
+##                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
-            lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))   
-        if detector is not None:
-            print('Setting vcmp')
-            for i, v in enumerate(vcmp.flat):
-                detector.vcmp[i] = int(v)
-            detector.dacs.vcp = vcp.astype(np.int).flat[:]
+            #lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
+            #lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))   
+        #if detector is not None:
+            #print('Setting vcmp')
+            #for i, v in enumerate(vcmp.flat):
+                #detector.vcmp[i] = int(v)
+            #detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
-        return vcmp, vcp, lines
+        #return vcmp, vcp, lines
 
     elif cfg.geometry == '9M':
         print( 'Geometry == ', cfg.geometry )
@@ -718,7 +718,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
         
         return vcmp, vcp, lines            
     
-    elif cfg.geometry == '1.5MOMNY':
+    elif cfg.geometry == '1.5MOMNY' or cfg.geometry == '2M':
         print( 'Geometry == ', cfg.geometry )
         lines = []
         
@@ -763,7 +763,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 detector.vcmp[i] = int(v)
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
-    return vcmp, vcp, lines    
+            return vcmp, vcp, lines    
     else:
         raise NotImplementedError('Check detector geometry')
                         
@@ -969,7 +969,9 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000) ):
 #    y /=  ( data.sum(axis = 2)>0 ).sum()
 #    par = find_initial_parameters(x,y)
     par = np.array([ 0,   0,   1.11495212e+03,
-         1.98609468e+02,   5.94207866e+02,   4.47860380e-01])
+                     1.98609468e+02,   5.94207866e+02,   4.47860380e-01])
+    #par = np.array([ 500,   3,   1.11495212e+03,
+     #                1.98609468e+02,   5.94207866e+02,   4.47860380e-01])
 
     fit_result = mpfit.fit(data, x, cfg.calibration.nproc, par)  
     
