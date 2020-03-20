@@ -129,7 +129,7 @@ class eiger2M:
 
         self.port = []
         for col in range(1):
-            for row in range(4,0,-1):
+            for row in range(8,0,-1):
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
 
@@ -150,9 +150,107 @@ class eiger2M:
             for v in vcmp1:
                 self.vcmp.append(str(i*2+1)+v)
 
+class eiger1_5MOMNY:
+    """
+    1.5M detector for OMNY, horizontal modules vertical stacking
+    """
+    def __init__(self):
+        self.nrow = 1024
+        self.ncol = 1536
+
+          #Single ports
+        self.port = []
+        for col in range(1):
+            for row in range(6,0,-1):
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+
+        #Half modules
+        col = [slice(256*(i-1),256*i, 1) for i in range(6,0,-1)]
+        row = [slice(1024*i,1024*(i+1),1) for i in range(1)]
+        self.halfmodule = [[c,r] for r in row for c in col]
+
+        #Modules
+        row = [slice(512*(i-1),512*i, 1) for i in range(3,0,-1)]
+        col = [slice(1024*i,1024*(i+1),1) for i in range(1)]
+        self.module = [[r,c] for c in col for r in row]
+
+        self.vcmp = []
+        for i in range(len(self.module)):
+            for v in vcmp0:
+                self.vcmp.append(str(i*2)+v)
+            for v in vcmp1:
+                self.vcmp.append(str(i*2+1)+v)
+                
+class eiger1_5M:
+    """
+    1.5M detector for cSAXs WAXS, horizontal module stacking
+    """
+    def __init__(self):
+        self.nrow = 3072
+        self.ncol = 512
+
+          #Single ports
+        self.port = []
+        for col in range(6):
+            for row in range(1,0,-1):
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+
+        #Half modules
+        col = [slice(256*(i-1),256*i, 1) for i in range(1,0,-1)]
+        row = [slice(1024*i,1024*(i+1),1) for i in range(6,0, -1)]
+        self.halfmodule = [[c,r] for r in row for c in col]
+
+        #Modules
+        row = [slice(512*(i-1),512*i, 1) for i in range(1,0,-1)]
+        col = [slice(1024*i,1024*(i+1),1) for i in range(6,0,-1)]
+        self.module = [[r,c] for c in col for r in row]
+
+        self.vcmp = []
+        for i in range(len(self.module)):
+            for v in vcmp0:
+                self.vcmp.append(str(i*2)+v)
+            for v in vcmp1:
+                self.vcmp.append(str(i*2+1)+v)
+
+class eiger1M:
+    """
+    1M detector at ESRF, horizontal modules vertical stacking (in reality flipped but calibrated not flipped)
+    """
+    def __init__(self):
+        self.nrow = 1024
+        self.ncol = 1024
+
+        self.port = []
+        for col in range(1):
+            for row in range(4,0,-1):
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
+                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+
+        #Half modules
+        col = [slice(256*(i-1),256*i, 1) for i in range(4,0,-1)]
+        row = [slice(1024*i,1024*(i+1),1) for i in range(1)]
+        self.halfmodule = [[c,r] for r in row for c in col]
+
+        #Modules
+        row = [slice(512*(i-1),512*i, 1) for i in range(2,0,-1)]
+        col = [slice(1024*i,1024*(i+1),1) for i in range(1)]
+        self.module = [[r,c] for c in col for r in row]
+
+        self.vcmp = []
+        for i in range(len(self.module)):
+            for v in vcmp0:
+                self.vcmp.append(str(i*2)+v)
+            for v in vcmp1:
+                self.vcmp.append(str(i*2+1)+v)
 
 #Dictionary lookup for using detector geometry for lookup
 detector = {'250k': eiger250k(),
             '500k': eiger500k(),
             '2M': eiger2M(),
-            '9M': eiger9M()}
+            '9M': eiger9M(),
+            '1.5M': eiger1_5M(),
+            '1.5MOMNY': eiger1_5MOMNY(),
+            '1M': eiger1M()
+            }
