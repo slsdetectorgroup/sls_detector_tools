@@ -234,6 +234,8 @@ def get_halfmodule_mask():
         return a.halfmodule
     elif cfg.geometry == '2M':
         a  =mask.eiger2M()
+    elif cfg.geometry == '1M':
+        a  =mask.eiger1M()
         return a.halfmodule
     elif cfg.geometry == '9M':
         a = mask.eiger9M()
@@ -520,6 +522,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
     * 250k
     * 500k
     * 2M
+    * 1M
     * 9M
     *1.5OMNY
     *1.5M
@@ -718,7 +721,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
         
         return vcmp, vcp, lines            
     
-    elif cfg.geometry == '1.5MOMNY' or cfg.geometry == '2M':
+    elif cfg.geometry == '1.5MOMNY' or cfg.geometry == '2M' or cfg.geometry == '1M' :
         print( 'Geometry == ', cfg.geometry )
         lines = []
         
@@ -1316,6 +1319,10 @@ def rewrite_calibration_files(detector, tau = None, hostname = None):
         #ESRF 2M detector
         halfmodule = mask.eiger2M.halfmodule
         vcmp_name = mask.eiger2M.vcmp
+
+    if cfg.geometry == '1M':
+        halfmodule = mask.eiger1M.halfmodule
+        vcmp_name = mask.eiger1M.vcmp
         
     elif cfg.geometry == '500k':
         halfmodule = mask.halfmodule
