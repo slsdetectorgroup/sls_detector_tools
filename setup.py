@@ -15,10 +15,11 @@ args = out.stdout.decode().strip('\n').split()
 
 c_ext = Extension("_sls_cmodule",
                   sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"],
-                  libraries = ['stdc++', 'Core', 'MathCore', 'Hist'],
-                  library_dirs = [os.path.join(os.environ['ROOTSYS'], 'lib')],
+                  libraries = ['Core', 'MathCore', 'Hist'],
+                  library_dirs = [os.path.join(os.environ['ROOTSYS'], '/usr/lib64')],
                   include_dirs=du.get_numpy_include_dirs(),
-                  extra_compile_args = args
+                  extra_compile_args = args #+ ['-fsanitize=address'],
+                #   extra_link_args = ['-fsanitize=address'],
                   )
                   
 

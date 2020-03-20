@@ -69,7 +69,7 @@ def find_edge(image):
     x,y = _find_presample_edge(image, par, a)
     return x, y
 
-def calculate_mtf(x,y):
+def calculate_mtf(x,y, plot = True):
     pixel_range = (-3,3)
     c,h = r.plot(x[(x>pixel_range[0])&(x<pixel_range[1])],y[(x>pixel_range[0])&(x<pixel_range[1])])
     func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
@@ -82,19 +82,20 @@ def calculate_mtf(x,y):
     c.Draw()
 
     #Plot the presample edge, fit and residuals
-    fig, ax = plt.subplots(2,1, figsize = (14,14))
-    ax[0].plot(x,y, '.', label= 'Presample edge')
-    ax[0].plot(x, gaus_edge(x,*par), label = 'Fit')
-    ax[0].set_xlim(-2,2)
-    ax[0].grid(True)
-    ax[0].set_xlabel('Distance [pixels]')
-    ax[0].set_ylabel('Normalized edge')
-    ax[0].legend()
-    ax[1].plot(x, y-gaus_edge(x,*par))
-    ax[1].set_xlim(-2,2)
-    ax[1].grid(True)
-    ax[1].set_xlabel('Distance [pixels]')
-    ax[1].set_ylabel('Resiudals')
+    if plot:
+        fig, ax = plt.subplots(2,1, figsize = (14,14))
+        ax[0].plot(x,y, '.', label= 'Presample edge')
+        ax[0].plot(x, gaus_edge(x,*par), label = 'Fit')
+        ax[0].set_xlim(-2,2)
+        ax[0].grid(True)
+        ax[0].set_xlabel('Distance [pixels]')
+        ax[0].set_ylabel('Normalized edge')
+        ax[0].legend()
+        ax[1].plot(x, y-gaus_edge(x,*par))
+        ax[1].set_xlim(-2,2)
+        ax[1].grid(True)
+        ax[1].set_xlabel('Distance [pixels]')
+        ax[1].set_ylabel('Resiudals')
     
     #Calculate MTF from fit
     x_fit = np.linspace(-200,200, 20000)
@@ -108,12 +109,14 @@ def calculate_mtf(x,y):
     f = f[0:u.size//2]
     u = u[0:u.size//2]
     
-    fig, ax = plt.subplots(2,1, figsize = (14,14))
-    ax[0].plot(x_fit,psf, label = 'Fitted LSF')
-    ax[0].set_xlim(-2,2)
-    ax[0].grid(True)
-    ax[0].legend()
-    ax[1].plot(u, f, '-', label = 'MTF from fitted edge')
+    if plot:
+        fig, ax = plt.subplots(2,1, figsize = (14,14))
+        ax[0].plot(x_fit,psf, label = 'Fitted LSF')
+        ax[0].set_xlim(-2,2)
+        ax[0].grid(True)
+        ax[0].legend()
+        ax[1].plot(u, f, '-', label = 'MTF from fitted edge')
+    return [u,f]
     ax[1].set_xlim(0,0.5)
     ax[1].plot(u, ideal_mtf(u), label = 'Ideal MTF')
     ax[1].legend()
@@ -147,3 +150,4 @@ def calculate_mtf(x,y):
     ax[1].legend()
 #    ax[1].set_xlabel[]
     ax[1].grid(True)
+    return [u, f]

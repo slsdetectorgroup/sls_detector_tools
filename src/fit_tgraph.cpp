@@ -89,65 +89,55 @@ void fit_using_tgraph(double *data, double *x, int shape[3], double *initpar, do
 
 void fit_trimbits(double *data, double *x, double *target, int shape[3], double *initpar,
                   double *result) {
-    // Number of parameters for the fit
-    int npar = 6;
+    const int npar = 6;
+    const int n_rows = shape[0];
+    const int n_cols = shape[1];
+    const int n_elements = shape[2];
 
     // Create the function to fit, note that the range is hardcoded
-    auto f = new TF1("scurve", scurve_model, 0, 64, npar);
+    TF1 f("scurve", scurve_model, 0, 64, npar);
 
     // We are fitting trimbits disable charge sharing corr
-    f->FixParameter(5, 0);
+    f.FixParameter(5, 0);
 
     // Loop over the data as a 3D array using pointers
-    for (int col = 0; col < shape[1]; col++) {
-        if ((col % (shape[1] / 6) == 0) && (col != 0)) {
-            std::cout << "Processed: " << std::setprecision(3)
-                      << static_cast<float>(col) / static_cast<float>(shape[1]) * 100 << "%"
-                      << std::endl;
-        }
-        for (int row = 0; row < shape[0]; row++) {
+    for (int row = 0; row < n_rows; ++row) {
+        for (int col = 0; col < n_cols; ++col) {
+
+            auto last = data + shape[2] - 1;
 
             // Set initial values for the fit
-            f->SetParameter(0, initpar[0]);
-            f->SetParameter(1, initpar[1]);
-            f->SetParameter(2, initpar[2]);
-            f->SetParameter(3, initpar[3]);
-            f->SetParameter(4, initpar[4]);
+            f.SetParameter(0, *data);
+            f.SetParLimits(0, 0, 2 * (*data));
+            f.SetParameter(1, initpar[1]);
+            f.SetParameter(2, initpar[2]);
+            f.SetParLimits(2, 0, 64);
+            f.SetParameter(3, initpar[3]);
+            f.SetParameter(4, *last);
+            f.SetParLimits(4, 0, 2 * (*last));
 
             // Do we have any data?
-            double sum = 0;
-            for (int i = 0; i < shape[2]; i++) {
-                sum += (data + row * shape[2] + col * shape[0] * shape[2])[i];
-            }
-            if (row == 240 && col == 600) {
-                std::cout << "--------------" << sum << std::endl;
-            }
+            auto sum = std::accumulate(data, data + n_elements, 0.0);
+
             // If there is no data skip the pixel
-            if (sum > (double)0.0) {
-
-                // Create a TGraph and fit
-                auto g = new TGraph(shape[2], x, data + row * shape[2] + col * shape[0] * shape[2]);
-                g->Fit("scurve", "NSQ");
-
-                // Get parameters
-                for (int i = 0; i < npar; i++) {
-                    result[row * (npar + 1) + col * shape[0] * (npar + 1) + i] = f->GetParameter(i);
-                }
+            if (sum > 0.0) {
+                TGraph g(shape[2], x, data);
+                g.Fit("scurve", "NRSQ");
+                f.GetParameters(result);
+                result += npar;
 
                 // Get trimbit
-                result[row * (npar + 1) + col * shape[0] * (npar + 1) + npar] =
-                    f->GetX(target[row + col * shape[0]]);
-
-                delete g;
+                *result++ = f.GetX(*target, -10., 74);
             } else {
                 // Fill the output with zeros
-                for (int i = 0; i < npar; i++) {
-                    result[row * (npar + 1) + col * shape[0] * (npar + 1) + i] = (double)0;
+                for (int i = 0; i < npar + 1; i++) {
+                    *result++ = 0.0;
                 }
-                result[row * (npar + 1) + col * shape[0] * (npar + 1) + npar] = (double)0;
+
             } // end else
+            ++target;
+            data += n_elements;
         }
     }
-    delete f;
     return;
 }

@@ -202,7 +202,7 @@ def read_frame(f, dr):
     """
     
     #Skip the frame header
-    f.seek(48, 1)
+    f.seek(112, 1)
 
     
     if dr in [8,16,32]:

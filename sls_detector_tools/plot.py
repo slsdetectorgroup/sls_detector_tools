@@ -18,6 +18,7 @@ import datetime
 from . import mask
 from . import config as cfg
 from . import utils
+from . import function
 
 try:
     from _sls_cmodule import hist

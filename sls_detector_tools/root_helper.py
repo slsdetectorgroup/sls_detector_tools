@@ -141,7 +141,7 @@ def plot(x, y, options='ALP', title="A TGraph",
 
 def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
          add=False, c=None, h0=None, color=None,
-         line_color=None, fill_style=1001):
+         line_color=None, fill_style=1001, draw = True):
     """Plot a histogram using TH1D also can add a new histogram as an overlay
     on the same canvas. In that case the canvas and one histogram on it
     needs to be specified
@@ -207,11 +207,13 @@ def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
 
     #If we are adding to an existing histogram we should not create a new
     # TCanvas for the plotting
+    c = None
     if add is False:
-        canvas_name = 'r.plotcanvas'+str(np.random.rand(1))
-        canvas_title = 'Histogram'
-        c = TCanvas(canvas_name, canvas_title, 200, 10, 900, 600)
-        c.SetGrid()
+        if draw is True:
+            canvas_name = 'r.plotcanvas'+str(np.random.rand(1))
+            canvas_title = 'Histogram'
+            c = TCanvas(canvas_name, canvas_title, 200, 10, 900, 600)
+            c.SetGrid()
 
 
     histogram_name = 'r.plothist'+str(np.random.rand(1))
@@ -230,19 +232,21 @@ def hist(data=None, xmin=None, xmax=None, bins=100, title='Histogram',
             hfill(x)
         del hfill
 
-    if add is False:
-        h.Draw()
-    else:
-        #Check axis and if the second histogram has a higher peak update
-        gPad.Update()
-        n = gPad.GetFrame().GetY2()
-        m = h.GetMaximum()*1.05
-        a = h0.GetYaxis()
-        a.SetRangeUser(0, max(m, n))
-        c.Update()
-        h.Draw('SAME')
+    if draw:
+        if add is False:
+            h.Draw()
+        else:
+            #Check axis and if the second histogram has a higher peak update
+            gPad.Update()
+            n = gPad.GetFrame().GetY2()
+            m = h.GetMaximum()*1.05
+            a = h0.GetYaxis()
+            a.SetRangeUser(0, max(m, n))
+            c.Update()
+            h.Draw('SAME')
 
-    c.Update()
+        
+        c.Update()
 
     return c, h
 
