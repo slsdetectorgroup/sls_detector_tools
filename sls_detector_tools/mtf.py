@@ -154,7 +154,7 @@ def calculate_mtf(x,y, plot = True):
     return [u, f]
 
 
-def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
+def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax = None, ci = 0):
     x = np.linspace(-200,200, 20000)
     mask = (xx>-3)&(xx<3)
     xx = xx[mask]
@@ -211,18 +211,14 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
     mtf = np.asarray(mtf)
     mtf = mtf[:, 0:u.size]
     
-    fig, ax = plt.subplots()
-    ci = 0
+    if ax == None:
+        fig, ax = plt.subplots()
+
     ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
-    ax.plot(u, mtf[1], color = colors[ci])
+    ax.plot(u, mtf[1], color = colors[ci], label = label)
 
     # half_nyq[fn] = mtf[0][100]
     print(f'u[100]:{u[100]}')
-
-    # if 'sr' in fn:
-    #     ax.fill_between(u*2, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
-    #     ax.plot(u*2, mtf[1], color = colors[ci], label = f'{fn}-scaled')
-    #     half_nyq[fn+'-scaled'] = mtf[0][50]
 
     ax.set_xlim(0,0.5)
 
