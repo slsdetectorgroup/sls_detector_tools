@@ -212,6 +212,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
     mtf = mtf[:, 0:u.size]
     
     fig, ax = plt.subplots()
+    ci = 0
     ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
     ax.plot(u, mtf[1], color = colors[ci], label = f'{fn}')
 
