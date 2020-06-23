@@ -173,7 +173,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
         fit = h.Fit('func', 'SQ')
         
         par = [func.GetParameter(i) for i in range(3)]
-        residuals = y-gaus_edge(x, *par) 
+        residuals = yy-gaus_edge(x, *par) 
         sigma[j] = par[2]
         if j ==0:
             y = gaus_edge(x,*par)
