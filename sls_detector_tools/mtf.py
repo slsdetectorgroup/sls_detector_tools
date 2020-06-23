@@ -155,6 +155,7 @@ def calculate_mtf(x,y, plot = True):
 
 
 def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
+    x = np.linspace(-200,200, 20000)
     mask = (xx>-3)&(xx<3)
     xx = xx[mask]
     yy = yy[mask]
@@ -173,7 +174,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
         fit = h.Fit('func', 'SQ')
         
         par = [func.GetParameter(i) for i in range(3)]
-        residuals = yy-gaus_edge(x, *par) 
+        residuals = yy-gaus_edge(xx, *par) 
         sigma[j] = par[2]
         if j ==0:
             y = gaus_edge(x,*par)
