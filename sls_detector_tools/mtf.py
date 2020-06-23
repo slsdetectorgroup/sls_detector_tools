@@ -155,7 +155,7 @@ def calculate_mtf(x,y, plot = True):
 
 
 def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
-    mask = (x>-3)&(x<3)
+    mask = (xx>-3)&(xx<3)
     xx = xx[mask]
     yy = yy[mask]
     sigma = np.zeros(N)   
