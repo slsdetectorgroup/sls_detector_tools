@@ -216,7 +216,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True):
     ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
     ax.plot(u, mtf[1], color = colors[ci], label = f'{fn}')
 
-    half_nyq[fn] = mtf[0][100]
+    # half_nyq[fn] = mtf[0][100]
     print(f'u[100]:{u[100]}')
 
     # if 'sr' in fn:
