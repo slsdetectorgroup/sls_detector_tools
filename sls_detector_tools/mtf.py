@@ -154,7 +154,7 @@ def calculate_mtf(x,y, plot = True):
     return [u, f]
 
 
-def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax = None, ci = 0):
+def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax = None, fig = None, ci = 0):
     x = np.linspace(-200,200, 20000)
     mask = (xx>-3)&(xx<3)
     xx = xx[mask]
