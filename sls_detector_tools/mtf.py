@@ -207,6 +207,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
     u = np.fft.fftfreq(n,d)
     f = f[0:u.size//2]
     u = u[0:u.size//2]
+    u *= 2 #Go to fraction of nyquist
 
     mtf = np.asarray(mtf)
     mtf = mtf[:, 0:u.size]
@@ -216,20 +217,12 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
 
     ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
     ax.plot(u, mtf[1], color = colors[ci], label = label)
-
-    # half_nyq[fn] = mtf[0][100]
-    print(f'u[100]:{u[100]}')
-
-    ax.set_xlim(0,0.5)
-
-
-    # u, f = calculate_mtf(x,y, False)
-    # ax.plot(u,f, label = f'{energy} keV')
-
-    ax.set_xlim(0,0.5)
+    ax.set_xlim(0,1)
     ax.set_ylim(0, 1.1)
+    ax.set_xlabel("Fraction of Nyquist")
+    ax.set_ylabel("MTF")
 
-    return fig, ax
+    return fig, ax, u, mtf[1]
 # ax.set_title(f'[Preliminary] MTF from fitted edge {energy} keV')
 # ax.set_xlabel("Spatial frequency [1/$\omega$]")
 # ax.plot(u, ideal_mtf(u), '--',label = 'ideal', color = 'black')
