@@ -176,7 +176,7 @@ class Cluster_finder():
             self.clustersPerFrame[self.n_frames] = nrOfFeatures
             self.countsPerFrame[self.n_frames] = frame.sum()
 
-            for p in regionprops(labeled, intensity_image = frame, coordinates='rc'):
+            for p in regionprops(labeled, intensity_image = frame):
                 #Write cluster properties to table
                 cluster['id'] = self.cluster_id
                 cluster['frameNr'] = self.n_frames
