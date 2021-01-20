@@ -372,7 +372,7 @@ def _clean_vrf_data(data):
     _pm = np.zeros((data.shape[0], data.shape[1]), dtype = np.bool)
     for i in range(data.shape[2]):
         # _threshold = np.median(data[:,:,i])*3
-        _threshold  = np.median(data[:,:,i][data[:,:,i]>0])
+        _threshold  = np.median(data[:,:,i][data[:,:,i]>0])*3
         if _threshold < 50:
             _threshold = 50
         _pm[data[:,:,i]>_threshold] = True
@@ -853,7 +853,8 @@ def _plot_scurve(data, x):
 def do_scurve(detector, xraybox,
               start = 0, 
               stop = 2001,
-              step = 40,):
+              step = 40,
+              pixelmask = None):
     """
     Take scurve data for calibration. When not using the Xray box pass a 
     dummy xray box to the function and make sure that shutter is open and 
@@ -878,6 +879,11 @@ def do_scurve(detector, xraybox,
     data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
     np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
     xraybox.xrf_close()
+
+    #Set pixels that are True in the mask to zero for all scan steps
+    if pixelmask is not None:
+        for i in range( data.shape[2] ):
+            data[:,:,i][pixelmask] = 0
 
     #plotting the result of the scurve scan
     if cfg.calibration.plot:
