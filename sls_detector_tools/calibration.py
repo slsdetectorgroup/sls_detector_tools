@@ -339,13 +339,13 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     return data, vrf_array
 
 def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
-    detector.dynamic_range = cfg.calibration.dynamic_range 
-    detector.exposure_time = cfg.calibration.exptime
+    detector.dr = cfg.calibration.dynamic_range 
+    detector.exptime = cfg.calibration.exptime
 
     threshold = np.arange(start, stop, step)
 
     _s = detector.image_size
-    data = np.zeros((_s.rows, _s.cols, threshold.size))
+    data = np.zeros((_s.y, _s.x, threshold.size))
 
     if cfg.calibration.type == 'TP':
         detector.eiger_matrix_reset = False
@@ -356,7 +356,7 @@ def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
             print(detector.vthreshold)
             if cfg.calibration.type == 'TP':
                 detector.pulse_all_pixels(1000)
-            detector.acq()
+            detector.acquire()
             data[:,:,i] = receiver.get_frame()
 
     if cfg.calibration.type == 'TP':
@@ -872,9 +872,11 @@ def do_scurve(detector, xraybox,
     
     """
         
-    with xrf_shutter_open(xraybox, cfg.calibration.target):
-        data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
-        np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
+    # with xrf_shutter_open(xraybox, cfg.calibration.target):
+    xraybox.xrf_open()    
+    data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
+    np.savez(os.path.join(cfg.path.data, get_data_fname()), data = data, x = x)
+    xraybox.xrf_close()
 
     #plotting the result of the scurve scan
     if cfg.calibration.plot:

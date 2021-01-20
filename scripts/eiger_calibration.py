@@ -85,11 +85,11 @@ vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 # for i in range(5):
 #     vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 ##d.dacs.vrf = vrf
-#cfg.calibration.exptime = 3
+cfg.calibration.exptime = 1
 ####
 ###
 #####impo
-#data, x = calibration.do_scurve(d, box)
+data, x = calibration.do_scurve(d, box)
 #fit_result = calibration.do_scurve_fit_scaled()
 #data, x = calibration.do_trimbit_scan(d, box)
 #tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
