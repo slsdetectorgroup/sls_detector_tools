@@ -59,18 +59,18 @@ class eiger500k:
         self.nrow = 512
         self.ncol = 1024
 
-        self.module = [[slice(0, 512, 1), slice(0, 1024, 1)]]
+        self.module = [(slice(0, 512, 1), slice(0, 1024, 1))]
 
         #Half modules
         _col = [slice(256*(i-1), 256*i, 1) for i in range(2, 0, -1)]
         _row = [slice(1024*i, 1024*(i+1), 1) for i in range(1)]
-        self.halfmodule = [[c,r] for r in _row for c in _col]
+        self.halfmodule = [(c,r) for r in _row for c in _col]
 
         self.port = []
         for col in range(1):
             for row in range(2,0,-1):
-                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
-                self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+                self.port.append( (slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)) )
+                self.port.append( (slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)) )
 
 
 class eiger9M:
