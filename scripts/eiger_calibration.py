@@ -78,7 +78,8 @@ cfg.calibration.exptime = 0.1
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
-# calibration.setup_detector(d)
+calibration.setup_detector(d)
+vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 # calibration.load_trimbits(d)
 #d.dacs.vcall = 3700
 # for i in range(5):

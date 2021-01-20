@@ -481,8 +481,12 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     """   
 
     #data taking in the xray box        
-    with xrf_shutter_open(xraybox, cfg.calibration.target):
-        data,x = _vrf_scan(detector, start, stop, step)
+    # with xrf_shutter_open(xraybox, cfg.calibration.target):
+    #     data,x = _vrf_scan(detector, start, stop, step)
+
+    xraybox.xrf_open()
+    data,x = _vrf_scan(detector, start, stop, step)
+    xraybox.xrf_close()
 
 
 
