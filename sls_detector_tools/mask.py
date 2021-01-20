@@ -12,7 +12,7 @@ trough the cfg.geometry setting.
 row = [slice(256, 512, 1), slice(0, 256, 1)]
 col= [slice(0, 256, 1), slice(256, 512, 1), 
       slice(512, 768, 1), slice(768, 1024, 1)]
-chip = [[r, c] for r in row for c in col]
+chip = [(r, c) for r in row for c in col]
 halfmodule = [(r, slice(0, 1024, 1)) for r in row]
 
 vcmp0 = [':vcmp_ll', ':vcmp_lr', ':vcmp_rl', ':vcmp_rr']
