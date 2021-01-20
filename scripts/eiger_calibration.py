@@ -91,8 +91,8 @@ cfg.calibration.exptime = 1
 ####
 ###
 #####impo
-data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit_scaled()
+data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
+fit_result = calibration.do_scurve_fit_scaled()
 #data, x = calibration.do_trimbit_scan(d, box)
 #tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #
