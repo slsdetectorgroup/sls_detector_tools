@@ -1058,7 +1058,7 @@ def _plot_trimbit_histogram(tb):
     ax.set_xlabel('Trimbits')
     return h
 
-def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
+def do_trimbit_scan(detector, xraybox, step = 2, pixelmask = None):
     """
     Setup the detector and then scan trough the trimbits. Normally with 
     step of 2
@@ -1096,11 +1096,15 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     # with xrf_shutter_open(xraybox, cfg.calibration.target):
     xraybox.xrf_open()
     data, x = _trimbit_scan(detector)
-    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
-             data = data, x = x)
     xraybox.xrf_close()
     
-    
+    #Set pixels that are True in the mask to zero for all scan steps
+    if pixelmask is not None:
+        for i in range( data.shape[2] ):
+            data[:,:,i][pixelmask] = 0
+
+    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
+             data = data, x = x)
     if cfg.calibration.plot is True:
         fig, ax1, ax2 = _plot_trimbit_scan(data, x)
         fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') )+'.png' )
