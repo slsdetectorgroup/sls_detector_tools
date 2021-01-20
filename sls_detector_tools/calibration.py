@@ -344,7 +344,7 @@ def _threshold_scan(detector, start = 0, stop = 2001, step = 40):
 
     threshold = np.arange(start, stop, step)
 
-    _s = detector.image_size
+    _s = detector.detsize
     data = np.zeros((_s.y, _s.x, threshold.size))
 
     if cfg.calibration.type == 'TP':
