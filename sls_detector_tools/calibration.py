@@ -63,9 +63,9 @@ def setup_measurement(detector):
         
     """
     #Setup for test
-    detector.rx_datastream = False
+    detector.rx_zmqstream = False
     time.sleep(0.1)
-    detector.rx_datastream = True
+    detector.rx_zmqstream = True
     detector.fwrite = False
 #    detector.dynamic_range = 16 
 #    detector.readout_clock = clk
