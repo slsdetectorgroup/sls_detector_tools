@@ -1200,7 +1200,7 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     
 #    #Actual trimbit files
     dacs = detector.dacs.get_asarray()
-    dacs = np.vstack((dacs, np.zeros(detector.n_modules)))
+    dacs = np.vstack((dacs, np.zeros(detector.nmod)))
 #    ##
 #    os.chdir(cfg.path.data)
     host = detector.hostname
