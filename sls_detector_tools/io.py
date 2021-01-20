@@ -172,15 +172,33 @@ def read_header( fname ):
 
     #Put information in the dict
     header = OrderedDict()
-    for i in range(11):
-#        field = tmp[i][0:19].strip(' ')
-#        value = tmp[i][22:].strip('\n').strip(' ')
-        field, value = tmp[i].split(':')
+    for line in tmp:
+        if '#Frame Header' in line:
+            break
+        line = line.strip('\n ')
+        try:
+            field, value = line.split(':', 1)
+        except:
+            print(f'{line=}')
+            print(f'len = {len(line)}')
+
         field = field.strip(' ')
         value = value.strip(' ')
         if field == 'Dynamic Range':
             value = int(value)
         header[ field ] = value
+    # for i in range(11):
+    #     try:
+    #         field, value = tmp[i].split(':', 1)
+    #     except:
+    #         print(f'{tmp[i]=}')
+    #         print(f'len = {len(tmp[i])}')
+
+    #     field = field.strip(' ')
+    #     value = value.strip(' ')
+    #     if field == 'Dynamic Range':
+    #         value = int(value)
+    #     header[ field ] = value
 
 
     return header
@@ -240,8 +258,12 @@ def load_file(fname, header, N = 1):
         
    #Open file and read 
     with open( fname, 'rb' ) as f:
-        if N == 1:    
-            image = read_frame(f, dr)
+        if N == 1:
+            try:    
+                image = read_frame(f, dr)
+            except:
+                print('HEY')
+                image = np.full((256,512), -1)
         else:
             #Reading more than one frame from the file
             image = np.zeros((256,512, N), dtype = dt)
@@ -292,7 +314,8 @@ def load_frame(bname, run_id,
     """
     #Construct ending of filename depending on index or not
     if frameindex == -1:
-        fname_end =  '_%d.raw' % run_id
+        # fname_end =  '_%d.raw' % run_id #v4
+        fname_end =  f'_f0_{run_id}.raw'
     else:
         fname_end =  '_f{:012d}_{:d}.raw'.format( frameindex, run_id )
 
@@ -301,7 +324,7 @@ def load_frame(bname, run_id,
     if geometry == '500k':
         if N == 1:
             # Should we control the data type more strictly?
-            image = np.full((512, 1024), default)
+            image = np.full((512, 1024), -1)
 
             try:
                 fname = bname + '_d'+ str(shift) + fname_end
@@ -324,6 +347,7 @@ def load_frame(bname, run_id,
                 image[0:256,512:1024] = np.flipud( load_file( fname, header ) )     
             except IOError:
                 print('Missing file: ', fname)
+            return image
             
         else:
             #0 constructing from type of returned data, use header instead
@@ -344,7 +368,7 @@ def load_frame(bname, run_id,
             fname = bname + '_d'+str(shift +3 ) + fname_end
             image[0:256,512:1024, :] = np.flipud( load_file( fname,header, N = N ) )
             
-        return image
+            return image
 
     elif geometry == '250k':
         if N == 1:

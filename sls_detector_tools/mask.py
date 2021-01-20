@@ -96,7 +96,7 @@ class eiger9M:
         #Modules
         row = [slice(512*(i-1), 512*i, 1) for i in range(6,0,-1)]
         col = [slice(1024*i, 1024*(i+1),1) for i in range(3)]
-        self.module = [ [r,c] for c in col for r in row]
+        self.module = [ (r,c) for c in col for r in row]
 
 
 

@@ -269,7 +269,7 @@ def draw_module_names(ax, vertical=False, color='white'):
 def fix_large_pixels(image, interpolation=True):
     """
     Expand and interpolate the values in large pixels at borders and in corners
-    Works on sigle module data with one or several frames
+    Works on single module data with one or several frames
     """
     #Check that rows and cols matches
     if image.shape[0] != 512 and image.shape[1] != 1024:
