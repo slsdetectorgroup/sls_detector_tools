@@ -1129,7 +1129,7 @@ def load_trimbits(detector):
     pathname = os.path.join(cfg.path.data, fname)
     detector.load_trimbits(pathname)
 
-def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None):
+def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None, pixelmask = None):
     
     #Filename for scurve
     if fname is None:
@@ -1152,6 +1152,12 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     with np.load( tb_pathname ) as f:
         data = f['data']
         x = f['x']
+
+
+    #Set pixels that are True in the mask to zero for all scan steps
+    if pixelmask is not None:
+        for i in range( data.shape[2] ):
+            data[:,:,i][pixelmask] = 0
 
     #Scale data
     data = data.astype( np.double )
