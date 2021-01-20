@@ -58,7 +58,7 @@ class ZmqReceiver:
 
             
         """
-        image = np.zeros(self.image_size.y, self.image_size.x)
+        image = np.zeros((self.image_size.y, self.image_size.x))
             
         for p,s in zip(self.mask.port, self.sockets):
 #            header =  s.recv()
