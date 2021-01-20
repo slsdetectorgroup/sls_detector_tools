@@ -271,27 +271,27 @@ def setup_detector(detector):
     
     """
     #Exposure
-    detector.n_frames = cfg.calibration.nframes
+    detector.frames = cfg.calibration.nframes
     detector.period = cfg.calibration.period
     if cfg.calibration.type == 'TP':
-        detector.exposure_time = cfg.calibration.tp_exptime
+        detector.exptime = cfg.calibration.tp_exptime
     else:
-        detector.exposure_time = cfg.calibration.exptime
+        detector.exptime = cfg.calibration.exptime
     
     #Data format and communication
     if cfg.calibration.type == 'TP':
-        detector.dynamic_range = cfg.calibration.tp_dynamic_range 
+        detector.dr = cfg.calibration.tp_dynamic_range 
     else:
-        detector.dynamic_range = cfg.calibration.dynamic_range
+        detector.dr = cfg.calibration.dynamic_range
         
-    detector.readout_clock = cfg.calibration.speed
+    # detector.readout_clock = cfg.calibration.speed
 #    for flag in cfg.calibration.flags:
 #        detector.set_flags( flag )
     
     #Trimming
-    detector.trimbits = cfg.calibration.trimval
-    detector.dacs.vtr = cfg.calibration.vtr
-    detector.dacs.vrs = cfg.calibration.vrs
+    detector.trimval = cfg.calibration.trimval
+    detector.dacs.vtrim = cfg.calibration.vtr
+    detector.dacs.vrshaper = cfg.calibration.vrs
     
 #    detector.set_dac('vthreshold', cfg.calibration.threshold)    
     
