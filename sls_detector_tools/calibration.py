@@ -505,7 +505,7 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
     vrf = _fit_and_plot_vrf_data(data, x, detector.hostname)
     
     #Save vrf?
-    cts = [data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)]
+    cts = [data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.nmod)]
     t = (1000*cfg.calibration.vrf_scan_exptime)/min([data[:,:,np.argmin(np.abs(x-vrf[i]))].mean() for i in range(detector.n_modules)])
     print('Suggested exptime: {:.2f}'.format(t))
     
