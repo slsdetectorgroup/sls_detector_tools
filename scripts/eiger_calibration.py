@@ -79,7 +79,9 @@ cfg.calibration.exptime = 0.1
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
+pixelmask = np.zeros((512,1024), dtype = np.bool)
+pixelmask[:,512:] = True
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
 # calibration.load_trimbits(d)
 #d.dacs.vcall = 3700
 # for i in range(5):
