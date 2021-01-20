@@ -371,7 +371,8 @@ def _clean_vrf_data(data):
     """
     _pm = np.zeros((data.shape[0], data.shape[1]), dtype = np.bool)
     for i in range(data.shape[2]):
-        _threshold = np.median(data[:,:,i])*3
+        # _threshold = np.median(data[:,:,i])*3
+        _threshold  = np.median(data[:,:,i][data[:,:,i]>0])
         if _threshold < 50:
             _threshold = 50
         _pm[data[:,:,i]>_threshold] = True
