@@ -49,7 +49,7 @@ class ZmqReceiver:
         #connect sockets
         for p,s in zip(self.ports, self.sockets):
             print('Initializing: {:d}'.format(p))
-            s.connect('tcp://{:s}:{:d}'.format(self.ip, p))
+            s.connect('tcp://{:s}:{:d}'.format(self.ip.str(), p))
             s.setsockopt(zmq.SUBSCRIBE, b'')
 
     def get_frame(self):
