@@ -81,18 +81,12 @@ d = Eiger()
 calibration.setup_detector(d)
 pixelmask = np.zeros((512,1024), dtype = np.bool)
 pixelmask[:,512:] = True
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
-# calibration.load_trimbits(d)
-#d.dacs.vcall = 3700
-# for i in range(5):
-#     vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
-d.dacs.vrpreamp = vrpreamp
+# vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
+# d.dacs.vrpreamp = vrpreamp
 cfg.calibration.exptime = 1
-####
-###
-#####impo
-data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
+# data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
 fit_result = calibration.do_scurve_fit_scaled()
+
 #data, x = calibration.do_trimbit_scan(d, box)
 #tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #

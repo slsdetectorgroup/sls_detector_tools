@@ -525,7 +525,7 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400, log = False):
 
             x0, y0 = h['x'], h['y']
             if cfg.calibration.plot:
-                plt.plot(x0, y0, ls='steps', label=label)
+                plt.step(x0, y0, label=label)
 
             if y0[1:].max() > max_value:
                 max_value = y0[1:].max()
