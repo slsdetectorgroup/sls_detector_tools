@@ -1131,7 +1131,7 @@ def load_trimbits(detector):
     """
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
-    detector.load_trimbits(pathname)
+    detector.trimbits = pathname
 
 def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None, pixelmask = None):
     

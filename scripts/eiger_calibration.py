@@ -88,10 +88,10 @@ cfg.calibration.exptime = 1
 #fit_result = calibration.do_scurve_fit_scaled()
 
 # data, x = calibration.do_trimbit_scan(d, box, pixelmask= pixelmask)
-tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+# tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #
 ##
-#calibration.load_trimbits(d)
+calibration.load_trimbits(d)
 ###
 #cfg.calibration.run_id = 1
 #data, x = calibration.do_scurve(d, box)
