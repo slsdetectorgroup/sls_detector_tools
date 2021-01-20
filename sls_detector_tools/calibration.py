@@ -308,10 +308,10 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
     :py:meth:`sls_detector.calibration.do_vrf_scan`
     """
      #Switch to 16bit since we always scan this fast
-    dr = detector.dynamic_range
-    detector.dynamic_range = 16 
-    detector.vthreshold = cfg.calibration.threshold  
-    detector.exposure_time = cfg.calibration.vrf_scan_exptime
+    dr = detector.dr
+    detector.dr = 16 
+    detector.threshold = cfg.calibration.threshold  
+    detector.exptime = cfg.calibration.vrf_scan_exptime
 
     vrf_array = np.arange(start, stop, step)
     
@@ -327,11 +327,11 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
             print('{} - {}'.format(time.asctime(), v))
             if cfg.calibration.type == 'TP':
                 detector.pulse_diagonal(1000)
-            detector.acq()
+            detector.acquire()
             data[:,:,i] = receiver.get_frame()
     
     #Reset dr
-    detector.dynamic_range = dr
+    detector.dr = dr
 
     if cfg.calibration.type == 'TP':
         detector.eiger_matrix_reset = True
