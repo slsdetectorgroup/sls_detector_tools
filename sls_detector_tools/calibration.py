@@ -66,7 +66,7 @@ def setup_measurement(detector):
     detector.rx_datastream = False
     time.sleep(0.1)
     detector.rx_datastream = True
-    detector.file_write = False
+    detector.fwrite = False
 #    detector.dynamic_range = 16 
 #    detector.readout_clock = clk
 #    detector.exposure_time = 0.01 
@@ -315,8 +315,8 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
 
     vrf_array = np.arange(start, stop, step)
     
-    _s = detector.image_size
-    data = np.zeros((_s.rows, _s.cols, vrf_array.size))
+    _s = detector.detsize
+    data = np.zeros((_s.y, _s.x, vrf_array.size))
 
     if cfg.calibration.type == 'TP':
         detector.eiger_matrix_reset = False
