@@ -50,11 +50,11 @@ gain10               Sn
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = 'TQ1'
-cfg.calibration.gain = 'gain5'
+cfg.calibration.gain = 'gain1'
 cfg.calibration.target = 'Cu'
-cfg.calibration.energy = 5
-#cfg.path.data = os.path.join('/mnt/local_sw_raid/eiger_data/trash',
-#                             cfg.det_id, cfg.calibration.gain)
+cfg.calibration.energy = 8
+cfg.path.data = os.path.join('/home/l_msdetect/erik/quad/data',
+                             cfg.det_id, cfg.calibration.gain)
 
 cfg.calibration.run_id = 0
 
