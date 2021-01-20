@@ -68,7 +68,7 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 # box = DummyBox()  #XrayBox or DummyBox
 # box.unlock()
 # box.HV =  True
-
+box = BigXrayBox()
 
 
 
