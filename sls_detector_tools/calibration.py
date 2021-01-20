@@ -1012,11 +1012,11 @@ def _trimbit_scan(detector, step = 2):
     """
 
 
-    detector.exposure_time = cfg.calibration.exptime
+    detector.exptime = cfg.calibration.exptime
     tb_array = np.arange(0, 64, step)
     
     _s = detector.image_size
-    data = np.zeros((_s.rows, _s.cols, tb_array.size))
+    data = np.zeros((_s.y, _s.x, tb_array.size))
 
 
     if cfg.calibration.type == 'TP':
@@ -1024,11 +1024,11 @@ def _trimbit_scan(detector, step = 2):
 
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(tb_array):
-            detector.trimbits = v
-            print(detector.trimbits)
+            detector.trimval = v
+            print(detector.trimval)
             if cfg.calibration.type == 'TP':
                 detector.pulse_all_pixels(1000)
-            detector.acq()
+            detector.acquire()
             data[:,:,i] = receiver.get_frame()
 
     if cfg.calibration.type == 'TP':
