@@ -84,7 +84,7 @@ vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 #d.dacs.vcall = 3700
 # for i in range(5):
 #     vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
-##d.dacs.vrf = vrf
+d.dacs.vrf = vrpreamp
 cfg.calibration.exptime = 1
 ####
 ###
