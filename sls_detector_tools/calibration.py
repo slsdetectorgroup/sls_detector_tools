@@ -554,7 +554,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
     if detector is None:
         mean = np.zeros( len(mask.detector[cfg.geometry].halfmodule)*4, dtype = np.int )
     else:
-        mean = np.zeros( detector.n_modules*4, dtype = np.int )
+        mean = np.zeros( detector.nmod*4, dtype = np.int )
     
     
     #Find the mean values for both module and half module
