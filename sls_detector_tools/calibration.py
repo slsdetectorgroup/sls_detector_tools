@@ -323,7 +323,7 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
 
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(vrf_array):
-            detector.dacs.vrf = v
+            detector.dacs.vrpreamp = v
             print('{} - {}'.format(time.asctime(), v))
             if cfg.calibration.type == 'TP':
                 detector.pulse_diagonal(1000)
