@@ -39,7 +39,7 @@ class ZmqReceiver:
         ports = detector.rx_zmqport
 
         #ip and ports
-        self.image_size = detector.image_size
+        self.image_size = detector.detsize
         self.ports = ports
         self.ip = ip
         self.context = zmq.Context()
