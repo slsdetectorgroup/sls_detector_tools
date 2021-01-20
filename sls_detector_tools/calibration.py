@@ -1185,6 +1185,7 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
          
     result = mpfit.find_trimbits(data, x, target, cfg.calibration.nproc, par) 
     tb = result['trimbits']
+    tb[np.isnan(tb['trimbits'])] = 32
     tb[tb>63] = 63
     tb[tb<0] = 0
     tb = tb.round()
