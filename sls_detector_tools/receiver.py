@@ -35,7 +35,7 @@ class ZmqReceiver:
     def __init__(self, detector):
         warnings.warn('ZmqReceiver currently only supports single frames')
 
-        ip = detector.rx_udpip #Workaround until we get zmqip
+        ip = detector.rx_zmqip #Workaround until we get zmqip
         ports = detector.rx_zmqport
 
         #ip and ports
