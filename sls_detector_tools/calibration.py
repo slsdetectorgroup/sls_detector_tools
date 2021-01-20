@@ -1015,7 +1015,7 @@ def _trimbit_scan(detector, step = 2):
     detector.exptime = cfg.calibration.exptime
     tb_array = np.arange(0, 64, step)
     
-    _s = detector.image_size
+    _s = detector.detsize
     data = np.zeros((_s.y, _s.x, tb_array.size))
 
 
