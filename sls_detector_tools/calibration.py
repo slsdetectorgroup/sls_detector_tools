@@ -310,7 +310,7 @@ def _vrf_scan(detector, start=1500, stop = 3800, step = 30):
      #Switch to 16bit since we always scan this fast
     dr = detector.dr
     detector.dr = 16 
-    detector.threshold = cfg.calibration.threshold  
+    detector.vthreshold = cfg.calibration.threshold  
     detector.exptime = cfg.calibration.vrf_scan_exptime
 
     vrf_array = np.arange(start, stop, step)
