@@ -1093,10 +1093,12 @@ def do_trimbit_scan(detector, xraybox, step = 2, data_mask = None):
     find_mean_and_set_vcmp(detector, fit_result)
            
 #    _take_trimbit_data(detector, xraybox, step = step, data_mask = data_mask)
-    with xrf_shutter_open(xraybox, cfg.calibration.target):
-        data, x = _trimbit_scan(detector)
-        np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
-                 data = data, x = x)
+    # with xrf_shutter_open(xraybox, cfg.calibration.target):
+    xraybox.xrf_open()
+    data, x = _trimbit_scan(detector)
+    np.savez(os.path.join(cfg.path.data, get_tbdata_fname()), 
+             data = data, x = x)
+    xraybox.xrf_close()
     
     
     if cfg.calibration.plot is True:

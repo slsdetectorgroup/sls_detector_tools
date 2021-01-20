@@ -85,9 +85,9 @@ pixelmask[:,512:] = True
 # d.dacs.vrpreamp = vrpreamp
 cfg.calibration.exptime = 1
 # data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
-fit_result = calibration.do_scurve_fit_scaled()
+#fit_result = calibration.do_scurve_fit_scaled()
 
-#data, x = calibration.do_trimbit_scan(d, box)
+data, x = calibration.do_trimbit_scan(d, box)
 #tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 #
 ##
