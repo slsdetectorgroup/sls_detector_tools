@@ -6,8 +6,8 @@ Script to calibrate an EIGER module using the big X-ray box.
 import sys
 
 #Temporary paths for dev
-sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
-sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
+# sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
+# sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
 #python
 import os
 import logging
@@ -22,11 +22,13 @@ sns.set_context('talk', font_scale = 1.2)
 #sls_detector
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
-from sls_detector import Detector, Eiger
-from sls_detector_tools import BigXrayBox, VacuumBox, xrf_shutter_open, DummyBox
+# from sls_detector_tools import BigXrayBox, VacuumBox, xrf_shutter_open, DummyBox
 from sls_detector_tools.plot import imshow
 from sls_detector_tools.io import write_trimbit_file
 from sls_detector_tools import mask
+
+from slsdet import Eiger
+from slsdetbox import BigXrayBox
 
 #Current Eiger calibration plan
 """
@@ -47,7 +49,7 @@ gain10               Sn
 #Configuration for the calibration script
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T62'
+cfg.det_id = 'TQ1'
 cfg.calibration.gain = 'gain5'
 cfg.calibration.target = 'Cu'
 cfg.calibration.energy = 5
@@ -63,9 +65,9 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
 #-------------------------------------------------------------Xray box control
-box = DummyBox()  #XrayBox or DummyBox
-box.unlock()
-box.HV =  True
+# box = DummyBox()  #XrayBox or DummyBox
+# box.unlock()
+# box.HV =  True
 
 
 
@@ -76,11 +78,11 @@ cfg.calibration.exptime = 0.1
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
-calibration.setup_detector(d)
-calibration.load_trimbits(d)
+# calibration.setup_detector(d)
+# calibration.load_trimbits(d)
 #d.dacs.vcall = 3700
-for i in range(5):
-    vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
+# for i in range(5):
+#     vrf, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 ##d.dacs.vrf = vrf
 #cfg.calibration.exptime = 3
 ####
