@@ -580,8 +580,15 @@ def find_mean_and_set_vcmp(detector, fit_result):
                 th = 0
             mean[i] = th
         
-        vcp0 = int(mean[0:4][mean[0:4]>0].mean())
-        vcp1 = int(mean[4:][mean[4:]>0].mean())
+        #handle nans
+        try:
+            vcp0 = int(np.nanmean(mean[0:4][mean[0:4]>0]))
+        except:
+            vcp0 = 0
+        try:
+            vcp1 = int(np.nanmean(mean[4:][mean[4:]>0]))
+        except:
+            vcp1 = 0
         detector.vcmp = mean
         detector.dacs.vcp = [vcp0, vcp1]
 
