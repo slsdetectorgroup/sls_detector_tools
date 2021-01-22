@@ -289,7 +289,9 @@ def setup_detector(detector):
 #        detector.set_flags( flag )
     
     #Trimming
+    detector.reg[12] = 0xc0000000 #Workaround for fast quad
     detector.trimval = cfg.calibration.trimval
+    detector.reg[12] = 0
     detector.dacs.vtrim = cfg.calibration.vtr
     detector.dacs.vrshaper = cfg.calibration.vrs
     
