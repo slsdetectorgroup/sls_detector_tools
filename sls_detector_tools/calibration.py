@@ -1031,7 +1031,9 @@ def _trimbit_scan(detector, step = 2):
 
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(tb_array):
+            detector.reg[12] = 0xc0000000 #Workaround for fast quad
             detector.trimval = v
+            detector.reg[12] = 0
             print(detector.trimval)
             if cfg.calibration.type == 'TP':
                 detector.pulse_all_pixels(1000)
