@@ -14,7 +14,7 @@ import logging
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-plt.ion()
+#plt.ion()
 sns.set()
 sns.set_context('talk', font_scale = 1.2)
 
@@ -50,7 +50,7 @@ gain10               Sn
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = 'TQ1'
-cfg.calibration.gain = 'gain1'
+cfg.calibration.gain = 'gain5'
 cfg.calibration.target = 'Cu'
 cfg.calibration.energy = 8
 cfg.path.data = os.path.join('/home/l_msdetect/erik/quad/data',
@@ -65,34 +65,28 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
 #-------------------------------------------------------------Xray box control
-# box = DummyBox()  #XrayBox or DummyBox
-# box.unlock()
-# box.HV =  True
 box = BigXrayBox()
-
-
-
 cfg.calibration.threshold = 1200
 cfg.calibration.vrf_scan_exptime = 0.1
-cfg.calibration.exptime = 0.1
+cfg.calibration.vtr = 2400
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
+d.parallel = False
 pixelmask = np.zeros((512,1024), dtype = np.bool)
 pixelmask[:,512:] = True
-# vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
-# d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = 1
-# data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
-#fit_result = calibration.do_scurve_fit_scaled()
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
+d.dacs.vrpreamp = vrpreamp
+cfg.calibration.exptime = 6
+data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
+fit_result = calibration.do_scurve_fit_scaled()
 
-# data, x = calibration.do_trimbit_scan(d, box, pixelmask= pixelmask)
-# tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
-#
-##
-calibration.load_trimbits(d)
-###
+#data, x = calibration.do_trimbit_scan(d, box, pixelmask= pixelmask)
+#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+#calibration.load_trimbits(d)
+
+
 #cfg.calibration.run_id = 1
 #data, x = calibration.do_scurve(d, box)
 #fit_result = calibration.do_scurve_fit_scaled()
