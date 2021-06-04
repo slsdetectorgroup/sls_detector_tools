@@ -993,7 +993,7 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000), par = 
 #    y /=  ( data.sum(axis = 2)>0 ).sum()
 #    par = find_initial_parameters(x,y)
     if par is None:
-        par = np.array([ 0,   0,   1.11495212e+03,
+        par = np.array([ 60,   0.01,   1.11495212e+03,
             1.98609468e+02,   5.94207866e+02,   4.47860380e-01])
 
     fit_result = mpfit.fit(data, x, cfg.calibration.nproc, par)  

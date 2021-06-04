@@ -49,11 +49,11 @@ gain10               Sn
 #Configuration for the calibration script
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'TQ1'
-cfg.calibration.gain = 'gain5'
-cfg.calibration.target = 'Cu'
-cfg.calibration.energy = 8
-cfg.path.data = os.path.join('/home/l_msdetect/erik/quad/data',
+cfg.det_id = 'T128'
+cfg.calibration.gain = 'gain1'
+cfg.calibration.target = 'Ti'
+cfg.calibration.energy = 4.5
+cfg.path.data = os.path.join('/mnt/disk1/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
 cfg.calibration.run_id = 0
@@ -66,31 +66,38 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 #-------------------------------------------------------------Xray box control
 box = BigXrayBox()
-cfg.calibration.threshold = 1200
+cfg.calibration.threshold = 1000
 cfg.calibration.vrf_scan_exptime = 0.1
-cfg.calibration.vtr = 2400
+cfg.calibration.vtr = 2600
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
 d.parallel = False
-pixelmask = np.zeros((512,1024), dtype = np.bool)
-pixelmask[:,512:] = True
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700, pixelmask=pixelmask)
+# pixelmask = np.zeros((512,1024), dtype = np.bool)
+# pixelmask[:,512:] = True
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = 6
-data, x = calibration.do_scurve(d, box, pixelmask=pixelmask)
+cfg.calibration.exptime = 4
+calibration.load_trimbits(d)
+d.dacs.vtrim = 2600
+data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
 
-#data, x = calibration.do_trimbit_scan(d, box, pixelmask= pixelmask)
-#tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
-#calibration.load_trimbits(d)
+data, x = calibration.do_trimbit_scan(d, box)
+tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
+calibration.load_trimbits(d)
 
 
-#cfg.calibration.run_id = 1
-#data, x = calibration.do_scurve(d, box)
-#fit_result = calibration.do_scurve_fit_scaled()
-#data, x = calibration.take_global_calibration_data(d, box)
+cfg.calibration.run_id = 1
+data, x = calibration.do_scurve(d, box)
+fit_result = calibration.do_scurve_fit_scaled()
+
+
+
+
+
+# data, x = calibration.take_global_calibration_data(d, box)
 #calibration.per_chip_global_calibration()
 #
 #cfg.top = d.hostname[0]
