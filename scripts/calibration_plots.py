@@ -65,7 +65,7 @@ def plot_pixel(pixel):
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = 'T128'
-cfg.calibration.gain = 'gain1'
+cfg.calibration.gain = 'gain2'
 cfg.calibration.target = 'Ti'
 cfg.path.data = os.path.join('/mnt/disk1/calibration/',
                             cfg.det_id, cfg.calibration.gain)
@@ -115,11 +115,14 @@ pixels = [it for it in zip(i,j)]
 
 print(f"Found {len(pixels)} pixels with value 0")
 
-# plot_pixel(pixels[30])
+plot_pixel(pixels[30])
 
 # a = tb_histograms(tb)
 
-plot_pixel((500,600))
+# plot_pixel((500,600))
+
+c,h = r.hist(tb, xmin =0, xmax = 64, bins = 65)
+# c.SetLogy()
 
 # ax, im = imshow(tb)
 # ax.set_title('Trimbit map')
@@ -127,18 +130,18 @@ plot_pixel((500,600))
 
 # failed = tb ==0
 # ax, im = imshow(failed)
-cfg.calibration.run_id = 1
+# cfg.calibration.run_id = 1
 
 # #plot vcmp
-with np.load(os.path.join(cfg.path.data, calibration.get_data_fname())) as f:
-    data = f['data']
-    x = f['x']
+# with np.load(os.path.join(cfg.path.data, calibration.get_data_fname())) as f:
+#     data = f['data']
+#     x = f['x']
 
-fit_result = np.load(os.path.join(cfg.path.data, calibration.get_fit_fname()))
+# fit_result = np.load(os.path.join(cfg.path.data, calibration.get_fit_fname()))
 
 
-# calibration._plot_scurve(data, x)
-mean, std, lines = chip_histograms( fit_result['mu'] )
+# # calibration._plot_scurve(data, x)
+# mean, std, lines = chip_histograms( fit_result['mu'] )
 # plt.xlabel('Vcmp [DAC LSB]')
 # plt.ylabel('Number of Pixels')
 

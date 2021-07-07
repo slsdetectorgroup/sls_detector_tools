@@ -71,6 +71,15 @@ def pol2(x, p0, p1, p2):
     """
     return p2*x**2 + p1*x + p0
 
+def pol3(x, p0, p1, p2, p3):
+    """
+    Third degree polynomial
+
+    .. math ::
+
+        f(x) = p_0 + p_1x + p_2x^2 + p_3x^3
+    """
+    return p3*x**3 + p2*x**2 + p1*x + p0
 
 
 #---------------------------------------------------------Special functions

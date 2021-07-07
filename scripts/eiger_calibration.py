@@ -3,6 +3,7 @@
 """
 Script to calibrate an EIGER module using the big X-ray box.
 """
+import ROOT
 import sys
 
 #Temporary paths for dev
@@ -12,12 +13,6 @@ import sys
 import os
 import logging
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-#plt.ion()
-sns.set()
-sns.set_context('talk', font_scale = 1.2)
-
 
 #sls_detector
 import sls_detector_tools.config as cfg
@@ -29,6 +24,12 @@ from sls_detector_tools import mask
 
 from slsdet import Eiger
 from slsdetbox import BigXrayBox
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+#plt.ion()
+sns.set()
+sns.set_context('talk', font_scale = 1.2)
 
 #Current Eiger calibration plan
 """
@@ -51,8 +52,8 @@ cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = 'T128'
 cfg.calibration.gain = 'gain1'
-cfg.calibration.target = 'Ti'
-cfg.calibration.energy = 4.5
+cfg.calibration.target = 'Sc'
+cfg.calibration.energy = 4.1
 cfg.path.data = os.path.join('/mnt/disk1/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
@@ -66,21 +67,22 @@ cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 #-------------------------------------------------------------Xray box control
 box = BigXrayBox()
-cfg.calibration.threshold = 1000
+cfg.calibration.threshold = 1300
 cfg.calibration.vrf_scan_exptime = 0.1
-cfg.calibration.vtr = 2600
+cfg.calibration.vtr = 2400
 
 #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
 d.parallel = False
-# pixelmask = np.zeros((512,1024), dtype = np.bool)
-# pixelmask[:,512:] = True
+
+# calibration.load_trimbits(d) #iterative approach starting with something good? 
+# d.dacs.vtrim = 2500
+
 vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
 d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = 4
-calibration.load_trimbits(d)
-d.dacs.vtrim = 2600
+cfg.calibration.exptime = 3
+
 data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
 
