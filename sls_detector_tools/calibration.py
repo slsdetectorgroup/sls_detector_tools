@@ -14,7 +14,7 @@ The fitting relies on the routines in sls_cmodule
 #import ROOT
 from ROOT import TF1
 
-    
+import logging
 
 
 #Python imports
@@ -882,7 +882,8 @@ def do_scurve(detector, xraybox,
     
     
     """
-        
+    logger = logging.getLogger()
+    logger.info(f"Target: {xraybox.target}")
     # with xrf_shutter_open(xraybox, cfg.calibration.target):
     xraybox.xrf_open()    
     data, x = _threshold_scan(detector, start = start, stop = stop, step = step)
@@ -1067,7 +1068,7 @@ def _plot_trimbit_scan(data,x):
 def _plot_trimbit_histogram(tb):
     h, fig, ax = plot.histogram(tb, 0, 64, 64)
     ax.set_xlabel('Trimbits')
-    return h
+    return h,fig, ax
 
 def do_trimbit_scan(detector, xraybox, step = 2, pixelmask = None):
     """
@@ -1145,7 +1146,7 @@ def load_trimbits(detector):
     detector.trimbits = pathname
 
 def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None, pixelmask = None):
-    
+    logger = logging.getLogger()
     #Filename for scurve
     if fname is None:
         fname = get_data_fname()
@@ -1196,19 +1197,25 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
          
     result = mpfit.find_trimbits(data, x, target, cfg.calibration.nproc, par) 
     tb = result['trimbits']
+    nan_tb = np.isnan(tb)
+    ax, im = plot.imshow(nan_tb)
+    logger.info(f'Failed to calculate: {nan_tb.sum()} trimbits')
     tb[np.isnan(tb)] = 32
     tb[tb>63] = 63
     tb[tb<0] = 0
     tb = tb.round()
-#    c,h = r.hist(tb, xmin = -.5, xmax = 63.5, bins = 64)
     tb = tb.astype(np.int32)
     ax, im = plot.imshow(tb)
-#    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
+
     
     fname = get_trimbit_fname()
     pathname = os.path.join(cfg.path.data, fname)
     np.savez( pathname, trimbits = tb, fit = result)
     
+    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
+    
+    h, fig, ax = _plot_trimbit_histogram(tb)
+    fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_hist' ) )
     
 #    #Actual trimbit files
     dacs = detector.dacs.get_asarray()
@@ -1263,9 +1270,6 @@ def find_and_write_trimbits(detector, tau = None):
                 
     #Magic numers for the initial parameters
     #TODO! Use a global fit for these
-#    par = np.array([  8.65703068e+00,   1.46117014e+00,   20,
-#         1.30881741e+01,   4.37825173e+03,   0.00000000e+00])
-
     par = np.array([  60,   1.46117014e+00,   20,
              1.30881741e+01,   4.37825173e+03,   0.00000000e+00])
 
@@ -1281,6 +1285,8 @@ def find_and_write_trimbits(detector, tau = None):
     ax, im = plot.imshow(tb)
     plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_image' ) )
     
+    h, fig, ax = _plot_trimbit_histogram(tb)
+    fig.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_hist' ) )
     
     #Save trimbits in np file
     

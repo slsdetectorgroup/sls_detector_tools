@@ -10,16 +10,18 @@ import os
 #Configuration for the calibration script
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T128'
-cfg.calibration.gain = 'gain1'
+cfg.det_id = 'T98'
+# cfg.calibration.gain = 'gain1'
 # cfg.calibration.target = 'Ti'
-cfg.path.data = Path(f'/mnt/disk1/calibration/{cfg.det_id}/{cfg.calibration.gain}')
+# cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
+#                              cfg.det_id, cfg.calibration.gain)
 
-out_path = Path('/home/l_frojdh/tmp/settings/standard')
+out_path = Path('/home/l_msdetect/erik/T98/standard/')
 
-for i in range(1,10,1):
+for i in [8]:
     cfg.calibration.gain = f'gain{i}'
-    path = Path(f'/mnt/disk1/calibration/{cfg.det_id}/{cfg.calibration.gain}')
+    path = Path(os.path.join('/home/l_msdetect/erik/data/calibration/',
+                             cfg.det_id, cfg.calibration.gain))
     
     # print(f'src: {path}')
     tbfiles = [f for f in os.listdir(path) if '.sn' in f]

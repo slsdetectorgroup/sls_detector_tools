@@ -11,17 +11,17 @@ plt.ion()
 
 fun = "pol3"
 pyfunc = eval(f"sf.{fun}")
-target = 3500
+target = 3300
 
-path = Path('/home/l_frojdh/tmp/settings/standard/')
+path = Path('/home/l_msdetect/erik/T98/standard')
 folders = [f for f in path.iterdir() if f.name.endswith('eV') and str(target) not in f.name]
 folders = [f for f in path.iterdir() if f.name.endswith('eV')]
 folders.sort(key = lambda x: int(x.name.rstrip('eV')))
 energy = [int(f.name.rstrip('eV')) for f in folders]
 
-xx = np.linspace(2900, 7000)
+xx = np.linspace(2900, 10000)
 fig, ax = plt.subplots(figsize = (14,9))
-for det in ['057', '118']:
+for det in ['083', '098']:
 
     dacs = np.zeros((len(folders), 18), dtype = np.int64)
     tb = np.zeros((len(folders), 256, 1024), dtype = np.int32)
@@ -32,13 +32,13 @@ for det in ['057', '118']:
 
 
     c,h = r.plot(energy, dacs[:, 2], draw = False)
-    func = TF1("func", fun, 3000, 9000)
+    func = TF1("func", fun, 3000, 17000)
     fit = h.Fit("func", "NRSQ")
     par = [func.GetParameter(i) for i in range(func.GetNpar())]
 
 
 
-
+    print(dacs[:,2])
 
     yy = pyfunc(xx, *par)
     vrf = func(target)
@@ -50,8 +50,14 @@ for det in ['057', '118']:
     # dst = path/f'{target}eV/noise.sn{det}'
     # dst.parent.mkdir(parents=True, exist_ok=True)
     # dacs[0,2] = vrf
-    # io.write_trimbit_file(dst, tb[0], dacs[0])
+    # # io.write_trimbit_file(dst, tb[0], dacs[0])
     # print(dst)
 
 
 ax.grid()
+
+# from sls_detector_tools.utils import random_pixel
+# pixels = random_pixel(n_pixels=10, rows=(0,256))
+# fig, ax = plt.subplots()
+# for pixel in pixels:
+#     ax.plot(tb[:,pixel[0], pixel[1]], 'o-')

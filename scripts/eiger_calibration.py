@@ -6,10 +6,7 @@ Script to calibrate an EIGER module using the big X-ray box.
 import ROOT
 import sys
 
-#Temporary paths for dev
-# sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector')
-# sys.path.append('/home/l_frojdh/slsdetectorgrup/sls_detector_tools')
-#python
+
 import os
 import logging
 import numpy as np
@@ -17,7 +14,6 @@ import numpy as np
 #sls_detector
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
-# from sls_detector_tools import BigXrayBox, VacuumBox, xrf_shutter_open, DummyBox
 from sls_detector_tools.plot import imshow
 from sls_detector_tools.io import write_trimbit_file
 from sls_detector_tools import mask
@@ -48,13 +44,13 @@ gain10               Sn
 """
 
 #Configuration for the calibration script
-cfg.geometry = '500k' #quad, 500k, 2M, 9M
+cfg.geometry = '500k' #250k, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T128'
-cfg.calibration.gain = 'gain1'
-cfg.calibration.target = 'Sc'
-cfg.calibration.energy = 4.1
-cfg.path.data = os.path.join('/mnt/disk1/calibration/',
+cfg.det_id = 'T98'
+cfg.calibration.gain = 'gain8'
+cfg.calibration.target = 'Sn'
+cfg.calibration.energy = 25.4
+cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
 cfg.calibration.run_id = 0
@@ -76,12 +72,18 @@ d = Eiger()
 calibration.setup_detector(d)
 d.parallel = False
 
-# calibration.load_trimbits(d) #iterative approach starting with something good? 
-# d.dacs.vtrim = 2500
+calibration.load_trimbits(d) #iterative approach starting with something good? 
+d.dacs.vtrim = cfg.calibration.vtr
+d.vthreshold = cfg.calibration.threshold
 
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2500, stop = 3700)
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 1500, stop = 2500)
 d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = 3
+cfg.calibration.exptime = 20
+
+logger.info(f'vpreamp: {d.dacs.vrpreamp}')
+logger.info(f'exptime: {cfg.calibration.exptime }s')
+logger.info(f'vtrim: {d.dacs.vtrim}')
+
 
 data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
@@ -96,23 +98,3 @@ data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
 
 
-
-
-
-# data, x = calibration.take_global_calibration_data(d, box)
-#calibration.per_chip_global_calibration()
-#
-#cfg.top = d.hostname[0]
-#cfg.bottom = d.hostname[1]
-#calibration.generate_calibration_report()
-
-#with np.load(os.path.join(cfg.path.data, calibration.get_tbdata_fname())) as f:
-#    data = f['data']
-#    x = f['x']
-#import time
-#t0 = time.time()
-#d.pulse_all_pixels(1000)
-#print(time.time()-t0)
-#
-
-#calibration._plot_trimbit_scan(data,x)
