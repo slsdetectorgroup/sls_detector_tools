@@ -23,7 +23,7 @@ class path:
     the slsDetectorsPackage. 
     """
     
-    base = '/home/l_frojdh'
+    base = '/home/l_msdetect/erik/'
     """Base directory for io"""
 
 
