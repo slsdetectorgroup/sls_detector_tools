@@ -12,6 +12,7 @@ import logging
 import numpy as np
 
 #sls_detector
+sys.path.append('/home/l_msdetect/erik/sls_detector_tools')
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
 from sls_detector_tools.plot import imshow
@@ -44,12 +45,12 @@ gain10               Sn
 """
 
 #Configuration for the calibration script
-cfg.geometry = '500k' #250k, 500k, 2M, 9M
+cfg.geometry = '1M' #250k, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T98'
+cfg.det_id = 'MS1M2'
 cfg.calibration.gain = 'gain8'
-cfg.calibration.target = 'Sn'
-cfg.calibration.energy = 25.4
+cfg.calibration.target = 'Ag'
+cfg.calibration.energy = 22.2
 cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
@@ -61,29 +62,30 @@ cfg.path.log = cfg.path.data
 cfg.set_log('default_file.log', stream = False, level = logging.INFO)
 
 
-#-------------------------------------------------------------Xray box control
+# #-------------------------------------------------------------Xray box control
 box = BigXrayBox()
-cfg.calibration.threshold = 1300
+cfg.calibration.threshold = 1200
 cfg.calibration.vrf_scan_exptime = 0.1
 cfg.calibration.vtr = 2400
 
-#--------------------------------------------Setup for taking calibration data
+# #--------------------------------------------Setup for taking calibration data
 d = Eiger()
 calibration.setup_detector(d)
 d.parallel = False
 
-calibration.load_trimbits(d) #iterative approach starting with something good? 
+
 d.dacs.vtrim = cfg.calibration.vtr
 d.vthreshold = cfg.calibration.threshold
 
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 1500, stop = 2500)
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 1500, stop = 3000)
 d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = 20
-
+cfg.calibration.exptime = t
+# cfg.calibration.exptime = 0.5
 logger.info(f'vpreamp: {d.dacs.vrpreamp}')
 logger.info(f'exptime: {cfg.calibration.exptime }s')
 logger.info(f'vtrim: {d.dacs.vtrim}')
 
+# calibration.load_trimbits(d)
 
 data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
@@ -93,8 +95,8 @@ tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 calibration.load_trimbits(d)
 
 
-cfg.calibration.run_id = 1
-data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit_scaled()
+# cfg.calibration.run_id = 1
+# data, x = calibration.do_scurve(d, box)
+# fit_result = calibration.do_scurve_fit_scaled()
 
 
