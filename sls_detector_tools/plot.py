@@ -510,7 +510,7 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400, log = False):
 
     max_value = 0
 
-    for m in mask.detector[cfg.geometry].module:
+    for k,m in enumerate(mask.detector[cfg.geometry].module):
         for i, c in enumerate(chips):
             h = histogram(data[m][c],
                           xmin=xmin,
@@ -520,7 +520,7 @@ def chip_histograms(data, xmin=0, xmax=2000, bins=400, log = False):
             mean.append(h['mean'])
             std.append(h['std'])
 
-            label = r'{:d}: $\mu$: {:.1f} $\sigma$: {:.1f}'.format(i,
+            label = r'{:d}-{:d}: $\mu$: {:.1f} $\sigma$: {:.1f}'.format(k,i,
                                                                    mean[-1], std[-1])
 
             x0, y0 = h['x'], h['y']

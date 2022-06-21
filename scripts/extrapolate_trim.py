@@ -11,9 +11,9 @@ plt.ion()
 
 fun = "pol3"
 pyfunc = eval(f"sf.{fun}")
-target = 3300
+target = 3000
 
-path = Path('/home/l_msdetect/erik/T98/standard')
+path = Path('/home/l_msdetect/erik/calibration/MS1M2/standard/')
 folders = [f for f in path.iterdir() if f.name.endswith('eV') and str(target) not in f.name]
 folders = [f for f in path.iterdir() if f.name.endswith('eV')]
 folders.sort(key = lambda x: int(x.name.rstrip('eV')))
@@ -21,7 +21,7 @@ energy = [int(f.name.rstrip('eV')) for f in folders]
 
 xx = np.linspace(2900, 10000)
 fig, ax = plt.subplots(figsize = (14,9))
-for det in ['083', '098']:
+for det in ['065', '053', '036', '123']:
 
     dacs = np.zeros((len(folders), 18), dtype = np.int64)
     tb = np.zeros((len(folders), 256, 1024), dtype = np.int32)
@@ -47,11 +47,11 @@ for det in ['083', '098']:
     ax.plot(target, vrf, 'o')
     print(f"{det} vrf: {vrf}")
 
-    # dst = path/f'{target}eV/noise.sn{det}'
-    # dst.parent.mkdir(parents=True, exist_ok=True)
-    # dacs[0,2] = vrf
-    # # io.write_trimbit_file(dst, tb[0], dacs[0])
-    # print(dst)
+    dst = path/f'{target}eV/noise.sn{det}'
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dacs[0,2] = vrf
+    io.write_trimbit_file(dst, tb[0], dacs[0])
+    print(dst)
 
 
 ax.grid()

@@ -67,9 +67,6 @@ def setup_measurement(detector):
     time.sleep(0.1)
     detector.rx_zmqstream = True
     detector.fwrite = False
-#    detector.dynamic_range = 16 
-#    detector.readout_clock = clk
-#    detector.exposure_time = 0.01 
     dacs = detector.dacs.get_asarray()  
     
     yield ZmqReceiver(detector)
@@ -270,6 +267,7 @@ def setup_detector(detector):
     * Vrs
     
     """
+
     #Exposure
     detector.frames = cfg.calibration.nframes
     detector.period = cfg.calibration.period
@@ -284,22 +282,12 @@ def setup_detector(detector):
     else:
         detector.dr = cfg.calibration.dynamic_range
         
-    # detector.readout_clock = cfg.calibration.speed
-#    for flag in cfg.calibration.flags:
-#        detector.set_flags( flag )
     
     #Trimming
-    detector.reg[12] = 0xc0000000 #Workaround for fast quad
     detector.trimval = cfg.calibration.trimval
-    detector.reg[12] = 0
     detector.dacs.vtrim = cfg.calibration.vtr
     detector.dacs.vrshaper = cfg.calibration.vrs
-    
-#    detector.set_dac('vthreshold', cfg.calibration.threshold)    
-    
-#    detector.set_fwrite( True )
-#    detector.set_overwrite(True)
-#    detector.s
+
 
 
 
@@ -558,7 +546,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
     else:
         mean = np.zeros( detector.nmod*4, dtype = np.int )
     
-    
+    print(f'cfg.geometry: {cfg.geometry}\n\n')
     #Find the mean values for both module and half module
     if cfg.geometry == '250k':
         for i in range(mean.size):
@@ -593,53 +581,6 @@ def find_mean_and_set_vcmp(detector, fit_result):
             vcp1 = 0
         detector.vcmp = mean
         detector.dacs.vcp = [vcp0, vcp1]
-
-        
-    #elif cfg.geometry == '2M':
-        #print( 'Geometry == ', cfg.geometry )
-        #lines = []
-        
-        #Module stuff
-        #dm = mask.detector[cfg.geometry]
-        #vcmp = np.zeros( (len(dm.module), 8) )
-        #vcp  = np.zeros( (len(dm.module), 2) )
-        
-        #for j,mod in enumerate( dm.module ):
-            #for i in range( 8 ):
-                #m = fit_result['mu'][mod][mask.chip[i]]
-                #try:
-                    #th = int( m[(m>10) & (m<1990)].mean() )
-                #except:
-                    #th = 0
-
-                #vcmp[j,i] = th
-                
-#                if type(detector) != type( None ):
-##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
-  
-                #Integer division!
-                #lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
-                    
-                #mean[i] = th
-        
-            #vcp0 = int( mean[0:4][mean[0:4]>0].mean() )
-            #vcp1 = int( mean[4:][mean[4:]>0].mean() )
-            #vcp[j,0] = vcp0
-            #vcp[j,1] = vcp1
-            
-##            if type( detector ) != type(None):
-##                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-##                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
-            
-            #lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
-            #lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))   
-        #if detector is not None:
-            #print('Setting vcmp')
-            #for i, v in enumerate(vcmp.flat):
-                #detector.vcmp[i] = int(v)
-            #detector.dacs.vcp = vcp.astype(np.int).flat[:]
-        
-        #return vcmp, vcp, lines
 
     elif cfg.geometry == '9M':
         print( 'Geometry == ', cfg.geometry )
@@ -752,10 +693,7 @@ def find_mean_and_set_vcmp(detector, fit_result):
                     th = 0
 
                 vcmp[j,i] = th
-                
-#                if type(detector) != type( None ):
-##                    detector.set_dac(mask.eiger9M.vcmp[j*8+i], th)
-  
+                  
                 #Integer division!
                 lines.append('./sls_detector_put {:s} {:d}'.format( dm.vcmp[j*8+i], th) )
                     
@@ -766,21 +704,24 @@ def find_mean_and_set_vcmp(detector, fit_result):
             vcp[j,0] = vcp0
             vcp[j,1] = vcp1
             
-#            if type( detector ) != type(None):
-#                detector.set_dac('{:d}:vcp'.format(j*2), vcp0)
-#                detector.set_dac('{:d}:vcp'.format(j*2+1), vcp1) 
             
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2, vcp0))
             lines.append('./sls_detector_put {:d}:vcp {:d}'.format(j*2+1, vcp1))
             
         if detector is not None:
             print('Setting vcmp')
+            #Swap around vcmp to compensate for 1M geo
+            # if cfg.geometry == '1M':
+            #     print("SHUFFLE")
+            #     vcmp[1,0:4] = vcmp[1,0:4][::-1]
+            #     vcmp[1,4:] = vcmp[1,4:][::-1]
             for i, v in enumerate(vcmp.flat):
                 detector.vcmp[i] = int(v)
             detector.dacs.vcp = vcp.astype(np.int).flat[:]
         
             return vcmp, vcp, lines    
     else:
+        print("MADNESS!!!")
         raise NotImplementedError('Check detector geometry')
 
 
@@ -1034,9 +975,7 @@ def _trimbit_scan(detector, step = 2):
 
     with setup_measurement(detector) as receiver:
         for i,v in enumerate(tb_array):
-            detector.reg[12] = 0xc0000000 #Workaround for fast quad
             detector.trimval = v
-            detector.reg[12] = 0
             print(detector.trimval)
             if cfg.calibration.type == 'TP':
                 detector.pulse_all_pixels(1000)
@@ -1145,6 +1084,14 @@ def load_trimbits(detector):
     pathname = os.path.join(cfg.path.data, fname)
     detector.trimbits = pathname
 
+
+def undo_bottom(image):
+    assert image.shape == (256,1024), "to undo bottom we need a half module"
+    image[:,0:512] = image[:,0:512][:,::-1]
+    image[:,512:] = image[:,512:][:,::-1]
+    return image
+
+
 def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau = None, pixelmask = None):
     logger = logging.getLogger()
     #Filename for scurve
@@ -1199,6 +1146,7 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     tb = result['trimbits']
     nan_tb = np.isnan(tb)
     ax, im = plot.imshow(nan_tb)
+    plt.savefig( os.path.join( cfg.path.data, get_tbdata_fname().strip('.npz') + '_tbfail' ) )
     logger.info(f'Failed to calculate: {nan_tb.sum()} trimbits')
     tb[np.isnan(tb)] = 32
     tb[tb>63] = 63
@@ -1225,8 +1173,15 @@ def find_and_write_trimbits_scaled(detector, fname = None, tb_fname = None, tau 
     host = detector.hostname
     for i, hm in enumerate(mask.detector[cfg.geometry].halfmodule):
         fn = '{}.sn{}'.format(get_trimbit_fname(),host[i][3:])
-        io.write_trimbit_file( os.path.join(cfg.path.data, fn), tb[hm], dacs[:,i] )
+        tmp = tb[hm].copy()
+        # if host[i] == 'beb053' or host[i] == 'beb036':
+        #     print(f"\n\n\nreverse: {host[i]}\n\n\n", flush=True)
+        #     tmp = undo_bottom(tmp)
+
+        io.write_trimbit_file( os.path.join(cfg.path.data, fn), tmp, dacs[:,i] )
     
+
+
     return tb, target, data,x, result
     
 
@@ -1331,18 +1286,8 @@ def rewrite_calibration_files(detector, tau = None, hostname = None):
     #We have an detector online and should use it
     if type(hostname) == type(None):
         find_mean_and_set_vcmp(detector, fit_result)
-        hostname= detector.get_hostname()
+        hostname= detector.hostname
         dacs = detector.dacs.get_asarray()
-        
-    elif type(hostname) == type( [] ):
-        dacs = np.zeros((len( hostname ), cfg.ndacs + 2 ))
-        print( dacs.shape )
-        vcmp, vcp = find_mean_and_set_vcmp(None, fit_result)
-#        return vcmp, vcp
-        dacobj = Dacs.Dacs( None )
-
-    else:
-        raise TypeError('Type of hostname needs to be None for online or a list of hostnames for offline')
         
     #Adding tau, todo fix if tau is already there
     if type(tau) != type(None):
@@ -1362,8 +1307,8 @@ def rewrite_calibration_files(detector, tau = None, hostname = None):
         vcmp_name = mask.eiger2M.vcmp
 
     elif cfg.geometry == '1M':
-        halfmodule = mask.eiger1M.halfmodule
-        vcmp_name = mask.eiger1M.vcmp
+        halfmodule = mask.eiger1M().halfmodule
+        vcmp_name = mask.eiger1M().vcmp
 
     elif cfg.geometry == '1.5MOMNY':
         halfmodule = mask.eiger1_5MOMNY.halfmodule
@@ -1379,26 +1324,13 @@ def rewrite_calibration_files(detector, tau = None, hostname = None):
         raise NotImplementedError("Add support for other modules")
         
     for i in range( len( halfmodule ) ):
-        fname = pathname + '.sn' + hostname[i][3:]
-        print(fname)
-        tb, tmpdacs = io.io.read_trimbit_file( fname )
-        if type(detector) == type(None):
-            dacs[i] = tmpdacs
-            
-            for j in range( cfg.nchips_per_halfmodule ):
-                idx =i*cfg.nchips_per_halfmodule + j
-                vcmp_idx = dacobj.get_index( vcmp_name[idx][2:] )
-                dacs[i, vcmp_idx] = vcmp.flat[ i*cfg.nchips_per_halfmodule + j ]
-                
-            vcp_idx = dacobj.get_index('vcp')
-            dacs[i, vcp_idx] = vcp.flat[i]
-            print( tmpdacs[vcp_idx], dacs[i, vcp_idx], vcp.flat[i] )
-                
+        in_fname = pathname + '.sn' + hostname[i][3:]
+        tb, tmpdacs = io.read_trimbit_file( in_fname )
         
         #Write with correct trimbits
-        fname = pathname + '_rw.sn' + hostname[i][3:]
-        print(fname)
-#        io.write_trimbit_file(fname, tb, dacs[i])
+        out_fname = pathname + '_rw.sn' + hostname[i][3:]
+        print(out_fname)
+        io.write_trimbit_file(out_fname, tb, dacs[:,i])
 
 
 

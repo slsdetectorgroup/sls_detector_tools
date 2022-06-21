@@ -42,15 +42,15 @@ class path:
     out = os.path.join(base, 'out')  
 #    log = os.path.join(base, 'tmp')
 
-
+from slsdet.enums import speedLevel
 class tests:
     plot = True
     """Plot the result of each module test"""
     
-    rxb_interval= {'Half Speed': [(786.04, 30.32),(1356.17, 32.95)],
-                   'Full Speed': [(921.58, 45.21),(1327.44, 33.13)]}
-    iodelay_interval= {'Full Speed': [(635.49, 5.57),(694.48, 19.11)],
-                   'Half Speed': [(635.62, 5.74),(754.32, 15.11)]}
+    rxb_interval= {speedLevel.HALF_SPEED: [(786.04, 30.32),(1356.17, 32.95)],
+                   speedLevel.FULL_SPEED: [(921.58, 45.21),(1327.44, 33.13)]}
+    iodelay_interval= {speedLevel.FULL_SPEED: [(635.49, 5.57),(694.48, 19.11)],
+                   speedLevel.HALF_SPEED: [(635.62, 5.74),(754.32, 15.11)]}
 
 #Configure logging
 def set_log(fname, level = logging.INFO, stream = False):
@@ -97,7 +97,7 @@ class calibration():
     nframes = 1
     speed = 'Quarter Speed'
     dynamic_range = 32
-    nproc = 12
+    nproc = 64
 
     tp_dynamic_range = 16
     tp_exptime = 0.01

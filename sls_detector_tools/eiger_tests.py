@@ -19,7 +19,7 @@ from .io import load_frame, save_txt, load_txt
 from _sls_cmodule import hist
 from . import config as cfg
 
-from . import ZmqReceiver
+from .receiver import ZmqReceiver
 from .mask import chip
 from .plot import imshow
 plt.ion()
@@ -44,13 +44,13 @@ def setup_test_and_receiver(detector,clk):
         
     """
     #Setup for test
-    detector.rx_datastream = False
+    detector.rx_zmqstream = False
     time.sleep(0.1)
-    detector.rx_datastream = True
-    detector.file_write = False
-    detector.dynamic_range = 16 
-    detector.readout_clock = clk
-    detector.exposure_time = 0.01 
+    detector.rx_zmqstream = True
+    detector.fwrite = False
+    detector.dr = 16 
+    detector.readoutspeed = clk
+    detector.exptime = 0.01 
     dacs = detector.dacs.get_asarray()  
     
 #    yield ZmqReceiver(detector.rx_zmqip, detector.rx_zmqport)
@@ -58,7 +58,7 @@ def setup_test_and_receiver(detector,clk):
     
     #Teardown after test
     detector.dacs.set_from_array( dacs )
-    detector.pulse_chip(-1)
+    detector.pulseChip(-1)
     
 def plot_lines(x, lines, interval, center):
     max_value = 256*256*1.1
@@ -151,14 +151,14 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 10):
 
     with setup_test_and_receiver(detector, clk) as receiver:
         detector.vthreshold = 4000
-        detector.dacs.vtr = 4000
+        detector.dacs.vtrim = 4000
         for i,rx in enumerate(rxb_values):
             detector.dacs.rxb_lb= rx
             detector.dacs.rxb_rb = rx
-            detector.pulse_chip(npulse)
+            detector.pulseChip(npulse)
             
             #Take frame and get data
-            detector.acq()
+            detector.acquire()
             data = receiver.get_frame()
             #Sum of pixels that are not equal to the expected pulse value
             for j,c in enumerate(chip):
@@ -172,11 +172,11 @@ def rx_bias(detector, clk = 'Full Speed', npulse = 10):
         fig, ax = plot_lines(rxb_values, N, cfg.tests.rxb_interval[clk], 1100)
         ax.set_xlabel('rx_bias [DAC code]')
         ax.set_ylabel('number of pixels [1]')
-        ax.set_title('RX bias test at: {:s}'.format(clk))
+        ax.set_title(f'RX bias test at: {clk}')
         
     #Save data for report
     header = ['rx_bias', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
-    n = detector._speed_int[ detector.readout_clock ]
+    n = clk.value
     path = os.path.join( cfg.path.test, cfg.det_id )  
     fname = os.path.join(path, '{:s}_rxbias_{:d}.txt'.format(cfg.det_id, n))
     save_txt(fname, header, [rxb_values] + [x for x in N])
@@ -204,7 +204,7 @@ def io_delay(detector, clk = 'Full Speed'):
         detector.vthreshold = 1500
         for i,io in enumerate(iodelay_values):
             detector.dacs.iodelay = io
-            detector.acq()
+            detector.acquire()
             data = receiver.get_frame()
     
             for j,c in enumerate(chip):
@@ -233,7 +233,7 @@ def io_delay(detector, clk = 'Full Speed'):
 
     #Saving result
     header = ['iodelay', 'chip0', 'chip1', 'chip2', 'chip3', 'chip4', 'chip5', 'chip6', 'chip7']
-    n = detector._speed_int[ detector.readout_clock ]
+    n = clk.value
     path = os.path.join( cfg.path.test, cfg.det_id )  
     fname = os.path.join(path, '{:s}_iodelay_{:d}.txt'.format(cfg.det_id, n))
     save_txt(fname, header, [iodelay_values] + [x for x in N])
@@ -312,8 +312,8 @@ def counter(detector, clk = 'Full Speed'):
         detector.dacs.vtr = 4000
         
         for n in n_pulses:
-            detector.pulse_chip(n)
-            detector.acq()
+            detector.pulseChip(n)
+            detector.acquire()
             data = receiver.get_frame()
             print('Found {:d} bad pixels'.format((data != n*2+4).sum()))
             bad_pixels[data != n*2+4] = True

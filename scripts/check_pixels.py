@@ -20,12 +20,12 @@ def scale_data(data, scale = None):
     return data, scale
 
 
-cfg.geometry = '500k' #quad, 500k, 2M, 9M
+cfg.geometry = '250k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T98'
-cfg.calibration.gain = 'gain1'
-cfg.calibration.target = 'Ti'
-cfg.calibration.energy = 4.5
+cfg.det_id = 'EM16'
+cfg.calibration.gain = 'gain41'
+cfg.calibration.target = 'Fe'
+cfg.calibration.energy = 6.4
 cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
@@ -95,4 +95,4 @@ def plot_pixel(pixel):
     return fig, ax
 
 
-plt.imshow(np.isnan(result['trimbits']))
+ax, im = imshow(np.isnan(result['trimbits']))
