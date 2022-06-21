@@ -10,17 +10,17 @@ import os
 #Configuration for the calibration script
 cfg.geometry = '500k' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'T98'
+cfg.det_id = 'TQ1'
 # cfg.calibration.gain = 'gain1'
 # cfg.calibration.target = 'Ti'
 # cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
 #                              cfg.det_id, cfg.calibration.gain)
 
-out_path = Path('/home/l_msdetect/erik/T98/standard/')
+out_path = Path('/home/l_frojdh/cal/')
 
-for i in [8]:
+for i in [5,6,7]:
     cfg.calibration.gain = f'gain{i}'
-    path = Path(os.path.join('/home/l_msdetect/erik/data/calibration/',
+    path = Path(os.path.join('/mnt/raid/quad/cal/',
                              cfg.det_id, cfg.calibration.gain))
     
     # print(f'src: {path}')

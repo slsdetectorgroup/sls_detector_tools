@@ -11,10 +11,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from . import root_helper as r
-from . function import pol1, pol2, gaus_edge, ideal_mtf
+from . function import pol1, pol2, gaus_edge, ideal_mtf, root_fstring,double_gaus_edge_new
 
 
-def _fit_rows(image):
+def _fit_rows(image, refine = True):
     col = np.arange(image.shape[1])
     edge_pos = np.zeros(image.shape[0])
     for i,row in enumerate(image):
@@ -34,8 +34,32 @@ def _fit_rows(image):
         g = TGraph(row.size, col.astype(np.double), row.astype(np.double))
         for j in range(3):
             fit = g.Fit('func', 'SQ')
+
         edge_pos[i] = fit.Get().Parameter(1)   
+
+    if refine:
+        for i,row in enumerate(image):
+            #Normalize the row, but now using the position we have
+            idx = int(edge_pos[i])
+            row -= row[(idx+5):(idx+10)].mean()
+            row /= row[(idx-10):(idx-5)].mean()
         
+            #Find inital parameters for the fit
+            C0 = row.max()
+            mu0 = col[row<0.5][0]
+            sigma0 = .15 
+            
+            func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))',edge_pos[i]-5, edge_pos[i]+5)  
+            func.SetParameter(0, C0)
+            func.SetParameter(1, mu0)
+            func.SetParameter(2, sigma0)
+            g = TGraph(row.size, col.astype(np.double), row.astype(np.double))
+            for j in range(3):
+                fit = g.Fit('func', 'SQR')
+
+            edge_pos[i] = fit.Get().Parameter(1)   
+
+
     return edge_pos
 
 def _fit_edge_angle(edge_pos, image):
@@ -70,37 +94,54 @@ def find_edge(image):
     x,y = _find_presample_edge(image, par, a)
     return x, y
 
-def calculate_mtf(x,y, plot = True):
-    pixel_range = (-3,3)
+def calculate_mtf(x,y, plot = True, pixel_range = (-3,3), double_gaus = False):
+    
     c,h = r.plot(x[(x>pixel_range[0])&(x<pixel_range[1])],y[(x>pixel_range[0])&(x<pixel_range[1])])
-    func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
-    func.SetParameter(0, 1)
-    func.SetParameter(1, 0)
-    func.SetParameter(2, .15)
+    
+    # func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
+    if double_gaus:
+        func = TF1('func', root_fstring.double_gaus_edge)
+        func.SetParameter(0, y[-1])
+        func.SetParameter(1, 1)
+        func.SetParameter(2, 0)
+        func.SetParameter(3, .15)
+        func.SetParameter(4, 1.55)
+        pfunc = double_gaus_edge_new 
+        func.SetParNames('C', 'A', 'mu', 'sigma', 'sigma2')
+    else:
+        func = TF1('func', root_fstring.gaus_edge)
+        func.SetParameter(0, 1)
+        func.SetParameter(1, 0)
+        func.SetParameter(2, .15)
+        pfunc = gaus_edge
     for i in range(3):
         fit = h.Fit('func', 'SQ')
-    par = [fit.Get().Parameter(i) for i in range(3)]
+    par = [fit.Get().Parameter(i) for i in range(func.GetNpar())]
     c.Draw()
 
     #Plot the presample edge, fit and residuals
     if plot:
         fig, ax = plt.subplots(2,1, figsize = (14,14))
         ax[0].plot(x,y, '.', label= 'Presample edge')
-        ax[0].plot(x, gaus_edge(x,*par), label = 'Fit')
-        ax[0].set_xlim(-2,2)
+        ax[0].plot(x, pfunc(x,*par), label = 'Fit')
+        ax[0].set_xlim(pixel_range)
+        ax[0].set_ylim(0,1.1)
         ax[0].grid(True)
         ax[0].set_xlabel('Distance [pixels]')
         ax[0].set_ylabel('Normalized edge')
         ax[0].legend()
-        ax[1].plot(x, y-gaus_edge(x,*par))
-        ax[1].set_xlim(-2,2)
+        ax[1].plot(x, y-pfunc(x,*par))
+        ax[1].set_xlim(pixel_range)
         ax[1].grid(True)
         ax[1].set_xlabel('Distance [pixels]')
         ax[1].set_ylabel('Resiudals')
     
+    for i,p in enumerate(par):
+        print(i,p)
+
     #Calculate MTF from fit
     x_fit = np.linspace(-200,200, 20000)
-    y_fit = gaus_edge(x_fit,*par)
+    y_fit = pfunc(x_fit,*par)
     psf = -np.gradient(y_fit, x_fit)
     f = np.abs( np.fft.fft(psf))
     f = f/f[0]
@@ -117,7 +158,7 @@ def calculate_mtf(x,y, plot = True):
         ax[0].grid(True)
         ax[0].legend()
         ax[1].plot(u, f, '-', label = 'MTF from fitted edge')
-    return [u,f]
+    # return [u,f]
     ax[1].set_xlim(0,0.5)
     ax[1].plot(u, ideal_mtf(u), label = 'Ideal MTF')
     ax[1].legend()
@@ -166,15 +207,18 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
         idx = np.random.randint(0, xx.size, xx.size)
         c,h = r.plot(xx, yy+residuals[idx], draw = False)
         func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
-        
+        # func = TF1('[0]+[1]/4 * ((1-TMath::Erf( (x-[2])/(sqrt(2)*[3])))'\
+        #                '+ (1-TMath::Erf( (x-[2])/(sqrt(2)*[4]) ) ) ) ')
         func.SetParameter(0, 1)
         func.SetParameter(1, 0)
         func.SetParameter(2, 0.4)
         fit = h.Fit('func', 'SQ')
         fit = h.Fit('func', 'SQ')
         
-        par = [func.GetParameter(i) for i in range(3)]
+        par = [func.GetParameter(i) for i in range(func.GetNpar())]
         residuals = yy-gaus_edge(xx, *par) 
+        # residuals = yy-double_gaus_edge_new(xx, *par)
+        
         sigma[j] = par[2]
         if j ==0:
             y = gaus_edge(x,*par)
@@ -207,7 +251,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
     u = np.fft.fftfreq(n,d)
     f = f[0:u.size//2]
     u = u[0:u.size//2]
-    u *= 2 #Go to fraction of nyquist
+    u *= 2 #Go to fraction of Nyquist
 
     mtf = np.asarray(mtf)
     mtf = mtf[:, 0:u.size]
@@ -222,7 +266,7 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
     ax.set_xlabel("Fraction of Nyquist")
     ax.set_ylabel("MTF")
 
-    return fig, ax, u, mtf[1]
+    return fig, ax, u, mtf
 # ax.set_title(f'[Preliminary] MTF from fitted edge {energy} keV')
 # ax.set_xlabel("Spatial frequency [1/$\omega$]")
 # ax.plot(u, ideal_mtf(u), '--',label = 'ideal', color = 'black')

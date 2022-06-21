@@ -178,7 +178,7 @@ def ideal_dqe(omega):
 
 
 #-- ROOT strings to create TF1 functions
-class root:
+class root_fstring:
     """
     Strings to build ROOT functions from
     """
@@ -190,6 +190,8 @@ class root:
     #normalize [5]
     scurve4 = ' ([0]+[1]*x) + 0.5 * (1-TMath::Erf( (x-[2])/(sqrt(2)*[3]) ) )'\
               '* ( [4] + [4]/[5]*(x-[2])) '
+
+    gaus_edge = '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))'
 
     # Doulble edge
     double_gaus_edge = '[0]+[1]/4 * ((1-TMath::Erf( (x-[2])/(sqrt(2)*[3])))'\
