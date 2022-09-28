@@ -164,6 +164,10 @@ def scurve4(x, p0, p1, mu, sigma, A, C):
     return (p0+p1*x) + 0.5*(1-erf((x-mu)/(np.sqrt(2)*sigma))) * (A + A/C*(x-mu))
 
 
+def fermi(x, a,b,c):
+    return a/(1+np.exp(-(x-b)/c))
+
+
 def ideal_mtf(omega):
     """
     mtf for an ideal pixel detector
@@ -175,6 +179,107 @@ def ideal_dqe(omega):
     Expression for the ideal DQE given an ideal MTF
     """
     return ideal_mtf(omega)**2
+
+
+#------------------------------------------ROOT style functions for fitting
+
+
+def eval_func_obj(f, x, par):
+    """Evaluate a ROOT style function object for all x"""
+    assert len(par) == f.npar
+    y = np.zeros(len(x))
+    for i,val in enumerate(x):
+        y[i] = f([val], par)
+    return y
+
+
+class GausFunc:
+    npar = 3
+    par_names = ['A', 'mu', 'sigma']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+        self.ipar = par
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        return par[0]*np.exp(-0.5*((x[0]-par[1])/par[2])**2)
+
+class GausEdgeFunc:
+    npar = 3
+    par_names = ['A', 'mu', 'sigma']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+        self.ipar = par
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        return par[0]/2 * (1-erf((x[0]-par[1])/(par[2]*np.sqrt(2))))
+
+
+class TrapFunc:
+    npar = 5
+    par_names = ['Offset', 'Center', 'Width', 'Amplitude', 'Charge Sharing']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+        self.ipar = par
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+    #     par0 is a global offset
+    #     par1 Is the center (inflection point?)
+    #     par2 is the width of the tilted part of the trapezium
+    #     par3 is the amplitude
+    #     par4 is the region without charge sharing
+        z = (x[0]-par[1])
+        
+        if z > 0:
+            y =- 1.*z
+        else:
+            y = z
+
+        if par[4] <= 0: 
+            if z >= 0:
+                return par[3]+par[0]
+            else:
+                return 0
+        
+        if par[2] <= 0:
+            if z<-0.5*par[4]:
+                return 0
+            elif z>0.5*par[4]:
+                return par[3]+par[0]
+            else:
+                return 0.5*par[3]+par[3]*z/par[4]
+        
+        if par[2]>par[4]:
+            par[2]=par[4]
+
+        f=0.
+        if y<=(-0.5*(par[4]+par[2])):
+            f=par[0]
+        elif y<=(-0.5*(par[4]-par[2])):
+            f=par[0]+0.5*par[3]*(y+(0.5*(par[4]+par[2])))*(y+(0.5*(par[4]+par[2])))/((par[4]*par[2]))
+        elif y<=0.5*(par[4]-par[2]):
+            f=par[0]+par[3]*0.5+par[3]*y/par[4]
+        
+        if z>0:
+            f=par[3]+par[0]-f
+        
+        f=par[3]+par[0]-f
+        return f
+
+
+
 
 
 #-- ROOT strings to create TF1 functions
@@ -196,3 +301,5 @@ class root_fstring:
     # Doulble edge
     double_gaus_edge = '[0]+[1]/4 * ((1-TMath::Erf( (x-[2])/(sqrt(2)*[3])))'\
                        '+ (1-TMath::Erf( (x-[2])/(sqrt(2)*[4]) ) ) ) '
+
+    fermi = '[0]/(1+TMath::Exp(-(x-[1])/[2]))'

@@ -5,6 +5,7 @@ Created on Mon Oct  8 09:16:27 2018
 
 @author: l_frojdh
 """
+import ROOT
 import numpy as np
 from ROOT import TF1, TGraph
 import matplotlib.pyplot as plt
@@ -94,54 +95,49 @@ def find_edge(image):
     x,y = _find_presample_edge(image, par, a)
     return x, y
 
-def calculate_mtf(x,y, plot = True, pixel_range = (-3,3), double_gaus = False):
+def calculate_mtf(x, y, func, plot = True, pixel_range = (-3,3)):
     
     c,h = r.plot(x[(x>pixel_range[0])&(x<pixel_range[1])],y[(x>pixel_range[0])&(x<pixel_range[1])])
     
-    # func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
-    if double_gaus:
-        func = TF1('func', root_fstring.double_gaus_edge)
-        func.SetParameter(0, y[-1])
-        func.SetParameter(1, 1)
-        func.SetParameter(2, 0)
-        func.SetParameter(3, .15)
-        func.SetParameter(4, 1.55)
-        pfunc = double_gaus_edge_new 
-        func.SetParNames('C', 'A', 'mu', 'sigma', 'sigma2')
-    else:
-        func = TF1('func', root_fstring.gaus_edge)
-        func.SetParameter(0, 1)
-        func.SetParameter(1, 0)
-        func.SetParameter(2, .15)
-        pfunc = gaus_edge
+    f = ROOT.TF1('func', func, pixel_range[0], pixel_range[1], func.npar)
+    if func.ipar is not None:
+        for i, p in enumerate(func.ipar):
+            f.SetParameter(i, p)
+            print(f'Setting par[{i}] to {p}')
+            
+#     pfunc = gaus_edge
+        
+        
     for i in range(3):
-        fit = h.Fit('func', 'SQ')
-    par = [fit.Get().Parameter(i) for i in range(func.GetNpar())]
-    c.Draw()
+        fit = h.Fit(f, 'SQ')
+    par = [fit.Get().Parameter(i) for i in range(f.GetNpar())]
+
 
     #Plot the presample edge, fit and residuals
     if plot:
+        yfit = func.eval(x, par)
         fig, ax = plt.subplots(2,1, figsize = (14,14))
         ax[0].plot(x,y, '.', label= 'Presample edge')
-        ax[0].plot(x, pfunc(x,*par), label = 'Fit')
+        ax[0].plot(x, yfit, label = 'Fit')
         ax[0].set_xlim(pixel_range)
         ax[0].set_ylim(0,1.1)
         ax[0].grid(True)
         ax[0].set_xlabel('Distance [pixels]')
         ax[0].set_ylabel('Normalized edge')
         ax[0].legend()
-        ax[1].plot(x, y-pfunc(x,*par))
+        ax[1].plot(x, y-yfit, '.')
         ax[1].set_xlim(pixel_range)
         ax[1].grid(True)
         ax[1].set_xlabel('Distance [pixels]')
         ax[1].set_ylabel('Resiudals')
     
-    for i,p in enumerate(par):
-        print(i,p)
+    print()
+    for n,p in zip(func.par_names, par):
+        print(f'{n}: {p}')
 
     #Calculate MTF from fit
     x_fit = np.linspace(-200,200, 20000)
-    y_fit = pfunc(x_fit,*par)
+    y_fit = func.eval(x_fit, par)
     psf = -np.gradient(y_fit, x_fit)
     f = np.abs( np.fft.fft(psf))
     f = f/f[0]
@@ -150,21 +146,21 @@ def calculate_mtf(x,y, plot = True, pixel_range = (-3,3), double_gaus = False):
     u = np.fft.fftfreq(n,d)
     f = f[0:u.size//2]
     u = u[0:u.size//2]
+    u *= 2 #Go to fraction of Nyquist
     
     if plot:
         fig, ax = plt.subplots(2,1, figsize = (14,14))
-        ax[0].plot(x_fit,psf, label = 'Fitted LSF')
+        ax[0].plot(x_fit,psf,'o-', label = 'Fitted LSF')
         ax[0].set_xlim(-2,2)
         ax[0].grid(True)
         ax[0].legend()
         ax[1].plot(u, f, '-', label = 'MTF from fitted edge')
-    # return [u,f]
-    ax[1].set_xlim(0,0.5)
-    ax[1].plot(u, ideal_mtf(u), label = 'Ideal MTF')
-    ax[1].legend()
-    ax[1].grid(True)
+        ax[1].set_xlim(0,0.5)
+        ax[1].plot(u*2, ideal_mtf(u), label = 'Ideal MTF', ls= '--', color = 'black')
+        ax[1].legend()
+        ax[1].grid(True)
     
-    #Calculate direct MTF
+#     #Calculate direct MTF
     delta = 0.1
     x_resample = np.arange(-30,30,delta)
     y_resample = np.zeros(x_resample.size)
@@ -183,7 +179,7 @@ def calculate_mtf(x,y, plot = True, pixel_range = (-3,3), double_gaus = False):
     
 
     ax[0].plot(x_resample,lsf_resample, 'o', label = 'Direct LSF')
-    ax[0].set_xlim(-2,2)
+#     ax[0].set_xlim(-2,2)
     ax[0].grid(True)
     ax[0].legend()
     ax[0].set_xlabel('Distance [pixels]')
@@ -192,10 +188,97 @@ def calculate_mtf(x,y, plot = True, pixel_range = (-3,3), double_gaus = False):
     ax[1].legend()
 #    ax[1].set_xlabel[]
     ax[1].grid(True)
-    return [u, f]
+    ax[1].set_xlim(0,1)
+    ax[1].set_ylim(0, 1.1)
+    return [u_resample, f]
 
 
-def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax = None, fig = None, ci = 0):
+def calculate_mtf_with_errors2(xx,yy, 
+                              func,
+                              N = 1000, 
+                              plot = True, 
+                              label = 'label', 
+                              ax = None, 
+                              fig = None, 
+                              ci = 0,
+                              n_points = 10000):
+    
+    pixel_range = (-2.5,2.5)
+    lim = (-200,200)
+    x = np.linspace(lim[0],lim[1], n_points*2)
+    mask = (xx>pixel_range[0])&(xx<[pixel_range[1]])
+    xx = xx[mask]
+    yy = yy[mask]
+    sigma = np.zeros(N)   
+    residuals = np.zeros(xx.size)
+
+    #Array to hold the different MTF
+    f_arr = np.zeros((N, n_points))
+    
+    for j in range(N):
+        idx = np.random.randint(0, xx.size, xx.size)
+        c,h = r.plot(xx, yy+residuals[idx], draw = False)
+        
+
+        f = ROOT.TF1('func', func, pixel_range[0], pixel_range[1], func.npar)
+        if func.ipar is not None:
+            for i, p in enumerate(func.ipar):
+                f.SetParameter(i, p)
+
+        for i in range(3):
+            fit = h.Fit(f, 'SQ')
+        par = [fit.Get().Parameter(i) for i in range(f.GetNpar())]
+
+ 
+        residuals = yy-func.eval(xx, par)
+        
+
+        y = func.eval(x, par)
+        psf = -np.gradient(y, x)
+        f = np.abs( np.fft.fft(psf))
+        f = f/f[0]
+        d =x[1]-x[0]
+        n = x.size
+        u = np.fft.fftfreq(n,d)
+        f = f[0:u.size//2]
+        a = f
+        u = u[0:u.size//2]
+        u *= 2 #Go to fraction of Nyquist
+        f_arr[j] = f
+        
+    colors = sns.color_palette()
+    
+
+    mtf = []
+    
+
+    
+    m = f_arr.mean(axis = 0)
+    s = np.std(f_arr, axis = 0)
+    
+    mtf.append(m-3*s)
+    mtf.append(m)
+    mtf.append(m+3*s)
+    
+    mtf = np.asarray(mtf)
+    mtf = mtf[:, 0:u.size]
+    
+    if ax == None:
+        fig, ax = plt.subplots()
+
+    ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
+    ax.plot(u, mtf[1], color = colors[ci], label = label)
+
+    ax.set_xlim(0,1)
+    ax.set_ylim(0, 1.1)
+    ax.set_xlabel("Fraction of Nyquist")
+    ax.set_ylabel("MTF")
+
+    return fig, ax, u, mtf
+
+
+
+def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax = None, fig = None, ci = 0, double_gaus = False):
     x = np.linspace(-200,200, 20000)
     mask = (xx>-3)&(xx<3)
     xx = xx[mask]
@@ -206,22 +289,39 @@ def calculate_mtf_with_errors(xx,yy, N = 1000, plot = True, label = 'label', ax 
     for j in range(N):
         idx = np.random.randint(0, xx.size, xx.size)
         c,h = r.plot(xx, yy+residuals[idx], draw = False)
-        func = TF1('func', '[0]/2 * (1-TMath::Erf( (x-[1])/([2]*sqrt(2)) ))')  
-        # func = TF1('[0]+[1]/4 * ((1-TMath::Erf( (x-[2])/(sqrt(2)*[3])))'\
-        #                '+ (1-TMath::Erf( (x-[2])/(sqrt(2)*[4]) ) ) ) ')
-        func.SetParameter(0, 1)
-        func.SetParameter(1, 0)
-        func.SetParameter(2, 0.4)
-        fit = h.Fit('func', 'SQ')
-        fit = h.Fit('func', 'SQ')
         
-        par = [func.GetParameter(i) for i in range(func.GetNpar())]
-        residuals = yy-gaus_edge(xx, *par) 
-        # residuals = yy-double_gaus_edge_new(xx, *par)
+        if double_gaus:
+            func = TF1('func', root_fstring.double_gaus_edge)
+            func.SetParameter(0, y[-1])
+            func.SetParameter(1, 1)
+            func.SetParameter(2, 0)
+            func.SetParameter(3, .15)
+            func.SetParameter(4, 1.55)
+            pfunc = double_gaus_edge_new 
+            func.SetParNames('C', 'A', 'mu', 'sigma', 'sigma2')
+        else:
+            func = TF1('func', root_fstring.gaus_edge)
+            func.SetParameter(0, 1)
+            func.SetParameter(1, 0)
+            func.SetParameter(2, .15)
+            pfunc = gaus_edge
+
+
+        for i in range(3):
+            fit = h.Fit('func', 'SQ')
+        par = [fit.Get().Parameter(i) for i in range(func.GetNpar())]
+
+        if double_gaus:
+            residuals = yy-double_gaus_edge_new(xx, *par)
+        else:
+            residuals = yy-gaus_edge(xx, *par) 
         
         sigma[j] = par[2]
-        if j ==0:
-            y = gaus_edge(x,*par)
+        if j == 0:
+            if double_gaus:
+                double_gaus_edge_new(xx, *par)
+            else:
+                y = gaus_edge(x,*par)
             psf = -np.gradient(y, x)
             f = np.abs( np.fft.fft(psf))
             f = f/f[0]
