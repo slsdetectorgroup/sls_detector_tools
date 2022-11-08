@@ -4,7 +4,7 @@ Convenient wrapper for plotting Python things in ROOT.
 Mostly uses numpy data and aims to have a Pyton like feeling.
 No external dependencies except numpy and PyROOT
 """
-
+import ROOT
 import numpy as np
 from ROOT import (
     TCanvas, TGraph, TH1D, TH2D,
@@ -93,9 +93,9 @@ def plot(x, y, options='ALP', title="A TGraph",
     #Show stats box if the graph is fitted
     gStyle.SetOptFit(1)
 
-    #type conversions (Note! as array does not copy unless needed)
-    xdata = np.asarray(x, dtype=np.double)
-    ydata = np.asarray(y, dtype=np.double)
+    #type conversion
+    xdata = np.asarray(x, dtype=np.double).copy()
+    ydata = np.asarray(y, dtype=np.double).copy()
 
     #check array size
     if xdata.size != ydata.size:
@@ -377,3 +377,15 @@ def getHist(h, edge='center'):
 
 
     return x, y
+
+
+
+def fit_python_function(x,y, fn, fit_range = None,):
+    #TODO! this should probably be a member of the function class
+    if fit_range is None:
+        fit_range = np.array((0, x.max()))
+    
+    c,graph = plot(x,y, draw = False)
+    func = ROOT.TF1('func', fn, *fit_range, fn.npar)
+    fit = graph.Fit(func, 'NRSQ')
+    return [func.GetParameter(i) for i in range(fn.npar)]

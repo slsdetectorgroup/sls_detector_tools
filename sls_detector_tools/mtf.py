@@ -120,7 +120,7 @@ def calculate_mtf(x, y, func, plot = True, pixel_range = (-3,3)):
         ax[0].plot(x,y, '.', label= 'Presample edge')
         ax[0].plot(x, yfit, label = 'Fit')
         ax[0].set_xlim(pixel_range)
-        ax[0].set_ylim(0,1.1)
+        ax[0].set_ylim(-0.1,1.1)
         ax[0].grid(True)
         ax[0].set_xlabel('Distance [pixels]')
         ax[0].set_ylabel('Normalized edge')
@@ -201,9 +201,12 @@ def calculate_mtf_with_errors2(xx,yy,
                               ax = None, 
                               fig = None, 
                               ci = 0,
-                              n_points = 10000):
+                              n_points = 10000,
+                              pixel_range = (-2.5,2.5),
+                              ls = '-'
+                              ):
     
-    pixel_range = (-2.5,2.5)
+    
     lim = (-200,200)
     x = np.linspace(lim[0],lim[1], n_points*2)
     mask = (xx>pixel_range[0])&(xx<[pixel_range[1]])
@@ -267,7 +270,7 @@ def calculate_mtf_with_errors2(xx,yy,
         fig, ax = plt.subplots()
 
     ax.fill_between(u, mtf[2], mtf[0], color = colors[ci], alpha = 0.3)
-    ax.plot(u, mtf[1], color = colors[ci], label = label)
+    ax.plot(u, mtf[1], color = colors[ci], label = label, ls = ls)
 
     ax.set_xlim(0,1)
     ax.set_ylim(0, 1.1)

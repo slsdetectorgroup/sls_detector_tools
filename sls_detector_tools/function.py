@@ -193,6 +193,104 @@ def eval_func_obj(f, x, par):
     return y
 
 
+class ParFunc:
+    npar = 1
+    par_names = ['tau']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        # [0]*TMath::Exp([1]*x+[2])
+        return x[0]*np.exp(-par[0]*x[0])
+
+
+class SumParFunc:
+    npar = 1
+    par_names = ['tau']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        # [0]*TMath::Exp([1]*x+[2])
+        a = x[0]*np.exp(-par[0]*x[0])
+        b = (1-np.exp(-par[0]*x[0]))
+        return  a + a*b + a*b**2
+        # "x*exp(-[0]*x) + x*exp(-[0]*x)*(1-exp(-[0]*x)) +x*exp(-[0]*x)*(1-exp(-[0]*x))*(1-exp(-[0]*x))"
+
+
+    # return x*np.exp(-tau*x)
+
+class DoubleExpoFunc:
+    npar = 6
+    par_names = ['0', '1', '2', '3', '4', '5']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        # [0]*TMath::Exp([1]*x+[2])
+        return par[0]*np.exp(par[1]*x[0]+par[2])+par[3]*np.exp(par[4]*x[0]+par[5])
+
+
+
+class ExpoFunc2:
+    npar = 2
+    par_names = ['0', '1',]
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        return par[0]*np.exp(par[1]*x[0])
+
+class ExpoFunc3:
+    npar = 3
+    par_names = ['0', '1', '2']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        # [0]*TMath::Exp([1]*x+[2])
+        return par[0]*np.exp(par[1]*x[0]+par[2])
+
+class ExpoFunc4:
+    npar = 4
+    par_names = ['0', '1', '2', '3']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        return par[0]*np.exp(par[1]*x[0]+par[2])+par[3]
+
+
 class GausFunc:
     npar = 3
     par_names = ['A', 'mu', 'sigma']
@@ -201,6 +299,7 @@ class GausFunc:
             if len(par) != self.npar:
                 raise ValueError("pars")
         self.ipar = par
+
     def eval(self, x, par):
         return eval_func_obj(self, x, par)
 
