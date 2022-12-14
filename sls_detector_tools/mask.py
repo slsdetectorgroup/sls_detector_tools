@@ -87,16 +87,17 @@ class eiger9M:
             for row in range(12,0,-1):
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*col*2,512*(col*2+1),1)] )
                 self.port.append( [slice(256*(row-1),256*row, 1), slice(512*(col*2+1),512*(col*2+2),1)] )
+        self.port = tuple(tuple(p) for p in self.port)
 
         #Half modules
-        col = [slice(256*(i-1), 256*i, 1) for i in range(12, 0, -1)]
-        row = [slice(1024*i, 1024*(i+1), 1) for i in range(3)]
-        self.halfmodule = [[c, r] for r in row for c in col]
+        col = tuple(slice(256*(i-1), 256*i, 1) for i in range(12, 0, -1))
+        row = tuple(slice(1024*i, 1024*(i+1), 1) for i in range(3))
+        self.halfmodule = tuple((c, r) for r in row for c in col)
 
         #Modules
-        row = [slice(512*(i-1), 512*i, 1) for i in range(6,0,-1)]
-        col = [slice(1024*i, 1024*(i+1),1) for i in range(3)]
-        self.module = [ (r,c) for c in col for r in row]
+        row = tuple(slice(512*(i-1), 512*i, 1) for i in range(6,0,-1))
+        col = tuple(slice(1024*i, 1024*(i+1),1) for i in range(3))
+        self.module = tuple( (r,c) for c in col for r in row)
 
 
 

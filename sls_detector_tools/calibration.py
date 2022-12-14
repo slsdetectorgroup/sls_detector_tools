@@ -383,7 +383,12 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
     
     
     halfmodule = get_halfmodule_mask()#[6:8]
-    
+
+    #Don't print legend for large detectors, clutters plot
+    no_legend = False
+    if len(halfmodule) > 10:
+        no_legend = True
+
     for i in range( len(halfmodule) ):
         y = data[halfmodule[i]].sum(axis = 0).sum(axis = 0)
         yd = np.gradient( y )
@@ -404,8 +409,14 @@ def _fit_and_plot_vrf_data(data, x, hostnames):
 #        par = np.zeros(3)
 
         if cfg.calibration.plot:
-            ax1.plot(x, y, 'o', color = colors[i], label = hostnames[i])
-            ax2.plot(x, yd, 'o', color = colors[i], label = '$\mu: ${:.0f}'.format(par[1]))
+            l = hostnames[i]
+            if no_legend:
+                l = ''
+            ax1.plot(x, y, 'o', color = colors[i], label = l)
+            l = '$\mu: ${:.0f}'.format(par[1])
+            if no_legend:
+                l = ''
+            ax2.plot(x, yd, 'o', color = colors[i], label = l)
             ax2.plot(xx, function.gaus(xx, *par), color = colors[i])
         #
         vrf.append( int( np.round(par[1])) )
@@ -504,6 +515,17 @@ def do_vrf_scan(detector, xraybox, pixelmask = None,
 
     return vrf, t  , cts
     
+def load_vrpreamp():
+    with np.load(os.path.join(cfg.path.data, get_vrf_fname())) as f:
+        vrpreamp = f['vrf']
+    return vrpreamp
+
+def load_vrpreamp_data():
+    with np.load(os.path.join(cfg.path.data, get_vrf_fname())) as f:
+        vrpreamp = f['vrf']
+        data = f['data']
+        x = f['x']
+    return vrpreamp, data, x
 
 def find_mean_and_set_vcmp(detector, fit_result):
     """
@@ -845,7 +867,13 @@ def do_scurve(detector, xraybox,
     
     #if data should be used interactivly
     return data, x
-    
+
+def load_scurve():
+    with np.load(os.path.join(cfg.path.data, get_data_fname())) as f:
+        data = f['data']
+        x = f['x']
+    return data, x
+
 def do_scurve_fit(mask = None, fname = None, thrange = (0,2000)):
     """
     Per pixel scurve fit from saved data and save the result in an npz file
@@ -948,11 +976,14 @@ def do_scurve_fit_scaled(  mask = None, fname = None, thrange = (0,2000), par = 
         plt.savefig( os.path.join( cfg.path.data, get_fit_fname().strip('.npy') )+'.png' )
 
    #Save the fit result
-    fname = get_fit_fname().strip('.npy')
+    fname = get_fit_fname()#.strip('.npy')
     pathname = os.path.join(cfg.path.data, fname)
     np.save(pathname, fit_result)
     
     return fit_result
+
+def load_fit_result():
+    return np.load(os.path.join(cfg.path.data, get_fit_fname()))
 
 
 def _trimbit_scan(detector, step = 2):

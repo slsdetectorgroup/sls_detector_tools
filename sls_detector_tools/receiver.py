@@ -76,8 +76,12 @@ class ZmqReceiver:
             else:
                 image[p] = np.frombuffer(data, dtype = get_dtype(header['bitmode'])).reshape(256,512)
         
-        #flip bottom
-        for hm in self.mask.halfmodule[1::2]:
+        # #flip bottom
+        # for hm in self.mask.halfmodule[1::2]:
+        #     image[hm] = image[hm][::-1,:]
+
+        #flip top
+        for hm in self.mask.halfmodule[0::2]:
             image[hm] = image[hm][::-1,:]
 
         return image

@@ -12,7 +12,7 @@ import logging
 import numpy as np
 
 #sls_detector
-sys.path.append('/home/l_msdetect/erik/sls_detector_tools')
+# sys.path.append('/home/l_msdetect/erik/sls_detector_tools')
 import sls_detector_tools.config as cfg
 from sls_detector_tools import calibration
 from sls_detector_tools.plot import imshow
@@ -45,13 +45,13 @@ gain10               Sn
 """
 
 #Configuration for the calibration script
-cfg.geometry = '1M' #250k, 500k, 2M, 9M
+cfg.geometry = '9M' #250k, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'MS1M2'
-cfg.calibration.gain = 'gain8'
-cfg.calibration.target = 'Ag'
-cfg.calibration.energy = 22.2
-cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
+cfg.det_id = '9M'
+cfg.calibration.gain = 'gain5'
+cfg.calibration.target = 'Cu'
+cfg.calibration.energy = 8
+cfg.path.data = os.path.join('/mnt/ssd/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
 cfg.calibration.run_id = 0
@@ -77,26 +77,29 @@ d.parallel = False
 d.dacs.vtrim = cfg.calibration.vtr
 d.vthreshold = cfg.calibration.threshold
 
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 1500, stop = 3000)
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2000, stop = 3500)
+# vrpreamp = calibration.load_vrpreamp()
 d.dacs.vrpreamp = vrpreamp
-cfg.calibration.exptime = t
-# cfg.calibration.exptime = 0.5
+# cfg.calibration.exptime = t
+cfg.calibration.exptime = 3
+
 logger.info(f'vpreamp: {d.dacs.vrpreamp}')
 logger.info(f'exptime: {cfg.calibration.exptime }s')
 logger.info(f'vtrim: {d.dacs.vtrim}')
 
-# calibration.load_trimbits(d)
+# # # calibration.load_trimbits(d)
 
 data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
+# fit_result = calibration.load_fit_result()
 
 data, x = calibration.do_trimbit_scan(d, box)
 tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 calibration.load_trimbits(d)
 
 
-# cfg.calibration.run_id = 1
-# data, x = calibration.do_scurve(d, box)
-# fit_result = calibration.do_scurve_fit_scaled()
+cfg.calibration.run_id = 1
+data, x = calibration.do_scurve(d, box)
+fit_result = calibration.do_scurve_fit_scaled()
 
 
