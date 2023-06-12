@@ -48,9 +48,9 @@ gain10               Sn
 cfg.geometry = '9M' #250k, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
 cfg.det_id = '9M'
-cfg.calibration.gain = 'gain5'
-cfg.calibration.target = 'Cu'
-cfg.calibration.energy = 8
+cfg.calibration.gain = 'gain2'
+cfg.calibration.target = 'Ti'
+cfg.calibration.energy = 4.5
 cfg.path.data = os.path.join('/mnt/ssd/calibration/',
                              cfg.det_id, cfg.calibration.gain)
 
@@ -77,17 +77,17 @@ d.parallel = False
 d.dacs.vtrim = cfg.calibration.vtr
 d.vthreshold = cfg.calibration.threshold
 
-vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2000, stop = 3500)
-# vrpreamp = calibration.load_vrpreamp()
+vrpreamp, t, cts = calibration.do_vrf_scan(d, box, start = 2700, stop = 3800)
+#vrpreamp = calibration.load_vrpreamp()
 d.dacs.vrpreamp = vrpreamp
 # cfg.calibration.exptime = t
-cfg.calibration.exptime = 3
+cfg.calibration.exptime = 300
 
 logger.info(f'vpreamp: {d.dacs.vrpreamp}')
 logger.info(f'exptime: {cfg.calibration.exptime }s')
 logger.info(f'vtrim: {d.dacs.vtrim}')
 
-# # # calibration.load_trimbits(d)
+# # # # calibration.load_trimbits(d)
 
 data, x = calibration.do_scurve(d, box)
 fit_result = calibration.do_scurve_fit_scaled()
@@ -98,8 +98,8 @@ tb, target, data,x, result = calibration.find_and_write_trimbits_scaled(d)
 calibration.load_trimbits(d)
 
 
-cfg.calibration.run_id = 1
-data, x = calibration.do_scurve(d, box)
-fit_result = calibration.do_scurve_fit_scaled()
+#cfg.calibration.run_id = 1
+#data, x = calibration.do_scurve(d, box)
+#fit_result = calibration.do_scurve_fit_scaled()
 
 

@@ -1,6 +1,13 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TROOT.h"
+
+// #include "TPyReturn.h"
+#include "CPyCppyy/API.h"
+
+
+
 #include "fit_tgraph.h"
 #include <Python.h>
 #include <iostream>
@@ -56,6 +63,7 @@ static PyObject *fit(PyObject *self, PyObject *args);
 static PyObject *find_trimbits(PyObject *self, PyObject *args);
 static PyObject *vrf_fit(PyObject *self, PyObject *args);
 static PyObject *hist(PyObject *self, PyObject *args);
+static PyObject *hist3d(PyObject *self, PyObject *args);
 static PyObject *gaus_float(PyObject *self, PyObject *args);
 
 /* Module specification */
@@ -64,6 +72,7 @@ static PyMethodDef module_methods[] = {
     {"find_trimbits", find_trimbits, METH_VARARGS, find_trimbits_doc},
     {"vrf_fit", vrf_fit, METH_VARARGS, find_trimbits_doc},
     {"hist", hist, METH_VARARGS, find_trimbits_doc},
+    {"hist3d", hist3d, METH_VARARGS, find_trimbits_doc},
     {"gaus_float", gaus_float, METH_VARARGS, find_trimbits_doc},
     {NULL, NULL, 0, NULL}};
 
@@ -426,4 +435,75 @@ static PyObject *hist(PyObject *self, PyObject *args) {
     Py_DECREF(par_array);
 
     return dict;
+}
+
+static PyObject *hist3d(PyObject *self, PyObject *args) {
+    // PyObject to be extracted from *args holds data and parameters to the TH1D
+    PyObject *data_obj = NULL;
+
+    int nbins = 0;
+    double xmin = 0;
+    double xmax = 0;
+    const char* name = nullptr;
+
+    // Check and parse..
+    if (!PyArg_ParseTuple(args, "Osidd", &data_obj, &name, &nbins, &xmin, &xmax)) {
+        return NULL;
+    }
+
+    // Numpy array from the parsed objects
+    PyObject *data_array = PyArray_FROM_OTF(data_obj, NPY_DOUBLE, NPY_ARRAY_C_CONTIGUOUS);
+
+
+    // Exception if it fails
+    if (data_array == NULL) {
+        std::cout << "Something went wrong, possibly crappy arguments?" << std::endl;
+        return NULL;
+    }
+
+    // Number of dimensions in the numpy array
+    int ndim = (int)PyArray_NDIM((PyArrayObject *)data_array);
+    if (ndim != 3) {
+        std::cout << "We need a 3D array!";
+        return NULL;
+    }
+
+    // Get the dimensions of the array
+    int shape[3];
+    for (int i = 0; i < ndim; i++) {
+        shape[i] = (int)PyArray_DIM((PyArrayObject *)data_array, i);
+    }
+
+    double *data = (double *)PyArray_DATA((PyArrayObject *)data_array);
+
+    // Histogram goes here
+    int pixel_bins = shape[1]*shape[2];
+    double pixel_min = -.5;
+    double pixel_xmax = shape[1]*shape[2];
+    auto h = new TH2D(name, "test", pixel_bins, pixel_min , pixel_xmax, nbins, xmin, xmax);
+
+    // Time to do some filling
+
+    for(size_t frame=0; frame!=shape[0]; ++frame){
+        for (size_t row=0; row!=shape[1]; ++row){
+            for (size_t col=0; col!=shape[2]; ++col){
+                size_t pos = col+(row*shape[2]);
+                if(*data>xmin)
+                    h->Fill(pos, *data);
+                ++data;
+            }
+        }
+    }
+
+    Py_DECREF(data_array);
+
+    //Wrap object to return
+    CPyCppyy::Import("ROOT");
+    PyObject* result = CPyCppyy::Instance_FromVoidPtr(h, "TH2D", kTRUE);
+    return result;
+
+    
+
+    // return dict;
+    // return PyLong_FromLong(5);
 }

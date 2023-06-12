@@ -8,23 +8,25 @@ import os
 
 
 #Configuration for the calibration script
-cfg.geometry = '1M' #quad, 500k, 2M, 9M
+cfg.geometry = '9M' #quad, 500k, 2M, 9M
 cfg.calibration.type = 'XRF' #Sets function to fit etc.
-cfg.det_id = 'MS1M2'
+cfg.det_id = '9M'
 # cfg.calibration.gain = 'gain1'
 # cfg.calibration.target = 'Ti'
 # cfg.path.data = os.path.join('/home/l_msdetect/erik/data/calibration/',
 #                              cfg.det_id, cfg.calibration.gain)
 
-out_path = Path('/home/l_msdetect/erik/calibration/MS1M2/standard/')
+out_path = Path('/home/l_msdetect/erik/csaxs_eiger/standard')
 
-for i in range(1,9,1):
+for i in range(2,8,1):
     cfg.calibration.gain = f'gain{i}'
-    path = Path(os.path.join('/mnt/raid/quad/cal/',
+    path = Path(os.path.join('/mnt/ssd/calibration/',
                              cfg.det_id, cfg.calibration.gain))
+
     
     # print(f'src: {path}')
     tbfiles = [f for f in os.listdir(path) if '.sn' in f]
+    print(tbfiles)
     for f in tbfiles:
         material = f.split('_')[1][0:2]
         ending = f.split('.')[-1]
