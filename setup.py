@@ -15,7 +15,7 @@ args = out.stdout.decode().strip('\n').split()
 
 c_ext = Extension("_sls_cmodule",
                   sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"],
-                  libraries = ['Core', 'MathCore', 'Hist','cppyy3_10'],
+                  libraries = ['Core', 'MathCore', 'Hist','cppyy3_10', 'uuid'],
                   library_dirs = [os.path.join(os.environ['ROOTSYS'])],
                   include_dirs=[*du.get_numpy_include_dirs(),],
                   extra_compile_args = args #+ ['-fsanitize=address'],

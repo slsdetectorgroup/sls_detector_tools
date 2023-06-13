@@ -6,7 +6,7 @@
 // #include "TPyReturn.h"
 #include "CPyCppyy/API.h"
 
-
+#include <uuid/uuid.h>
 
 #include "fit_tgraph.h"
 #include <Python.h>
@@ -64,6 +64,7 @@ static PyObject *find_trimbits(PyObject *self, PyObject *args);
 static PyObject *vrf_fit(PyObject *self, PyObject *args);
 static PyObject *hist(PyObject *self, PyObject *args);
 static PyObject *hist3d(PyObject *self, PyObject *args);
+static PyObject *sparse_file_to_th2(PyObject *self, PyObject *args, PyObject *kwds);
 static PyObject *gaus_float(PyObject *self, PyObject *args);
 
 /* Module specification */
@@ -73,6 +74,7 @@ static PyMethodDef module_methods[] = {
     {"vrf_fit", vrf_fit, METH_VARARGS, find_trimbits_doc},
     {"hist", hist, METH_VARARGS, find_trimbits_doc},
     {"hist3d", hist3d, METH_VARARGS, find_trimbits_doc},
+    {"sparse_file_to_th2", (PyCFunction)(void(*)(void))sparse_file_to_th2, METH_VARARGS | METH_KEYWORDS, find_trimbits_doc},
     {"gaus_float", gaus_float, METH_VARARGS, find_trimbits_doc},
     {NULL, NULL, 0, NULL}};
 
@@ -436,6 +438,99 @@ static PyObject *hist(PyObject *self, PyObject *args) {
 
     return dict;
 }
+
+char* uuid(char out[UUID_STR_LEN]){
+  uuid_t b;
+  uuid_generate(b);
+  uuid_unparse_lower(b, out);
+  return out;
+}
+
+// for the moment constrained
+struct __attribute__((__packed__)) Hit
+{
+    int16_t row;
+    int16_t col;
+    double energy;
+};
+
+
+static PyObject *sparse_file_to_th2(PyObject *self, PyObject *args, PyObject *kwds) {
+
+
+    int nbins = 0;
+    double xmin = 0;
+    double xmax = 0;
+
+    // Parse file name, accepts string or pathlike objects
+    PyObject *fname_obj = NULL;
+    PyObject *fname_bytes = NULL;
+    char *fname = NULL;
+    Py_ssize_t len;
+
+    static char *kwlist[] = {"fname", "nbins", "xmin", "xmax", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "Oidd", kwlist, &fname_obj,
+                                     &nbins, &xmin, &xmax)) {
+        return NULL;
+    }
+
+    if (fname_obj != Py_None)
+        if (!PyUnicode_FSConverter(fname_obj, &fname_bytes))
+            return NULL;
+
+    PyBytes_AsStringAndSize(fname_bytes, &fname, &len);
+
+
+    char histogram_name[UUID_STR_LEN]={0};
+    uuid(histogram_name);
+    std::cout << "histogram: " << histogram_name << "\n";
+
+    FILE* fp  = fopen(fname, "rb");
+
+    if (fp == NULL) {
+        PyErr_SetFromErrnoWithFilename(PyExc_OSError, fname);
+        return NULL;
+    }
+
+    int32_t magic, nrow, ncol, itemsize;
+    if(!fread(&magic, sizeof(magic), 1, fp))
+        return NULL;
+    if(!fread(&nrow, sizeof(nrow), 1, fp))
+        return NULL;
+    if(!fread(&ncol, sizeof(ncol), 1, fp))
+        return NULL;
+    if(!fread(&itemsize, sizeof(itemsize), 1, fp))
+        return NULL;
+
+
+    // Histogram goes here
+    int pixel_bins = nrow*ncol;
+    double pixel_min = -.5;
+    double pixel_xmax = pixel_bins+.5;
+    auto h = new TH2D(histogram_name, "test", pixel_bins, pixel_min , pixel_xmax, nbins, xmin, xmax);
+
+    // Fill the histogram
+    Hit hit{};
+    while(fread(&hit, sizeof(hit), 1, fp)){
+        size_t pos = hit.col+(hit.row*ncol);
+        // size_t pos = hit.row+(hit.col*nrow);
+
+        if(hit.energy>xmin){
+            // std::cout << "row: " << hit.row << " col: " << hit.col << " pos: " << pos << " energy: " << hit.energy << std::endl;
+            h->Fill(pos, hit.energy);
+            counter++;
+        }   
+    }
+
+    // Wrap object to return
+    CPyCppyy::Import("ROOT");
+    PyObject* result = CPyCppyy::Instance_FromVoidPtr(h, "TH2D", kTRUE);
+    return result;
+    // return PyLong_FromLong(5);
+}
+
+
+
 
 static PyObject *hist3d(PyObject *self, PyObject *args) {
     // PyObject to be extracted from *args holds data and parameters to the TH1D
