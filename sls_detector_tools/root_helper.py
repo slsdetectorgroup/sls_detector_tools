@@ -389,3 +389,16 @@ def fit_python_function(x,y, fn, fit_range = None,):
     func = ROOT.TF1('func', fn, *fit_range, fn.npar)
     fit = graph.Fit(func, 'NRSQ')
     return [func.GetParameter(i) for i in range(fn.npar)]
+
+
+def EvalTF1(func, x):
+    y = np.zeros(x.size)
+    for i in range(x.size):
+        y[i] = func(x[i])
+    return y
+
+def GetRangeTF1(func):
+    low = np.double()
+    high = np.double()
+    func.GetRange(low,high)
+    return low, high

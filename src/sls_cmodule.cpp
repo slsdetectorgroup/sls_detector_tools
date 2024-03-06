@@ -2,9 +2,11 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TROOT.h"
+#include "TF1.h"
+#include "TPython.h"
 
 // #include "TPyReturn.h"
-#include "CPyCppyy/API.h"
+// #include "CPyCppyy/API.h"
 
 #include <uuid/uuid.h>
 
@@ -66,6 +68,7 @@ static PyObject *hist(PyObject *self, PyObject *args);
 static PyObject *hist3d(PyObject *self, PyObject *args);
 static PyObject *sparse_file_to_th2(PyObject *self, PyObject *args, PyObject *kwds);
 static PyObject *gaus_float(PyObject *self, PyObject *args);
+static PyObject *charge_sharing_func(PyObject *self, PyObject *args);
 
 /* Module specification */
 static PyMethodDef module_methods[] = {
@@ -76,6 +79,7 @@ static PyMethodDef module_methods[] = {
     {"hist3d", hist3d, METH_VARARGS, find_trimbits_doc},
     {"sparse_file_to_th2", (PyCFunction)(void(*)(void))sparse_file_to_th2, METH_VARARGS | METH_KEYWORDS, find_trimbits_doc},
     {"gaus_float", gaus_float, METH_VARARGS, find_trimbits_doc},
+    {"charge_sharing_func", charge_sharing_func, METH_VARARGS, find_trimbits_doc},
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef sls_cmodule_def = {PyModuleDef_HEAD_INIT, "_sls_cmodule",
@@ -90,6 +94,7 @@ PyMODINIT_FUNC PyInit__sls_cmodule(void) {
 
     /* Load `numpy` functionality. */
     import_array();
+    TPython::Import("ROOT");
     return m;
 }
 
@@ -518,15 +523,11 @@ static PyObject *sparse_file_to_th2(PyObject *self, PyObject *args, PyObject *kw
         if(hit.energy>xmin){
             // std::cout << "row: " << hit.row << " col: " << hit.col << " pos: " << pos << " energy: " << hit.energy << std::endl;
             h->Fill(pos, hit.energy);
-            counter++;
+            // counter++;
         }   
     }
 
-    // Wrap object to return
-    CPyCppyy::Import("ROOT");
-    PyObject* result = CPyCppyy::Instance_FromVoidPtr(h, "TH2D", kTRUE);
-    return result;
-    // return PyLong_FromLong(5);
+    return TPython::CPPInstance_FromVoidPtr(h, h->ClassName(), kTRUE);
 }
 
 
@@ -592,13 +593,17 @@ static PyObject *hist3d(PyObject *self, PyObject *args) {
 
     Py_DECREF(data_array);
 
-    //Wrap object to return
-    CPyCppyy::Import("ROOT");
-    PyObject* result = CPyCppyy::Instance_FromVoidPtr(h, "TH2D", kTRUE);
-    return result;
+    // Create python object to return
+    return TPython::CPPInstance_FromVoidPtr(h, h->ClassName(), kTRUE);
 
-    
+}
 
-    // return dict;
-    // return PyLong_FromLong(5);
+static PyObject *charge_sharing_func(PyObject *self, PyObject *args){
+    double xmin = 2000;
+    double xmax = 3500;
+    if (!PyArg_ParseTuple(args, "|dd", &xmin, &xmax)) {
+        return NULL;
+    }
+    auto func = new TF1("charge", charge_sharing_model, xmin,xmax,4);
+    return TPython::CPPInstance_FromVoidPtr(func, func->ClassName(), kTRUE);
 }

@@ -378,7 +378,27 @@ class TrapFunc:
         return f
 
 
+class ChargeFunc:
+    """
+    Fitting pixels spectra with charge sharing
+    """
+    npar = 4
+    par_names = ['N0', 'alpha', 'sigma', 'mu']
+    def __init__(self, par = None):
+        if par is not None:
+            if len(par) != self.npar:
+                raise ValueError("pars")
+        self.ipar = par
 
+    def eval(self, x, par):
+        return eval_func_obj(self, x, par)
+
+    def __call__(self, x, par):
+        A = (1-par[1])**2/(par[2]*np.sqrt(2*np.pi))
+        B = np.exp(-(x[0]-par[3])**2/(2*par[2]**2))
+        C = (1+np.log(x[0]/par[3]))
+        D = (1-erf((x[0]-par[3])/par[2]))/2
+        return  par[0]*(A*B + ((4*par[1])/par[3])*(1-par[1]*C)*D)  
 
 
 #-- ROOT strings to create TF1 functions

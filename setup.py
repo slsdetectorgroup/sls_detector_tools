@@ -7,7 +7,8 @@ import os
 import subprocess
 from setuptools import setup, Extension, find_packages
 import numpy.distutils.misc_util as du
-import cppyy
+
+
 __version__ = '0.0.1'
 out = subprocess.run(['root-config', '--cflags', '--glibs', '--ldflags'], 
                      stdout = subprocess.PIPE)
@@ -15,7 +16,7 @@ args = out.stdout.decode().strip('\n').split()
 
 c_ext = Extension("_sls_cmodule",
                   sources = ["src/sls_cmodule.cpp", "src/fit_tgraph.cpp"],
-                  libraries = ['Core', 'MathCore', 'Hist','cppyy3_10', 'uuid'],
+                  libraries = ['ROOTTPython','Core', 'MathCore', 'Hist', 'uuid'],
                   library_dirs = [os.path.join(os.environ['ROOTSYS'])],
                   include_dirs=[*du.get_numpy_include_dirs(),],
                   extra_compile_args = args #+ ['-fsanitize=address'],

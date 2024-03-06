@@ -16,6 +16,20 @@ double scurve_model(double *x, double *par) {
     return f;
 }
 
+double charge_sharing_model(double *x, double *par){
+    // A = (1-par[1])**2/(par[2]*np.sqrt(2*np.pi))
+    // B = np.exp(-(x[0]-par[3])**2/(2*par[2]**2))
+    // C = (1+np.log(x[0]/par[3]))
+    // D = (1-erf((x[0]-par[3])/par[2]))/2
+    // return  par[0]*(A*B + ((4*par[1])/par[3])*(1-par[1]*C)*D)  
+
+    double A = ((1-par[1])*(1-par[1]))/(par[2]*TMath::Sqrt(2*TMath::Pi()));
+    double B = TMath::Exp(-((x[0]-par[3])*(x[0]-par[3]))/(2*(par[2]*par[2])));
+    double C =  (1+TMath::Log(x[0]/par[3]));
+    double D = (1-TMath::Erf((x[0]-par[3])/par[2]))/2;
+    return  par[0]*(A*B + ((4*par[1])/par[3])*(1-par[1]*C)*D);
+}
+
 double gaus_func(double *x, double *par) {
     double f = par[0] * TMath::Gaus(x[0], par[1], par[2]);
     return f;

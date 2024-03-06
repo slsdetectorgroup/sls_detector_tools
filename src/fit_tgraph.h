@@ -1,4 +1,5 @@
 double scurve_model(double *x, double *par);
+double charge_sharing_model(double *x, double *par);
 double gaus_func(double *x, double *par);
 void gaus_fit(int n, double *x, double *y, double xmin, double xmax, double *result);
 void gaus_fit2(int n, double *x, double *y, double xmin, double xmax, double *result);
